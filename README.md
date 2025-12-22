@@ -381,3 +381,28 @@ dotfiles/
 
 ---
 
+## 19. Cons of Using This Setup
+
+- **Steep learning curve**  
+  GlazeWM, Zellij, and heavy keyboard usage require time to build muscle memory and can slow productivity initially.
+
+- **Windows-specific quirks**  
+  Some applications don’t tile cleanly, OS updates may break keybindings, and focus issues can occur with certain apps.
+
+- **Higher maintenance overhead**  
+  Multiple tools (WezTerm, Starship, Conda, Zellij) mean more configuration files to manage and troubleshoot.
+
+- **Performance edge cases**  
+  Large repositories can slow Starship prompts, and misconfigured plugins or scans may add terminal latency.
+
+- **Toolchain fragility**  
+  Version mismatches or breaking changes in upstream tools can impact stability without pinned versions.
+
+- **Reduced portability**  
+  This setup may not translate well to teammates’ machines or restricted corporate environments.
+
+- **Debugging complexity**  
+  When issues occur, it’s harder to isolate whether the cause is the terminal, shell, prompt, or window manager.
+
+- **Over-optimization risk**  
+  Time spent tuning the environment can outweigh productivity gains if not kept minimal and intentional.
