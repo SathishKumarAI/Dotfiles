@@ -14,3 +14,5 @@ Official / primary references used in this environment.
 - WinGet Docs: https://learn.microsoft.com/windows/package-manager/winget/
 - Conda Docs: https://docs.conda.io/projects/conda/en/latest/
 - Git for Windows: https://gitforwindows.org/
+- zoxide GitHub: https://github.com/ajeetdsouza/zoxide
+- zoxide Docs (README): https://github.com/ajeetdsouza/zoxide#readme

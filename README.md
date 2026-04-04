@@ -1,6 +1,6 @@
 # Windows Power Developer Environment
 
-**GlazeWM · WezTerm · Starship · Zellij · PowerToys · Conda · Git · WinGet**
+**GlazeWM · WezTerm · Starship · Zellij · PowerToys · Conda · Git · WinGet · zoxide**
 
 ---
 
@@ -33,6 +33,7 @@ Windows 10 / 11
 │
 │         ├── Starship   → Prompt
 │         ├── Conda      → Python environments
+│         ├── zoxide     → Fast directory navigation (z)
 │         └── Zellij     → Panes & sessions
 │
 └── Git                  → Version control
@@ -48,6 +49,7 @@ Windows 10 / 11
 | Terminal Emulator    | WezTerm   |
 | Prompt Engine        | Starship  |
 | Terminal Multiplexer | Zellij    |
+| Directory Navigation | zoxide    |
 | OS Productivity      | PowerToys |
 | Package Manager      | WinGet    |
 | Python Environments  | Conda     |
@@ -195,7 +197,58 @@ Windows 10 / 11
 
 ---
 
-## 9. PowerToys (OS-Level Productivity)
+## 9. zoxide (Directory Navigation)
+
+### Role
+
+* Replaces `cd` with a **learning, frequency-weighted jump command**
+* Remembers directories you visit and jumps to the best match
+
+### Why zoxide
+
+* No manual bookmarks — adapts to your usage
+* Works in PowerShell and Git Bash
+* Zero config needed after shell init
+
+### Install
+
+```powershell
+winget install ajeetdsouza.zoxide
+```
+
+### Shell Initialization
+
+**PowerShell** (`$PROFILE`):
+
+```powershell
+if (Get-Command zoxide -ErrorAction SilentlyContinue) {
+  Invoke-Expression (& { (zoxide init powershell) })
+}
+```
+
+**Git Bash** (`~/.bashrc`):
+
+```bash
+eval "$(zoxide init bash)"
+```
+
+### Core Commands
+
+```bash
+z project        # jump to best match for "project"
+z -              # jump to previous directory
+z -l project     # list matches for "project"
+```
+
+### Database Location
+
+```text
+~/.local/share/zoxide/db.zo
+```
+
+---
+
+## 10. PowerToys (OS-Level Productivity)
 
 ### Role
 
@@ -238,7 +291,7 @@ Adds native Windows productivity features that **complement GlazeWM**.
 
 ---
 
-## 10. WinGet (Package Management)
+## 11. WinGet (Package Management)
 
 ### Role
 
@@ -254,6 +307,7 @@ winget install Starship.Starship
 winget install Zellij.Zellij
 winget install Git.Git
 winget install Anaconda.Anaconda3
+winget install ajeetdsouza.zoxide
 ```
 
 ### Optional Tools
@@ -266,7 +320,7 @@ winget install Neovim.Neovim
 
 ---
 
-## 11. Terminal vs Shell (Critical Concept)
+## 12. Terminal vs Shell (Critical Concept)
 
 | Component         | Meaning             |
 | ----------------- | ------------------- |
@@ -281,7 +335,7 @@ WezTerm → PowerShell → Starship → Conda → Zellij
 
 ---
 
-## 12. All Terminals & Shells on Windows
+## 13. All Terminals & Shells on Windows
 
 ### Terminal Emulators
 
@@ -298,7 +352,7 @@ WezTerm → PowerShell → Starship → Conda → Zellij
 
 ---
 
-## 13. Git Tooling
+## 14. Git Tooling
 
 ### Git Core
 
@@ -316,7 +370,7 @@ winget install Git.Git
 
 ---
 
-## 14. Recommended Default Flow
+## 15. Recommended Default Flow
 
 ```text
 System Boot
@@ -331,20 +385,46 @@ System Boot
 
 ---
 
-## 15. Dotfiles Structure (Suggested)
+## 16. Dotfiles Structure (Actual)
 
 ```text
-dotfiles/
-├── wezterm/wezterm.lua
-├── glazewm/config.yaml
-├── starship/starship.toml
-├── zellij/config.kdl
-└── scripts/startup.ps1
+Dotfiles/
+├── scripts/
+│   └── bootstrap.ps1                                  ← ONE-SHOT SETUP — run this first
+│
+├── dotfiles/
+│   ├── glazewm/config.yaml                            ← GlazeWM personal config
+│   ├── starship/starship.toml                         ← Starship (Catppuccin Mocha powerline)
+│   ├── Zellij/
+│   │   ├── config.kdl                                 ← Zellij config (Ctrl+a prefix, theme)
+│   │   └── layouts/dev.kdl                            ← Dev session layout (3 tabs)
+│   ├── wizterm/.wezterm.lua                           ← WezTerm config (Lua)
+│   ├── powershell/
+│   │   └── Microsoft.PowerShell_profile.ps1           ← PowerShell profile (Starship+zoxide+aliases)
+│   ├── bash/
+│   │   └── .bashrc                                    ← Git Bash profile (Starship+zoxide)
+│   └── windows_setup/
+│       ├── env_setup.ps1                              ← Shell env setup (with permission prompts)
+│       ├── conda/setup.md                             ← Conda setup guide
+│       └── env_path/
+│           ├── update_user_path_autodetect_suryadeva.ps1  ← User PATH fix script
+│           └── update_user_path_autodetect_suryadeva.md   ← Script documentation
+│
+├── win11 installation files/                          ← TUI App Manager (see §22)
+│   ├── run.py                                         ← Entry point
+│   └── files/ core.py · data.py · tui.py · config.py
+│
+├── md files/
+│   ├── zoxide.md                                      ← zoxide deep-dive
+│   └── path_fix.md                                    ← PATH recovery guide
+│
+└── tools/
+    └── fetch_env_refs.py                              ← Regenerates TOOLS_LINKS.md
 ```
 
 ---
 
-## 16. Performance & Stability Guidelines
+## 17. Performance & Stability Guidelines
 
 * Tune Starship `scan_timeout`
 * Disable unused PowerToys modules
@@ -354,7 +434,99 @@ dotfiles/
 
 ---
 
-## 17. Reference Links
+## 18. Fresh Machine Setup (Bootstrap)
+
+One command sets up everything on a new machine:
+
+```powershell
+# Clone the repo first, then from repo root:
+powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1
+```
+
+`bootstrap.ps1` runs 4 steps **with permission prompts at every step**:
+
+| Step | Script | Action |
+| ---- | ------ | ------ |
+| 1 | (inline) | Install core tools via `winget` |
+| 2 | `env_path/update_user_path_autodetect_suryadeva.ps1` | Fix User PATH |
+| 3 | `windows_setup/env_setup.ps1` | Configure shells (Starship, zoxide, Conda) |
+| 4 | (inline) | Deploy dotfiles to correct locations with backups |
+
+```powershell
+# Dry run — see what would happen, no changes:
+powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -DryRun
+
+# Skip individual steps if already done:
+powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -SkipApps -SkipPath
+```
+
+### Manual env setup only
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\dotfiles\windows_setup\env_setup.ps1
+```
+
+### Fix User PATH only
+
+```powershell
+# Dry run:
+powershell -ExecutionPolicy Bypass -File .\dotfiles\windows_setup\env_path\update_user_path_autodetect_suryadeva.ps1 -DryRun
+# Apply:
+powershell -ExecutionPolicy Bypass -File .\dotfiles\windows_setup\env_path\update_user_path_autodetect_suryadeva.ps1
+```
+
+---
+
+## 19. TUI App Manager (`win11 installation files/`)
+
+A full visual terminal app for managing your dev tools on Windows — installs, version checks, update detection, and disk audit.
+
+### Quick Start
+
+```bash
+pip install requests rich textual
+python "win11 installation files/run.py"
+```
+
+### What It Does
+
+| Action | How |
+| ------ | --- |
+| Visual TUI with live sidebar | `python run.py` |
+| Check installed versions | `python run.py --check` |
+| Check for updates online | `python run.py --update` |
+| Install all essential + recommended | `python run.py --install` |
+| Install AI tools only | `python run.py --ai` |
+| Disk usage audit by tier | `python run.py --audit` |
+
+### App Tiers
+
+| Symbol | Tier | Meaning |
+| ------ | ---- | ------- |
+| ★ | Essential | Must-have — every machine |
+| ◆ | Recommended | Strongly suggested |
+| ◇ | Optional | Install if your stack needs it |
+| ○ | Skip | Listed for awareness only |
+
+### Install Profiles
+
+| Profile | Includes |
+| ------- | -------- |
+| Default | Essential + Recommended |
+| Minimal | Essential only |
+| Full Stack | All tiers |
+| AI Engineer | Essential + Recommended + AI-tagged apps |
+| Machine 1 / 2 | Per-machine tag filtering |
+
+### Categories Covered
+
+Editors & IDEs · Version Control · DevOps/Containers · Databases (incl. vector DBs) · Runtimes · **AI & LLM tools** (Claude Code, Ollama, LM Studio, Aider, Open WebUI) · Terminal/CLI · Productivity · Communication
+
+> See `win11 installation files/README.md` for full documentation.
+
+---
+
+## 20. Reference Links
 
 * WezTerm configs
   [https://github.com/hendrikmi/dotfiles/tree/main/wezterm](https://github.com/hendrikmi/dotfiles/tree/main/wezterm)
@@ -368,9 +540,12 @@ dotfiles/
 * GlazeWM deep dive
   [https://blog.markvincze.com/switching-to-the-glazewm-tiling-window-manager-on-windows/](https://blog.markvincze.com/switching-to-the-glazewm-tiling-window-manager-on-windows/)
 
+* zoxide GitHub
+  [https://github.com/ajeetdsouza/zoxide](https://github.com/ajeetdsouza/zoxide)
+
 ---
 
-## 18. What This Setup Achieves
+## 21. What This Setup Achieves
 
 * Keyboard-first development
 * Clean separation of responsibilities
@@ -381,7 +556,7 @@ dotfiles/
 
 ---
 
-## 19. Cons of Using This Setup
+## 22. Cons of Using This Setup
 
 - **Steep learning curve**  
   GlazeWM, Zellij, and heavy keyboard usage require time to build muscle memory and can slow productivity initially.

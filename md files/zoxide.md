@@ -28,11 +28,11 @@ No filesystem crawling, no background indexing.
 
 ## Supported Platforms & Shells
 
-| OS      | Shells          |
-| ------- | --------------- |
-| Linux   | bash, zsh, fish |
-| macOS   | bash, zsh, fish |
-| Windows | PowerShell      |
+| OS      | Shells                     |
+| ------- | -------------------------- |
+| Linux   | bash, zsh, fish            |
+| macOS   | bash, zsh, fish            |
+| Windows | PowerShell, Git Bash       |
 
 ---
 
@@ -59,12 +59,12 @@ sudo pacman -S zoxide
 ### Windows (PowerShell)
 
 ```powershell
-winget install zoxide
+winget install ajeetdsouza.zoxide
 ```
 
 Verify:
 
-```bash
+```powershell
 zoxide --version
 ```
 
@@ -91,6 +91,23 @@ eval "$(zoxide init zsh)"
 ```fish
 zoxide init fish | source
 ```
+
+### PowerShell (`$PROFILE`) — Windows
+
+```powershell
+if (Get-Command zoxide -ErrorAction SilentlyContinue) {
+  Invoke-Expression (& { (zoxide init powershell) })
+}
+```
+
+### Git Bash on Windows (`~/.bashrc`)
+
+```bash
+eval "$(zoxide init bash)"
+```
+
+> On Windows, `~/.bashrc` resolves to `C:\Users\<username>\.bashrc`.
+> Run `env_setup.ps1` (see `dotfiles/windows_setup/env_setup.ps1`) to add this automatically with a permission prompt.
 
 Commit these files into your dotfiles repository.
 
