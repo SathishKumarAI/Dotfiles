@@ -8,17 +8,30 @@
 //   - c for new pane
 //   - x to close current pane
 //   - d to detach session
-//   - And many more default Zellij commands
+//
+// Layouts: zellij --layout dev   (see layouts/dev.kdl)
+
+// Theme: Catppuccin Mocha (matches WezTerm + Starship)
+theme "catppuccin-mocha"
+
+// Default layout on startup
+// default_layout "dev"
+
+// Session behavior
+on_force_close "detach"
+simplified_ui false
+pane_frames true
+auto_layout true
 
 keybinds {
     shared_except "tmux" "locked" {
         // Unbind the default Ctrl+b prefix
         unbind "Ctrl b"
-        
+
         // Set Ctrl+a as the new prefix key (enters Normal mode)
         bind "Ctrl a" { SwitchToMode "Normal"; }
     }
-    
+
     // In locked mode, also allow Ctrl+a to unlock
     locked {
         bind "Ctrl a" { SwitchToMode "Normal"; }

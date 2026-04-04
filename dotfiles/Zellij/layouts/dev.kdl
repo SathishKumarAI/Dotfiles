@@ -1,0 +1,32 @@
+// dev.kdl — Zellij layout for a typical dev session
+// Usage: zellij --layout dev
+//
+// Layout:
+//   Tab 1 "Code"  → main editor pane + log pane below
+//   Tab 2 "Shell" → full-width shell
+//   Tab 3 "Logs"  → split: left logs, right watch/run
+
+layout {
+    tab name="Code" {
+        pane split_direction="vertical" {
+            pane size="70%" focus=true
+            pane size="30%" {
+                pane split_direction="horizontal" {
+                    pane name="git"
+                    pane name="run"
+                }
+            }
+        }
+    }
+
+    tab name="Shell" {
+        pane
+    }
+
+    tab name="Logs" {
+        pane split_direction="horizontal" {
+            pane name="logs" size="60%"
+            pane name="watch" size="40%"
+        }
+    }
+}
