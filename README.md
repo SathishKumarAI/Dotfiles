@@ -78,6 +78,113 @@ Windows 10 / 11
 
 * [https://blog.markvincze.com/switching-to-the-glazewm-tiling-window-manager-on-windows/](https://blog.markvincze.com/switching-to-the-glazewm-tiling-window-manager-on-windows/)
 * [https://github.com/glzr-io/glazewm/blob/main/resources/assets/cheatsheet.png](https://github.com/glzr-io/glazewm/blob/main/resources/assets/cheatsheet.png)
+* https://www.youtube.com/watch?v=1jE7rCvByHg
+* https://www.nerdfonts.com/font-downloads
+* 
+
+For Arch Linux, install a Nerd Font package and then set that font in your terminal.
+
+## 1. Install a Nerd Font
+
+Recommended:
+
+```bash
+sudo pacman -S ttf-jetbrains-mono-nerd
+```
+
+Other good options:
+
+```bash
+sudo pacman -S ttf-firacode-nerd
+```
+
+or
+
+```bash
+sudo pacman -S ttf-hack-nerd
+```
+
+---
+
+## 2. Refresh font cache
+
+```bash
+fc-cache -fv
+```
+
+---
+
+## 3. Configure your terminal font
+
+### VS Code
+
+Open settings JSON:
+
+```json
+"terminal.integrated.fontFamily": "JetBrainsMono Nerd Font"
+```
+
+---
+
+### Kitty
+
+Edit:
+
+```bash
+nano ~/.config/kitty/kitty.conf
+```
+
+Add:
+
+```conf
+font_family JetBrainsMono Nerd Font
+```
+
+---
+
+### Alacritty
+
+Edit:
+
+```bash
+nano ~/.config/alacritty/alacritty.toml
+```
+
+Add:
+
+```toml
+[font]
+normal = { family = "JetBrainsMono Nerd Font" }
+```
+
+---
+
+### WezTerm
+
+Edit:
+
+```bash
+nano ~/.wezterm.lua
+```
+
+Add:
+
+```lua
+return {
+  font = wezterm.font("JetBrainsMono Nerd Font"),
+}
+```
+
+---
+
+## 4. Restart terminal
+
+Completely close and reopen terminal/VS Code.
+
+---
+
+## 5. Test icons
+
 
 ---
 
