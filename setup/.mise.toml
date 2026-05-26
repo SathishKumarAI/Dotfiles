@@ -1,0 +1,11 @@
+# mise config for this project
+# Ensures consistent tool versions across all machines
+# See: https://mise.jdx.dev/configuration.html
+
+[tools]
+python = "3.12"
+node = "lts"
+go = "latest"
+
+[env]
+EDITOR = "nvim"

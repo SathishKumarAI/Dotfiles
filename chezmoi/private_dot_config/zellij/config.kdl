@@ -1,0 +1,27 @@
+// Zellij configuration file
+// Changed prefix key from Ctrl+b to Ctrl+a to avoid conflicts with Vim
+//
+// Usage: Press Ctrl+a to enter Zellij's command mode, then use:
+//   - Ctrl+a again to lock/unlock
+//   - h/j/k/l for pane navigation
+//   - n/p for next/previous tab
+//   - c for new pane
+//   - x to close current pane
+//   - d to detach session
+//   - And many more default Zellij commands
+
+keybinds {
+    shared_except "tmux" "locked" {
+        // Unbind the default Ctrl+b prefix
+        unbind "Ctrl b"
+        
+        // Set Ctrl+a as the new prefix key (enters Normal mode)
+        bind "Ctrl a" { SwitchToMode "Normal"; }
+    }
+    
+    // In locked mode, also allow Ctrl+a to unlock
+    locked {
+        bind "Ctrl a" { SwitchToMode "Normal"; }
+    }
+}
+

@@ -1,0 +1,67 @@
+# .zshrc — managed by chezmoi
+
+# Path
+typeset -U path
+path=($HOME/.local/bin $HOME/bin $path)
+export PATH
+
+# History
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt SHARE_HISTORY
+setopt APPEND_HISTORY
+
+# Key bindings (emacs style)
+bindkey -e
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+
+# Completion
+autoload -Uz compinit && compinit
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' menu select
+
+# mise — language version manager
+if [ -f "$HOME/.local/bin/mise" ]; then
+    eval "$($HOME/.local/bin/mise activate zsh)"
+    export NODE_PATH="$(npm root -g 2>/dev/null)"
+fi
+
+# Starship prompt
+if command -v starship &>/dev/null; then
+    eval "$(starship init zsh)"
+fi
+
+# zoxide (smart cd)
+if command -v zoxide &>/dev/null; then
+    eval "$(zoxide init zsh)"
+fi
+
+# fzf
+if command -v fzf &>/dev/null; then
+    eval "$(fzf --zsh 2>/dev/null)" || true
+fi
+
+# Conda
+if [ -f "$HOME/miniforge3/etc/profile.d/conda.sh" ]; then
+    . "$HOME/miniforge3/etc/profile.d/conda.sh"
+fi
+
+# Aliases
+alias ll='ls -alF --color=auto'
+alias la='ls -A --color=auto'
+alias l='ls -CF --color=auto'
+alias lg='lazygit'
+alias v='nvim'
+alias g='git'
+alias dc='docker compose'
+alias gs='git status'
+alias gd='git diff'
+alias gp='git push'
+alias gl='git log --oneline -20'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias cls='clear'

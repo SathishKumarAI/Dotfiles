@@ -1,0 +1,64 @@
+# .bashrc — managed by chezmoi
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+    . /etc/bashrc
+fi
+
+# Path
+if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]; then
+    PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+fi
+export PATH
+
+# mise — language version manager
+if [ -f "$HOME/.local/bin/mise" ]; then
+    eval "$($HOME/.local/bin/mise activate bash)"
+    export NODE_PATH="$(npm root -g 2>/dev/null)"
+fi
+
+# Starship prompt
+if command -v starship &>/dev/null; then
+    eval "$(starship init bash)"
+fi
+
+# zoxide (smart cd)
+if command -v zoxide &>/dev/null; then
+    eval "$(zoxide init bash)"
+fi
+
+# fzf
+if command -v fzf &>/dev/null; then
+    eval "$(fzf --bash 2>/dev/null)" || true
+fi
+
+# Conda
+if [ -f "$HOME/miniforge3/etc/profile.d/conda.sh" ]; then
+    . "$HOME/miniforge3/etc/profile.d/conda.sh"
+fi
+
+# Aliases
+alias ll='ls -alF --color=auto'
+alias la='ls -A --color=auto'
+alias l='ls -CF --color=auto'
+alias lg='lazygit'
+alias v='nvim'
+alias g='git'
+alias dc='docker compose'
+alias gs='git status'
+alias gd='git diff'
+alias gp='git push'
+alias gl='git log --oneline -20'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias cls='clear'
+
+# bashrc.d drop-in
+if [ -d ~/.bashrc.d ]; then
+    for rc in ~/.bashrc.d/*; do
+        if [ -f "$rc" ]; then
+            . "$rc"
+        fi
+    done
+fi
+unset rc
