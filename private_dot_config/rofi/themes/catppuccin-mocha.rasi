@@ -1,0 +1,101 @@
+* {
+    bg:           #1e1e2e;
+    bg-alt:       #313244;
+    fg:           #cdd6f4;
+    fg-alt:       #bac2de;
+    accent:       #89b4fa;
+    urgent:       #f38ba8;
+    selected:     #45475a;
+    active:       #a6e3a1;
+
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+window {
+    width:            600px;
+    background-color: @bg;
+    border:           2px solid;
+    border-color:     @accent;
+    border-radius:    12px;
+    padding:          0;
+    location:         center;
+    anchor:           center;
+}
+
+mainbox {
+    background-color: @bg;
+    border-radius:    12px;
+    children:         [ inputbar, message, listview ];
+}
+
+inputbar {
+    background-color: @bg-alt;
+    border-radius:    12px 12px 0 0;
+    padding:          14px 20px;
+    spacing:          12px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color:       @accent;
+    font:             "monospace bold 14";
+}
+
+entry {
+    placeholder:       "Search apps...";
+    placeholder-color: #6c7086;
+    text-color:        @fg;
+    font:              "monospace 14";
+}
+
+listview {
+    background-color: @bg;
+    columns:          1;
+    lines:            8;
+    padding:          8px 0;
+    fixed-height:     false;
+    dynamic:          true;
+    scrollbar:        false;
+    cycle:            true;
+}
+
+element {
+    padding:          10px 20px;
+    spacing:          12px;
+    background-color: transparent;
+}
+
+element selected.normal {
+    background-color: @selected;
+    border-radius:    0;
+}
+
+element-icon {
+    size:             24px;
+    vertical-align:   0.5;
+}
+
+element-text {
+    font:             "monospace 13";
+    vertical-align:   0.5;
+    text-color:       inherit;
+}
+
+element selected.normal element-text,
+element selected.active element-text {
+    text-color: @accent;
+}
+
+element normal.active {
+    text-color: @active;
+}
+
+element normal.urgent {
+    text-color: @urgent;
+}
+
+message {
+    padding:          8px 20px;
+    background-color: @bg;
+}

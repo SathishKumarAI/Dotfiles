@@ -1,0 +1,17 @@
+configuration {
+    modes:             "drun,run,window,filebrowser";
+    show-icons:        true;
+    icon-theme:        "Adwaita";
+    terminal:          "ghostty";
+    drun-display-format: "{name}";
+    display-drun:      " Apps";
+    display-run:       " Run";
+    display-window:    " Windows";
+    display-filebrowser: " Files";
+    hover-select:      false;
+    me-select-entry:   "";
+    me-accept-entry:   "MousePrimary";
+    kb-cancel:         "Escape,Super_L";
+}
+
+@theme "catppuccin-mocha"
