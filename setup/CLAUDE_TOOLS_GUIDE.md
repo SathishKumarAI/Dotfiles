@@ -51,29 +51,26 @@ chezmoi add ~/coding/CLAUDE.md
 
 **Location:** `~/.claude/settings.json`
 
-**What we've allowed:**
-```
-Read-only commands:
-  git status, git diff, git log, git branch, git show
-  ls, find, grep, cat, head, tail, wc, which, echo, pwd, du, df
-  
-Tool-specific:
-  mise *, chezmoi *
-  gh auth status, gh repo list, gh pr list
-  python3 --version, node --version, go version
-  npm list, pip show, pip list
-  
-All file reads:
-  Read (the dedicated read tool)
+**Current policy: Allow everything EXCEPT destructive operations.**
+
+```json
+{
+  "allow": ["Read", "Edit", "Write", "WebFetch", "WebSearch", "Bash(*)"],
+  "deny": [
+    "Bash(rm *)", "Bash(rmdir *)", "Bash(unlink *)", "Bash(shred *)",
+    "Bash(git reset --hard*)", "Bash(git clean -f*)", "Bash(git push --force*)",
+    "Bash(git push -f *)", "Bash(git branch -D *)", "Bash(git checkout -- *)",
+    "Bash(sudo rm *)", "Bash(flatpak uninstall *)",
+    "Bash(dnf remove *)", "Bash(pip uninstall *)", "Bash(npm uninstall -g *)"
+  ]
+}
 ```
 
-**How to add more:**
+**Philosophy:** Claude can do anything — read, write, install, build, run, test — but must always ask before deleting or removing anything.
+
+**How to edit:**
 ```bash
 v ~/.claude/settings.json
-# Add to the "allow" array:
-# "Bash(npm test*)"        — allow test runs
-# "Bash(docker ps*)"       — allow docker status checks
-# "Bash(pytest*)"          — allow pytest
 ```
 
 ---

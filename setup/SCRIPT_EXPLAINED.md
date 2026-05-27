@@ -179,18 +179,21 @@ Prints installed versions of everything so you can verify at a glance that nothi
 
 ## Flags: Risky, Outdated, or Problematic Items
 
-### CRITICAL: Rocky Linux 10 Compatibility
+### Rocky Linux 10 Compatibility (TESTED)
 
-Your machine is **Rocky Linux 10.1** but this script targets **8.x/9.x**. Key differences:
+The **custom script** (`rocky-dev-setup-custom.sh`) has been tested on Rocky Linux 10.1. Confirmed findings:
 
-| Issue | Impact |
-|-------|--------|
-| `epel-release` | EPEL for Rocky 10 may not be available yet or may need `epel-next-release` |
-| `crb` / `powertools` | Rocky 10 may use a different repo name |
-| `python3` defaults | Rocky 10 likely ships Python 3.12+, not 3.9 |
-| `java-17-openjdk` | May need `java-21-openjdk` on Rocky 10 (21 is the newer LTS) |
-| Docker CentOS repo | Uses `centos` repo — may need `rhel` or `rocky` specific URL for v10 |
-| NodeSource script | May not yet support Rocky 10 / RHEL 10 |
+| Item | Rocky 10 Status | Resolution |
+|------|----------------|------------|
+| `epel-release` | Works (`epel-release-10-7.el10_1`) | No changes needed |
+| `crb` repo | Works | Same name as Rocky 9 |
+| `python3` | Ships 3.12.12 | mise manages versions on top |
+| Docker repo | Must use `docker.com/linux/rhel/` not `centos` | Fixed in custom script |
+| `redis` RPM | **Not available** on Rocky 10 | Run as Podman/Docker container |
+| `fd-find` | Available in EPEL | Works fine |
+| `bat` | Available in EPEL | Works fine |
+| NodeSource | Replaced by **mise** for Node.js | No longer needed |
+| Java | Skipped (not in user's workflow) | Add `mise use java@21` if needed |
 
 ### Hardcoded Go Version
 

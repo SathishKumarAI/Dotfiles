@@ -292,6 +292,24 @@ log_section "STEP 7: Database Clients"
 dnf install -y postgresql sqlite mariadb
 log_success "Database clients installed (psql, sqlite3, mysql)"
 
+# Redis — no RPM on Rocky 10, run as container
+if ! command -v redis-cli &>/dev/null; then
+    log_info "Redis: no RPM for Rocky 10 — pulling container image..."
+    sudo -u "$ACTUAL_USER" podman pull redis:latest 2>/dev/null || \
+        docker pull redis:latest 2>/dev/null || true
+    log_success "Redis available as container: podman run -d --name redis -p 6379:6379 redis:latest"
+fi
+
+# MongoDB Shell
+if ! command -v mongosh &>/dev/null; then
+    log_info "Installing MongoDB Shell..."
+    curl -Lo /tmp/mongosh.tgz "https://downloads.mongodb.com/compass/mongosh-2.5.0-linux-x64.tgz" 2>/dev/null
+    tar -C /tmp -xzf /tmp/mongosh.tgz 2>/dev/null
+    cp /tmp/mongosh-*/bin/mongosh /usr/local/bin/ 2>/dev/null
+    rm -rf /tmp/mongosh* 2>/dev/null
+    log_success "mongosh installed"
+fi
+
 #==============================================================================
 # STEP 8: VS Code
 #==============================================================================

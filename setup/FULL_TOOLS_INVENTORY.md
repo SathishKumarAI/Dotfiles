@@ -250,16 +250,34 @@ ll    → ls -alF
 
 ---
 
-## Still Needs `sudo` Install
+## System Package Install (sudo required)
 
-Run these if not done yet:
 ```bash
-# Docker (add repo first)
+# 1. Add Docker repo (Rocky 10 uses RHEL repo)
 sudo dnf config-manager --add-repo=https://download.docker.com/linux/rhel/docker-ce.repo
-sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# 2. Docker + database clients + CLI tools
+sudo dnf install -y docker-ce docker-ce-cli containerd.io \
+    docker-buildx-plugin docker-compose-plugin \
+    postgresql sqlite mariadb \
+    htop bat fd-find ripgrep ShellCheck
+
+# 3. Enable Docker and add user to docker group
 sudo systemctl enable --now docker
 sudo usermod -aG docker $USER
 
-# Database clients + CLI tools
-sudo dnf install -y postgresql sqlite mariadb redis htop bat fd-find ripgrep ShellCheck
+# 4. Redis (no RPM for Rocky 10 — run as container instead)
+podman pull redis:latest
+podman run -d --name redis -p 6379:6379 redis:latest
+# Connect: redis-cli -h 127.0.0.1 (install via: pip install redis-cli)
 ```
+
+### Rocky 10 Package Notes
+
+| Package | Status | Notes |
+|---------|--------|-------|
+| `docker-ce` | Needs RHEL repo added first | Uses `docker.com/linux/rhel/` not `centos` |
+| `redis` | **No RPM** on Rocky 10 | Run as Podman/Docker container instead |
+| `fd-find` | Available in EPEL | Provides the `fd` command |
+| `bat` | Available in EPEL | Provides the `bat` command |
+| `ripgrep` | Available in EPEL | Provides the `rg` command |
