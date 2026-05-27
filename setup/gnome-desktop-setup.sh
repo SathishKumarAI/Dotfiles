@@ -113,7 +113,43 @@ for i in name command binding; do
   break
 done
 
-log_success "All done! Keyboard shortcuts:"
+#--- GNOME Extensions ---
+log_info "Installing GNOME extensions..."
+
+pip install gnome-extensions-cli 2>/dev/null
+
+EXTENSIONS=(
+  "blur-my-shell@aunetx"
+  "just-perfection-desktop@just-perfection"
+  "appindicatorsupport@rgcjonas.gmail.com"
+  "clipboard-indicator@tudmotu.com"
+  "Vitals@CoreCoding.com"
+  "tiling-assistant@leleat-on-github"
+)
+
+for ext in "${EXTENSIONS[@]}"; do
+  log_info "  Installing $ext..."
+  gext install "$ext" 2>/dev/null || log_warn "  Failed: $ext (install manually from extensions.gnome.org)"
+done
+
+log_success "GNOME extensions installed"
+
+#--- Summary ---
+echo ""
+log_success "Desktop setup complete!"
+echo ""
+echo "Theme:      Catppuccin Mocha (GTK + cursors + Papirus Dark icons)"
+echo "Fonts:      JetBrainsMono + FiraCode Nerd Fonts"
+echo ""
+echo "Extensions:"
+echo "  - Blur my Shell     (blurred panel & overview)"
+echo "  - Just Perfection   (fine-tune UI elements)"
+echo "  - AppIndicator      (system tray icons)"
+echo "  - Clipboard Indicator (clipboard history)"
+echo "  - Vitals            (CPU/RAM/temp in top bar)"
+echo "  - Tiling Assistant  (quarter tiling & layouts)"
+echo ""
+echo "Keyboard shortcuts:"
 echo "  Super+T  → Terminal"
 echo "  Super+E  → Files"
 echo "  Super+B  → Browser"
@@ -123,3 +159,8 @@ echo "  Super+Up → Maximize"
 echo "  Super+[  → Previous workspace"
 echo "  Super+]  → Next workspace"
 echo "  Alt+Tab  → Switch windows"
+echo ""
+echo "YouTube references:"
+echo "  - GNOME 47 on Fedora: https://www.youtube.com/watch?v=bV6qNfxIXkE"
+echo "  - Catppuccin GNOME:   https://m.youtube.com/watch?v=TwIz9WNxP5w"
+echo "  - Ultimate GNOME 2026: https://www.youtube.com/watch?v=Eox-YemFC1U"
