@@ -1,0 +1,16 @@
+# wofi configuration -> ~/.config/wofi/config
+# Defaults applied to every invocation; override per-mode on the command line.
+
+mode=drun
+show=drun
+width=600
+height=420
+location=center
+prompt=Search apps...
+allow_images=true
+image_size=24
+insensitive=true
+no_actions=true
+hide_scroll=true
+gtk_dark=true
+term=wezterm

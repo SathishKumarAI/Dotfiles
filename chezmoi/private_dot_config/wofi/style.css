@@ -1,0 +1,79 @@
+/* wofi style -> ~/.config/wofi/style.css
+ * Catppuccin Mocha — matches the rofi theme palette.
+ *   bg #1e1e2e  bg-alt #313244  fg #cdd6f4  accent #89b4fa
+ *   selected #45475a  active #a6e3a1  urgent #f38ba8  muted #6c7086
+ */
+
+* {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+window {
+    background-color: #1e1e2e;
+    border: 2px solid #89b4fa;
+    border-radius: 12px;
+    color: #cdd6f4;
+}
+
+#input {
+    margin: 0;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px 12px 0 0;
+    background-color: #313244;
+    color: #cdd6f4;
+    caret-color: #89b4fa;
+}
+
+#input image {
+    color: #89b4fa;
+}
+
+#input:focus {
+    border: none;
+    outline: none;
+}
+
+#outer-box {
+    margin: 0;
+    padding: 0;
+    background-color: #1e1e2e;
+    border-radius: 12px;
+}
+
+#scroll {
+    margin: 0;
+    padding: 8px 0;
+}
+
+#inner-box {
+    margin: 0;
+    padding: 0;
+}
+
+#entry {
+    padding: 10px 20px;
+    border-radius: 0;
+    background-color: transparent;
+}
+
+#entry image {
+    margin-right: 12px;
+}
+
+#text {
+    color: #cdd6f4;
+}
+
+#entry:selected {
+    background-color: #45475a;
+}
+
+#entry:selected #text {
+    color: #89b4fa;
+}
+
+#text:selected {
+    color: #89b4fa;
+}
