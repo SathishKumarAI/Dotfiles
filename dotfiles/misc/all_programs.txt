@@ -1,0 +1,444 @@
+COMPLETE PROGRAMS REPORT
+Total installed: 123
+Total store apps: 163
+Total running: 125
+Total startup: 8
+
+================================================================================
+INSTALLED PROGRAMS (123)
+================================================================================
+
+Anaconda3 2025.06-0 (Python 3.13.5 64-bit) | 2025.06-0 | Anaconda, Inc.
+AVG Update Helper | 1.8.1996.6 | AVG Technologies
+Brave | 148.1.90.122 | Brave Software Inc
+Chrome Remote Desktop | 1.0 | BraveSoftware\Brave-Browser
+Chrome Remote Desktop Host | 148.0.7778.23 | Google LLC
+Claude Code | 2.1.89 | Anthropic PBC
+cURL | 8.17.0.6 | curl
+dch_setup | 1.54.0.0 | kbedohi
+Dell Command | Power Manager | 2.2.1 | Dell Inc.
+Dell ControlVault Host Components Installer 64 bit | 4.12.5.8 | Broadcom Limited
+Dell SupportAssist | 5.0.1.2516 | Dell Inc.
+Dell SupportAssist OS Recovery Plugin for Dell Update | 5.5.15.2 | Dell Inc.
+Dell Touchpad | 10.3201.101.216 | ALPSALPINE CO., LTD.
+DiagnosticsHub_CollectionService | 17.14.36412 | Microsoft Corporation
+ExplorerPatcher | 26100.4946.69.6 | VALINET Solutions SRL
+fd | 10.3.0 | David Peter
+fzf | 0.67.0 | Junegunn Choi
+Git | 2.54.0 | The Git Development Community
+GitHub CLI | 2.81.0 | GitHub, Inc.
+GlazeWM | 3.9.1 | Glzr Software Pte. Ltd.
+Google Chrome | 148.0.7778.168 | Google LLC
+icecap_collection_neutral | 17.14.36015 | Microsoft Corporation
+icecap_collection_x64 | 17.14.36015 | Microsoft Corporation
+icecap_collectionresources | 17.14.36015 | Microsoft Corporation
+icecap_collectionresourcesx64 | 17.14.36015 | Microsoft Corporation
+iCloud Outlook | 15.5.0.23 | Apple Inc.
+Intel(R) Management Engine Components | 2521.8.6.0 | Intel Corporation
+Intel(R) Management Engine Driver | 1.0.0.0 | Intel Corporation
+Intel(R) Trusted Connect Service Client x64 | 1.77.4.0 | Intel Corporation
+Intel(R) Trusted Connect Service Client x86 | 1.77.4.0 | Intel Corporation
+Intel(R) Trusted Connect Services Client | 1.77.4.0 | Intel Corporation
+Intel(R) Wireless Bluetooth(R) | 19.11.1639.0649 | Intel Corporation
+JDownloader 2 | 2.0.250317 | AppWork GmbH
+jq | 1.8.1 | jqlang
+Kubernetes - Minikube - A Local Kubernetes Development Environment | 1.38.0 | Kubernetes
+lazygit | 0.57.0 | Jesse Duffield
+LibreOffice 25.8.4.2 | 25.8.4.2 | The Document Foundation
+LM Studio 0.3.39 | 0.3.39 | LM Studio
+Maxx Audio Installer (x64) | 2.7.13058.0 | Waves Audio Ltd.
+Microsoft .NET Host - 8.0.26 (x64) | 64.104.50421 | Microsoft Corporation
+Microsoft .NET Host FX Resolver - 8.0.26 (x64) | 64.104.50421 | Microsoft Corporation
+Microsoft .NET Runtime - 8.0.26 (x64) | 64.104.50421 | Microsoft Corporation
+Microsoft Edge | 148.0.3967.54 | Microsoft Corporation
+Microsoft Edge WebView2 Runtime | 148.0.3967.54 | Microsoft Corporation
+Microsoft OneDrive | 26.070.0414.0001 | Microsoft Corporation
+Microsoft Teams Meeting Add-in for Microsoft Office | 1.25.24601 | Microsoft
+Microsoft VC++ redistributables repacked. | 12.0.0.0 | Intel Corporation
+Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.44.35211 | 14.44.35211.0 | Microsoft Corporation
+Microsoft Visual C++ 2015-2022 Redistributable (x86) - 14.44.35211 | 14.44.35211.0 | Microsoft Corporation
+Microsoft Visual C++ 2022 X64 Additional Runtime - 14.44.35211 | 14.44.35211 | Microsoft Corporation
+Microsoft Visual C++ 2022 X64 Minimum Runtime - 14.44.35211 | 14.44.35211 | Microsoft Corporation
+Microsoft Visual C++ 2022 X86 Additional Runtime - 14.44.35211 | 14.44.35211 | Microsoft Corporation
+Microsoft Visual C++ 2022 X86 Minimum Runtime - 14.44.35211 | 14.44.35211 | Microsoft Corporation
+Microsoft Visual Studio Code (User) | 1.119.1 | Microsoft Corporation
+Microsoft Visual Studio Installer | 4.5.35.35368 | Microsoft Corporation
+Microsoft Visual Studio Setup Configuration | 3.12.2140.44225 | Microsoft Corporation
+Microsoft Visual Studio Setup WMI Provider | 3.12.2140.44225 | Microsoft Corporation
+Microsoft Windows Desktop Runtime - 8.0.26 (x64) | 64.104.50433 | Microsoft Corporation
+MiKTeX | 24.1 | MiKTeX.org
+MosUnst | 2.0.2.0 | ASIX Electronics Corporation
+Node.js | 22.20.0 | Node.js Foundation
+Npgsql 3.2.6 | 3.2.6-3 | EnterpriseDB
+OBS Studio | 32.0.4 | OBS Project
+Obsidian | 1.9.14 | Obsidian
+ONLYOFFICE | 9.3.1.8 | Ascensio System SIA
+ONLYOFFICE 9.3.1 (x64) | 9.3.1.8 | Ascensio System SIA
+OptaneDowngradeGuard | 18.0.0.0 | Intel Corporation
+Pandoc 3.8.3 | 3.8.3 | John MacFarlane
+PostgreSQL 17  | 17.7-1 | PostgreSQL Global Development Group
+Postman x86_64 11.66.4 | 11.66.4 | Postman
+PowerToys (Preview) | 0.96.1 | Microsoft Corporation
+PowerToys (Preview) x64 | 0.96.1 | Microsoft Corporation
+Python 3.11.9 (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python 3.11.9 Add to Path (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python 3.11.9 Core Interpreter (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python 3.11.9 Development Libraries (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python 3.11.9 Documentation (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python 3.11.9 Executables (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python 3.11.9 pip Bootstrap (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python 3.11.9 Standard Library (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python 3.11.9 Tcl/Tk Support (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python 3.11.9 Test Suite (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python 3.11.9 Utility Scripts (64-bit) | 3.11.9150.0 | Python Software Foundation
+Python Launcher | 3.11.9150.0 | Python Software Foundation
+Realtek Audio COM Components | 1.0.2 | Realtek Semiconductor Corp.
+Realtek Audio Driver | 6.0.9107.1 | Realtek Semiconductor Corp.
+Realtek Card Reader | 10.0.26100.21374 | Realtek Semiconductor Corp.
+Realtek USB Audio | 6.3.9600.2172 | Realtek Semiconductor Corp.
+Realtek USB Ethernet Controller All-In-One Windows Driver | 11.17.20.1030 | Realtek
+RipGrep MSVC | 15.1.0 | BurntSushi
+RstDowngradeGuard | 18.0.0.0 | Intel Corporation
+starship | 1.24.1 | Starship Contributors
+Stirling-PDF | 2.10.0 | Stirling PDF Inc.
+TbtLegacyPlug | 18.0.0.0 | kbedohi
+Tesseract-OCR - open source OCR engine | 5.5.0.20241111 | Tesseract-OCR community
+Thunderbolt™ Software | 1.54.0.0 | Intel(R) Corporation
+Visual Studio Community 2022 | 17.14.30 | Microsoft Corporation
+vs_communitymsires | 17.14.36015 | Microsoft Corporation
+vs_communitysharedmsi | 17.14.36025 | Microsoft Corporation
+vs_communityx64msi | 17.14.36025 | Microsoft Corporation
+vs_CoreEditorFonts | 17.7.40001 | Microsoft Corporation
+vs_devenvsharedmsi | 17.14.36015 | Microsoft Corporation
+vs_devenx64vmsi | 17.14.36015 | Microsoft Corporation
+vs_filehandler_amd64 | 17.14.36024 | Microsoft Corporation
+vs_filehandler_x86 | 17.14.36024 | Microsoft Corporation
+vs_FileTracker_Singleton | 17.14.36015 | Microsoft Corporation
+vs_githubprotocolhandlermsi | 17.14.36015 | Microsoft Corporation
+vs_minshellinteropsharedmsi | 17.14.36015 | Microsoft Corporation
+vs_minshellinteropx64msi | 17.14.36015 | Microsoft Corporation
+vs_minshellmsires | 17.14.36015 | Microsoft Corporation
+vs_minshellsharedmsi | 17.14.36024 | Microsoft Corporation
+vs_minshellx64msi | 17.14.36301 | Microsoft Corporation
+vs_tipsmsi | 17.14.36015 | Microsoft Corporation
+vs_vswebprotocolselectormsi | 17.14.36323 | Microsoft Corporation
+WezTerm version 20240203-110809-5046fc22 | 20240203-110809-5046fc22 | Wez Furlong
+Wget | 1.21.4 | Jernej Simoncic
+Windows 11 Installation Assistant | 1.4.19041.6448 | Microsoft Corporation
+Windows Subsystem for Linux | 2.6.1.0 | Microsoft Corporation
+WizTree v4.28 | 4.28 | Antibody Software
+Zebar | 3.1.1 | Glzr Software Pte. Ltd.
+Zen Browser (x64 en-US) | 1.18.1b | Zen OSS Team
+Zoom Workplace | 6.7.8 (32670) | Zoom Communications, Inc.
+zoxide | 0.9.8 | Ajeet D'Souza
+
+================================================================================
+MICROSOFT STORE APPS (163)
+================================================================================
+
+11413PtruceanBogdan.Wintoys | 2.4.12.0 | CN=38903382-DB59-47AA-88DA-F5FEB5192385
+1527c705-839a-4832-9118-54d4Bd6a0c89 | 10.0.19640.1000 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+21676OptimiliaStudios.ReadAloud | 2.1.40.0 | CN=4B45AB52-CF8E-4638-8A2B-A4C53035C6B9
+AIToolkit.Inference.Agent | 1.1.0.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+AppleInc.iCloud | 15.7.56.0 | CN=5BD5593D-A41B-4F89-884E-B4F3E0FBAA75
+AppUp.IntelGraphicsExperience | 1.100.5688.0 | CN=EB51A5DA-0E72-4863-82E4-EA21C1F8DFE3
+AppUp.IntelOptaneMemoryandStorageManagement | 18.1.1042.0 | CN=EB51A5DA-0E72-4863-82E4-EA21C1F8DFE3
+AppUp.ThunderboltControlCenter | 1.0.37.0 | CN=EB51A5DA-0E72-4863-82E4-EA21C1F8DFE3
+c5e2524a-ea46-4f67-841f-6a9465d9d515 | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Dell.SupportAssistforPCs | 5.0.1.0 | CN=Dell Technologies Inc., OU=SupportAssist Client, O=Dell Technologies Inc., L=Round Rock, S=Texas, C=US
+E2A4F912-2574-4A75-9BB0-0D023378592B | 10.0.19640.1000 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Enflick.TextNow-UnlimitedTextCalls | 23.21.0.0 | CN=70176DE0-98A5-4827-AA28-0D9D627036F0
+F46D4000-FD22-4DB4-AC8E-4E1DDDE828FE | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.AAD.BrokerPlugin | 1000.19580.1000.2 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.AccountsControl | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Advertising.Xaml | 10.1811.1.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Advertising.Xaml | 10.1811.1.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.ApplicationCompatibilityEnhancements | 1.2511.9.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.AsyncTextService | 10.0.26100.1 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.AV1VideoExtension | 2.0.7.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.AVCEncoderVideoExtension | 1.1.23.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.BingSearch | 1.1.40.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.BingWeather | 4.54.63040.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.BioEnrollment | 10.0.19587.1000 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.CommandPalette | 0.7.3271.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.CredDialogHost | 10.0.19595.1001 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.DesktopAppInstaller | 1.28.240.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.ECApp | 10.0.26100.8246 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Edge.GameAssist | 1.0.3590.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.GetHelp | 10.2409.41132.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.HEIFImageExtension | 1.2.30.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.HEVCVideoExtension | 2.4.43.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Ink.Handwriting.en-US.1.0 | 0.1121.1848.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Ink.Handwriting.en-US.1.0 | 0.1121.1848.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Ink.Handwriting.Main.en-US.1.0.1 | 0.1121.1848.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.LockApp | 10.0.26100.8246 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.MicrosoftEdge.Stable | 140.0.3485.66 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.MicrosoftEdgeDevToolsClient | 1000.25128.1000.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.MicrosoftSolitaireCollection | 4.25.4290.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.MicrosoftStickyNotes | 4.0.6105.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.MPEG2VideoExtension | 1.2.13.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.NET.Native.Framework.2.1 | 2.1.27427.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.NET.Native.Framework.2.1 | 2.1.27427.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.NET.Native.Framework.2.2 | 2.2.29512.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.NET.Native.Framework.2.2 | 2.2.29512.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.NET.Native.Runtime.2.1 | 2.1.26424.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.NET.Native.Runtime.2.1 | 2.1.26424.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.NET.Native.Runtime.2.2 | 2.2.28604.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.NET.Native.Runtime.2.2 | 2.2.28604.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.OneDriveSync | 25179.914.3.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.OutlookForWindows | 1.2025.1209.500 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Paint | 11.2601.441.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.PowerAutomateDesktop | 1.0.2094.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.PowerToys.FileLocksmithContextMenu | 0.96.1.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.PowerToys.ImageResizerContextMenu | 0.96.1.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.PowerToys.PowerRenameContextMenu | 0.96.1.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.PowerToys.SparseApp | 0.96.1.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.PPIProjection | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.RawImageExtension | 2.5.7.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.ScreenSketch | 11.2602.47.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.SecHealthUI | 1000.29554.1001.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Services.Store.Engagement | 10.0.23012.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Services.Store.Engagement | 10.0.23012.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.StartExperiencesApp | 1.264.3.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.StorePurchaseApp | 22603.1401.2.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.UI.Xaml.2.3 | 2.32002.13001.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.UI.Xaml.2.3 | 2.32002.13001.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.UI.Xaml.2.8 | 8.2501.31001.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.UI.Xaml.2.8 | 8.2501.31001.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.UI.Xaml.2.8 | 8.2511.26001.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.UI.Xaml.CBS | 9.2602.17001.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.VCLibs.140.00 | 14.0.33519.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.VCLibs.140.00 | 14.0.33519.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.VCLibs.140.00.UWPDesktop | 14.0.33728.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.VCLibs.140.00.UWPDesktop | 14.0.33728.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.VisualStudioCode | 1.0.119.1 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.VP9VideoExtensions | 1.2.12.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WebMediaExtensions | 2.1.26.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WebpImageExtension | 1.2.14.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WidgetsPlatformRuntime | 1.6.14.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Win32WebViewHost | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WinAppRuntime.DDLM.5001.373.1736.0-x6 | 5001.373.1736.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WinAppRuntime.DDLM.5001.373.1736.0-x8 | 5001.373.1736.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WinAppRuntime.DDLM.8000.675.1142.0-x6 | 8000.675.1142.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WinAppRuntime.DDLM.8000.675.1142.0-x8 | 8000.675.1142.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.Apprep.ChxApp | 1000.25128.1000.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.AssignedAccessLockApp | 1000.25128.1000.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.AugLoop.CBS | 1.1126.2131.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.CapturePicker | 10.0.19580.1000 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.CloudExperienceHost | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.ContentDeliveryManager | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.DevHome | 0.2100.858.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.NarratorQuickStart | 10.0.26100.1 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.OOBENetworkCaptivePortal | 10.0.26495.1000 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.OOBENetworkConnectionFlow | 10.0.26495.1000 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.ParentalControls | 1000.25128.1000.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.PeopleExperienceHost | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.Photos | 2026.11020.20001.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.PinningConfirmationDialog | 1000.25140.1001.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.PrintQueueActionCenter | 1.0.2.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.SecureAssessmentBrowser | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.ShellExperienceHost | 10.0.26100.8115 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.StartMenuExperienceHost | 10.0.26100.4768 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Windows.XGpuEjectDialog | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAlarms | 11.2512.0.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.2 | 2000.802.31.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.2 | 2000.802.31.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.4 | 4000.1309.2056.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.4 | 4000.1309.2056.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.5 | 5001.373.1736.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.5 | 5001.373.1736.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.6 | 6000.519.329.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.6 | 6000.519.329.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.7 | 7000.676.1651.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.7 | 7000.744.1258.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.7 | 7000.770.750.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.7 | 7000.785.2325.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.7 | 7000.785.2325.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.8 | 8000.770.947.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.8 | 8000.806.2252.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.8 | 8000.836.2153.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.8 | 8000.836.2153.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.8 | 8000.859.21.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.1.8 | 8000.859.21.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.2 | 2.0.1.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.2 | 2.0.1.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.CBS.1.6 | 6000.708.357.100 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsAppRuntime.CBS.1.8 | 8000.715.1812.100 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsCalculator | 11.2508.4.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsCamera | 2025.2510.2.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsNotepad | 11.2512.29.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsSoundRecorder | 1.1.86.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsStore | 22603.1401.19.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.WindowsTerminal | 1.24.11321.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.Winget.Source | 2026.507.1538.57 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.XboxGameCallableUI | 1000.25128.1000.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.XboxSpeechToTextOverlay | 1.111.30001.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.YourPhone | 1.26032.102.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Microsoft.ZuneMusic | 11.2603.12.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftCorporationII.QuickAssist | 2.0.35.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftCorporationII.WinAppRuntime.Main.1.5 | 5001.373.1736.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftCorporationII.WinAppRuntime.Main.1.8 | 8000.836.2153.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftCorporationII.WinAppRuntime.Singleton | 8002.0.1.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftCorporationII.WindowsSubsystemForLinux | 2.6.1.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftCorporationII.WinML.Intel.OpenVINO.EP.1.8 | 1.8.74.0 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.60719890.Voiess | 1000.26100.8115.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.60719895.Livtop | 1000.26100.8115.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.60719896.Speion | 1000.26100.8115.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.60719898.InpApp | 1000.26100.8115.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.Client.CBS | 1000.26100.297.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.Client.Core | 1000.26100.86.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.Client.CoreAI | 1000.26100.8246.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.Client.FileExp | 1000.26100.4.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.Client.OOBE | 1000.26100.40.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.Client.Photon | 1000.26100.10.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.Client.WebExperience | 526.1202.40.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.CrossDevice | 1.26032.83.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.Speech.en-US.1 | 1.0.28.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MicrosoftWindows.UndockedDevKit | 10.0.26100.1 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+MSTeams | 26072.521.4595.7966 | CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Windows.CBSPreview | 10.0.19580.1000 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+windows.immersivecontrolpanel | 10.0.8.1000 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+Windows.PrintDialog | 6.2.3.0 | CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+
+================================================================================
+RUNNING PROCESSES (125)
+================================================================================
+
+ApMsgFwd.exe | 832 | 2,512 K
+ApntEx.exe | 9152 | 2,016 K
+Apoint.exe | 4928 | 6,964 K
+AppActions.exe | 5424 | 12,696 K
+ApplePhotoStreams.exe | 15352 | 4,756 K
+ApplicationFrameHost.exe | 6412 | 6,988 K
+ApRemote.exe | 9060 | 1,080 K
+AsixService.exe | 4496 | 4,512 K
+backgroundTaskHost.exe | 31492 | 61,320 K
+bash.exe | 19504 | 1,244 K
+chrome.exe | 71420 | 529,876 K
+cmd.exe | 16632 | 1,252 K
+Code.exe | 37104 | 147,504 K
+CodeSetup-stable-974500e64f0d1cfdf7c9821a2a51c2cb3bf0e561.exe | 23040 | 13,580 K
+CodeSetup-stable-974500e64f0d1cfdf7c9821a2a51c2cb3bf0e561.tmp | 45872 | 52,600 K
+conda.exe | 20400 | 1,296 K
+conhost.exe | 5996 | 2,784 K
+CrossDeviceResume.exe | 8772 | 12,348 K
+csrss.exe | 860 | 3,672 K
+ctfmon.exe | 13868 | 48,956 K
+Dell.CoreServices.Client.exe | 6764 | 138,852 K
+Dell.TechHub.Analytics.SubAgent.exe | 6692 | 69,720 K
+Dell.TechHub.DataManager.SubAgent.exe | 6812 | 73,592 K
+Dell.TechHub.Diagnostics.SubAgent.exe | 6664 | 124,728 K
+Dell.TechHub.exe | 4532 | 44,808 K
+Dell.TechHub.Instrumentation.SubAgent.exe | 6824 | 165,136 K
+Dell.TechHub.Instrumentation.UserProcess.exe | 8740 | 49,396 K
+Dell.Update.SubAgent.exe | 6732 | 26,016 K
+dllhost.exe | 64124 | 20,484 K
+dwm.exe | 1460 | 75,816 K
+editors_helper.exe | 13024 | 619,960 K
+esif_uf.exe | 4320 | 2,240 K
+explorer.exe | 7468 | 477,236 K
+fontdrvhost.exe | 1180 | 1,756 K
+hidfind.exe | 9068 | 2,644 K
+HidMonitorSvc.exe | 4484 | 4,916 K
+HostControlService.exe | 4332 | 2,820 K
+HostStorageService.exe | 58144 | 7,988 K
+iCloudCKKS.exe | 11552 | 3,244 K
+iCloudHome.exe | 14488 | 18,476 K
+igfxCUIService.exe | 2796 | 3,368 K
+igfxEM.exe | 7844 | 6,028 K
+IntelCpHDCPSvc.exe | 1932 | 1,936 K
+IntelCpHeciSvc.exe | 2236 | 2,560 K
+jhi_service.exe | 8364 | 1,892 K
+LsaIso.exe | 864 | 1,824 K
+lsass.exe | 940 | 20,780 K
+Memory Compression | 2732 | 96,920 K
+Microsoft.CmdPal.UI.exe | 9212 | 45,492 K
+MpDefenderCoreService.exe | 4756 | 14,816 K
+ms-teams.exe | 14180 | 34,228 K
+ms-teamsupdate.exe | 49888 | 37,804 K
+msdtc.exe | 13640 | 4,640 K
+msedgewebview2.exe | 13924 | 53,732 K
+MsMpEng.exe | 5028 | 438,220 K
+NgcIso.exe | 2544 | 2,808 K
+NisSrv.exe | 1496 | 6,088 K
+OneApp.IGCC.WinService.exe | 4612 | 12,344 K
+OneDrive.Sync.Service.exe | 19092 | 24,364 K
+OpenConsole.exe | 28204 | 11,592 K
+pet.exe | 30904 | 8,712 K
+pg_ctl.exe | 4732 | 2,060 K
+postgres.exe | 5964 | 3,828 K
+powershell.exe | 30496 | 79,336 K
+PowerToys.AlwaysOnTop.exe | 7788 | 3,592 K
+PowerToys.Awake.exe | 7812 | 17,968 K
+PowerToys.exe | 3352 | 19,700 K
+PowerToys.FancyZones.exe | 1116 | 6,024 K
+PowerToys.KeyboardManagerEngine.exe | 9464 | 1,732 K
+PowerToys.LightSwitchService.exe | 9508 | 4,004 K
+PowerToys.MouseJumpUI.exe | 9736 | 4,332 K
+PowerToys.Peek.UI.exe | 9844 | 103,684 K
+PowerToys.PowerLauncher.exe | 10092 | 168,392 K
+PowerToys.PowerOCR.exe | 9224 | 8,868 K
+PowerToys.ZoomIt.exe | 9332 | 2,560 K
+python.exe | 2516 | 2,760 K
+RAVBg64.exe | 3620 | 4,436 K
+Registry | 132 | 41,624 K
+remoting_host.exe | 4512 | 3,444 K
+remoting_native_messaging_host.exe | 8988 | 16,868 K
+RstMwService.exe | 4744 | 1,988 K
+RtkAudioService64.exe | 2200 | 4,616 K
+RtkNGUI64.exe | 11880 | 12,532 K
+rundll32.exe | 23936 | 10,672 K
+RuntimeBroker.exe | 1656 | 40,076 K
+SearchHost.exe | 7892 | 76,760 K
+SearchIndexer.exe | 9392 | 76,352 K
+SearchProtocolHost.exe | 30368 | 19,960 K
+Secure System | 92 | 54,932 K
+SecurityHealthService.exe | 13760 | 15,928 K
+SecurityHealthSystray.exe | 13812 | 4,452 K
+services.exe | 652 | 9,252 K
+ServiceShell.exe | 3208 | 73,924 K
+ShellHost.exe | 7972 | 8,144 K
+sihost.exe | 7408 | 28,376 K
+smss.exe | 560 | 1,048 K
+spoolsv.exe | 4288 | 5,808 K
+StartMenuExperienceHost.exe | 10844 | 87,620 K
+SupportAssistAgent.exe | 4440 | 272,112 K
+svchost.exe | 1148 | 35,648 K
+System | 4 | 3,848 K
+System Idle Process | 0 | 8 K
+SystemSettings.exe | 15172 | 1,316 K
+TabTip.exe | 13892 | 16,996 K
+taskhostw.exe | 3388 | 13,060 K
+tasklist.exe | 42388 | 11,808 K
+TbtP2pShortcutService.exe | 4788 | 1,708 K
+TextInputHost.exe | 5952 | 58,580 K
+ThunderboltService.exe | 4776 | 6,376 K
+unsecapp.exe | 4052 | 3,844 K
+UserOOBEBroker.exe | 15180 | 5,424 K
+UshUpgradeService.exe | 2684 | 4,980 K
+uvicorn.exe | 17440 | 1,140 K
+WavesSvc64.exe | 10840 | 8,880 K
+WavesSysSvc64.exe | 4920 | 2,224 K
+Widgets.exe | 11184 | 30,528 K
+WidgetService.exe | 8812 | 7,124 K
+WindowsPackageManagerServer.exe | 13584 | 28,652 K
+wininit.exe | 944 | 1,376 K
+winlogon.exe | 600 | 7,596 K
+wlanext.exe | 8016 | 2,556 K
+WmiPrvSE.exe | 4076 | 33,260 K
+WMIRegistrationService.exe | 5008 | 2,520 K
+wslservice.exe | 5088 | 8,960 K
+WUDFHost.exe | 1220 | 11,652 K
+
+================================================================================
+STARTUP PROGRAMS (8)
+================================================================================
+
+Adobe Acrobat Synchronizer | "C:\Program Files\Adobe\Acrobat DC\Acrobat\AdobeCollabSync.exe"
+OneDrive | "C:\Users\SuryaDeva\AppData\Local\Microsoft\OneDrive\OneDrive.exe" /background
+RtHDVBg_PushButton | "C:\Program Files\Realtek\Audio\HDA\RAVBg64.exe" /IM
+RtHDVCpl | "C:\Program Files\Realtek\Audio\HDA\RtkNGUI64.exe" /s
+SecurityHealth | %windir%\system32\SecurityHealthSystray.exe
+Teams | "C:\Users\SuryaDeva\AppData\Local\Microsoft\WindowsApps\MSTeams_8wekyb3d8bbwe\ms-teams.exe" msteams:system-initiated
+WavesSvc | "C:\Program Files\Waves\MaxxAudio\WavesSvc64.exe" -Jack
+Web Companion | C:\Program Files (x86)\Lavasoft\Web Companion\Application\WebCompanion.exe --minimize 
