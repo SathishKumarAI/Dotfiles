@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Rofi power menu: lock / logout / suspend / reboot / shutdown.
+set -euo pipefail
+
+choice=$(printf '%s\n' \
+    "󰌾  Lock" \
+    "󰍃  Logout" \
+    "󰒲  Suspend" \
+    "󰜉  Reboot" \
+    "󰐥  Shutdown" |
+    env -u WAYLAND_DISPLAY rofi -dmenu -i -p "Power" -normal-window \
+        -theme-str 'listview {lines: 5;} window {width: 22em;}')
+
+case "$choice" in
+    *Lock*)     loginctl lock-session ;;
+    *Logout*)   gnome-session-quit --logout --no-prompt ;;
+    *Suspend*)  systemctl suspend ;;
+    *Reboot*)   systemctl reboot ;;
+    *Shutdown*) systemctl poweroff ;;
+esac

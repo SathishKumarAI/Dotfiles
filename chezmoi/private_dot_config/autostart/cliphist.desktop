@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=cliphist clipboard daemon
+Comment=Stores Wayland clipboard history for the rofi clipboard menu
+Exec=sh -c "wl-paste --watch cliphist store"
+X-GNOME-Autostart-enabled=true
+NoDisplay=true

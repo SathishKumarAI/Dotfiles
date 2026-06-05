@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Clipboard history picker. Requires: cliphist + wl-clipboard.
+# The storing daemon is started by ~/.config/autostart/cliphist.desktop:
+#   wl-paste --watch cliphist store
+set -euo pipefail
+
+command -v cliphist >/dev/null || { notify-send "rofi-clip" "install 'cliphist'"; exit 1; }
+
+# rofi must run on X11 (-u WAYLAND_DISPLAY); wl-copy must keep Wayland.
+sel=$(cliphist list | env -u WAYLAND_DISPLAY rofi -dmenu -i -p "Clipboard" -normal-window \
+        -theme-str 'window {width: 50em;}')
+[ -n "$sel" ] || exit 0
+printf '%s' "$sel" | cliphist decode | wl-copy

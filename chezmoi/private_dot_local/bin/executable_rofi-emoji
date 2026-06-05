@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Emoji / unicode picker -> copies to clipboard. Requires: rofimoji.
+set -euo pipefail
+
+command -v rofimoji >/dev/null || { notify-send "rofi-emoji" "install 'rofimoji'"; exit 1; }
+
+# WAYLAND_DISPLAY unset so rofimoji's rofi selector uses X11 (XWayland).
+# With no WAYLAND_DISPLAY rofimoji copies via xclip; Mutter syncs X<->Wayland.
+exec env -u WAYLAND_DISPLAY rofimoji \
+    --selector rofi \
+    --selector-args "-normal-window" \
+    --action copy

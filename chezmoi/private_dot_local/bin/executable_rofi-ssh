@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Pick an SSH host from ~/.ssh/config and open it in wezterm.
+set -euo pipefail
+
+cfg="$HOME/.ssh/config"
+[ -f "$cfg" ] || { notify-send "rofi-ssh" "no ~/.ssh/config"; exit 0; }
+
+hosts=$(awk '/^[Hh]ost / {for(i=2;i<=NF;i++) if($i !~ /[*?]/) print $i}' "$cfg" | sort -u)
+[ -n "$hosts" ] || { notify-send "rofi-ssh" "no hosts in ~/.ssh/config"; exit 0; }
+
+sel=$(printf '%s\n' "$hosts" | env -u WAYLAND_DISPLAY rofi -dmenu -i -p "SSH" -normal-window)
+[ -n "$sel" ] || exit 0
+exec wezterm start -- ssh "$sel"

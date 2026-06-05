@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# fzf picker for zellij sessions: attach existing or create new. Alias: zj
+set -euo pipefail
+
+sessions=$(zellij list-sessions -ns 2>/dev/null || zellij list-sessions 2>/dev/null || true)
+choice=$(printf '%s\n%s' "$sessions" "＋  new session" \
+    | sed '/^$/d' \
+    | fzf --prompt="zellij ❯ " --height=40% --reverse) || exit 0
+
+if [ -z "$choice" ] || [ "$choice" = "＋  new session" ]; then
+    printf 'session name (blank = auto): '
+    read -r name
+    if [ -n "$name" ]; then exec zellij -s "$name"; else exec zellij; fi
+else
+    exec zellij attach "$choice"
+fi

@@ -9,16 +9,24 @@
 
 ---
 
-## GNOME — App Launchers (Custom)
+## GNOME — Custom Shortcuts (this repo)
+
+Set by `chezmoi/.chezmoiscripts/run_onchange_after_gnome-launcher.sh`.
+Rofi menus need `setup/install-extras.sh` (clipboard/emoji/calc tools).
 
 | Shortcut | Action |
 |----------|--------|
-| `Super + T` | Terminal (Ptyxis) |
+| `Ctrl + Space` | Rofi app launcher |
+| `Super + W` | Window switcher (rofi) |
+| `Super + Escape` | Power menu (lock/logout/suspend/reboot/shutdown) |
+| `Super + Shift + V` | Clipboard history (cliphist) |
+| `Super + .` | Emoji / unicode picker (rofimoji) |
+| `Super + =` | Calculator (rofi-calc / qalc) |
+| `Super + \` | SSH menu (opens host in wezterm) |
+| `Super + Return` | WezTerm |
 | `Super + E` | Files (Nautilus) |
-| `Super + B` | Browser (Brave) |
-| `Super + C` | VS Code |
-| `Ctrl + Alt + Space` | Rofi App Launcher (canonical) |
-| `Super + Space` | Rofi App Launcher (alt, if `setup-rofi-keybind.sh` run) |
+| `Super + B` | Browser (auto-detected) |
+| `Super + Shift + S` | Screenshot (region → clipboard) |
 
 ## GNOME — Window Management
 
@@ -86,7 +94,7 @@
 
 ## Rofi — App Launcher
 
-> Triggered by `Ctrl + Alt + Space` (Super + Space if alt keybind installed)
+> Triggered by `Ctrl + Space`
 
 | Key | Action |
 |-----|--------|
@@ -236,7 +244,7 @@ Learn top-down. Each tier is the ~5 keys you'll hit most before the next.
 
 | Key | Action |
 |-----|--------|
-| `Ctrl + Alt + Space` | Open app launcher (rofi) |
+| `Ctrl + Space` | Open app launcher (rofi) |
 | `Ctrl + Shift + D` / `E` | Split pane H / V |
 | `Ctrl + Shift + H/J/K/L` | Move between panes |
 | `Ctrl + Shift + T` / `W` | New / close tab |

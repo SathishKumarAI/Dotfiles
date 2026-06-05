@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# One-shot system update: Arch pkgs + AUR + mise + chezmoi + flatpak.
+# Alias: up
+set -uo pipefail
+
+step() { printf '\n\033[1;35m== %s ==\033[0m\n' "$1"; }
+
+step "Arch + AUR (yay)"
+if command -v yay >/dev/null; then yay -Syu; else sudo pacman -Syu; fi
+
+step "mise runtimes"
+command -v mise >/dev/null && mise upgrade || echo "mise not found, skip"
+
+step "chezmoi dotfiles (pull + apply)"
+command -v chezmoi >/dev/null && chezmoi update --apply || echo "chezmoi not found, skip"
+
+step "flatpak"
+command -v flatpak >/dev/null && flatpak update -y || echo "flatpak not found, skip"
+
+step "Done ✓"

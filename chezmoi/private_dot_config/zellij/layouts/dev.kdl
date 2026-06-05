@@ -1,0 +1,19 @@
+// Dev workspace: editor on top, two shells (work + logs) below.
+// Launch with:  zellij --layout dev      (alias: dev)
+layout {
+    tab name="code" focus=true {
+        pane size="68%" {
+            command "nvim"
+            args "."
+        }
+        pane split_direction="vertical" size="32%" {
+            pane name="shell"
+            pane name="logs"
+        }
+    }
+    tab name="git" {
+        pane {
+            command "lazygit"
+        }
+    }
+}

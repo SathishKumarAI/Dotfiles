@@ -34,7 +34,7 @@ RED = "#f38ba8"
 # --- Content: (title, accent, [(keys, action), ...]) ---
 CARDS = [
     ("1 · DAILY — learn first", GREEN, [
-        ("Ctrl+Alt+Space", "App launcher (rofi)"),
+        ("Ctrl+Space", "App launcher (rofi)"),
         ("Ctrl+Shift+D / E", "Split pane  H / V"),
         ("Ctrl+Shift+H J K L", "Move between panes"),
         ("Ctrl+Shift+T / W", "New / close tab"),
@@ -63,11 +63,21 @@ CARDS = [
         ("Super+Q", "Close window (GNOME)"),
     ]),
     ("ROFI — launcher", PINK, [
-        ("Ctrl+Alt+Space", "Open"),
+        ("Ctrl+Space", "Open"),
         ("type...", "Fuzzy search (most-used first)"),
         ("Enter", "Launch selected"),
         ("Tab", "Switch mode (apps/run/win)"),
         ("Esc", "Close"),
+    ]),
+    ("GNOME MENUS (Super)", TEAL, [
+        ("Super+W", "Window switcher"),
+        ("Super+Esc", "Power menu"),
+        ("Super+Shift+V", "Clipboard history"),
+        ("Super+.", "Emoji picker"),
+        ("Super+=", "Calculator"),
+        ("Super+\\", "SSH menu"),
+        ("Super+Return", "WezTerm"),
+        ("Super+Shift+S", "Screenshot region"),
     ]),
     ("ZELLIJ — prefix Ctrl+A", YELLOW, [
         ("Ctrl+A then H J K L", "Navigate panes"),

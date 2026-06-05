@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Calculator via rofi-calc (libqalculate). Enter copies the result.
+set -euo pipefail
+
+command -v qalc >/dev/null || { notify-send "rofi-calc" "install 'libqalculate' + 'rofi-calc'"; exit 1; }
+
+WL="${WAYLAND_DISPLAY:-}"   # pass Wayland into the copy command only
+exec env -u WAYLAND_DISPLAY rofi -show calc -modi calc -no-show-match -no-sort -normal-window \
+    -calc-command "echo -n '{result}' | WAYLAND_DISPLAY='$WL' wl-copy"
