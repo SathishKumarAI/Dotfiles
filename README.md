@@ -131,9 +131,10 @@ These are the actual config files deployed to your home directory via [chezmoi](
 | Script | Run As | What It Does |
 |--------|--------|-------------|
 | `rocky-dev-setup-custom.sh` | `sudo` | **Main script.** Installs mise, chezmoi, Docker, database clients, VS Code, CLI tools, Miniforge, AWS CLI. Rocky 9/10 compatible. |
-| `gnome-desktop-setup.sh` | user | Installs Nerd Fonts, Catppuccin Mocha GTK theme + cursors + Papirus icons, 6 GNOME extensions, keyboard shortcuts. |
-| `gnome-taskbar.sh` | user | Enables + configures Dash to Panel: top panel with clock left, open-window icons centered, system tray + system menu right. |
+| `gnome-desktop-setup.sh` | user | Installs Nerd Fonts, Catppuccin Mocha GTK theme + cursors + Papirus icons, 6 GNOME extensions, keyboard shortcuts, Nautilus large icon view + thumbnails. |
+| `gnome-taskbar.sh` | user | Enables + configures Dash to Panel: top panel with clock **right** (seconds + date), open-window icons centered, numeric battery %, system tray + system menu right. |
 | `gnome-extra-extensions.sh` | user | Installs + enables AppIndicator (tray), Tiling Assistant (window tiling), Just Perfection (UI tweaks) via `yay`. |
+| `gnome-panel-extras.sh` | user | Installs + enables Caffeine (keep-awake toggle) + Media Controls (play/pause + track in panel) via `yay` + `gext`. |
 | `rocky-dev-setup.sh` | `sudo` | Original reference script (before mise/chezmoi customization). Kept for comparison. |
 | `chezmoi-migration.sh` | user | Migrates existing dotfiles into chezmoi format. One-time use. |
 
@@ -197,8 +198,9 @@ Every tool uses the [Catppuccin Mocha](https://github.com/catppuccin/catppuccin)
 | **Icons** | Papirus Dark |
 | **Cursors** | Catppuccin Mocha Dark |
 | **Fonts** | JetBrainsMono + FiraCode Nerd Fonts |
-| **Extensions** | Dash to Panel, CopyQ Clipboard, AppIndicator, Tiling Assistant, Just Perfection (+ Blur my Shell, Vitals via desktop-setup) |
-| **Panel** | `gnome-taskbar.sh` — clock left, window icons centered, tray + system menu right |
+| **Extensions** | Dash to Panel, CopyQ Clipboard, AppIndicator, Tiling Assistant, Just Perfection, Caffeine, Media Controls (+ Blur my Shell, Vitals via desktop-setup) |
+| **Panel** | `gnome-taskbar.sh` — clock **right** (seconds+date), window icons centered, numeric battery %, tray + system menu right |
+| **Files** | Nautilus large icon view + image thumbnails (`gnome-desktop-setup.sh`) |
 
 > Per-extension daily usage + keybindings: [`md files/KEYBOARD-SHORTCUTS.md`](md%20files/KEYBOARD-SHORTCUTS.md) → "GNOME — Extensions".
 
@@ -297,10 +299,16 @@ Full details: [setup/FULL_TOOLS_INVENTORY.md](setup/FULL_TOOLS_INVENTORY.md)
 - [ ] **WezTerm Linux config** — Fork the Windows `.wezterm.lua` into a Linux-specific version (remove PowerShell/WSL paths)
 
 ### In Progress
-- [ ] **Extra GNOME extensions install** — run `setup/gnome-extra-extensions.sh` (needs sudo): AppIndicator + Tiling Assistant + Just Perfection built via `yay`, install step pending password. Then enable + log out/in. *(picking up tomorrow — see `memory/`)*
+- [ ] **Log out / back in** — apply latest GNOME changes (clock-right, Caffeine, Media Controls). Wayland can't hot-reload the shell.
+- [ ] **GNOME dconf backup** — `dconf dump /` into chezmoi so the whole desktop is restorable.
 
 ### Completed
-- [x] GNOME panel — Dash to Panel enabled + configured via `gnome-taskbar.sh` (clock left / icons center / tray right); fixed `panel-positions`/`panel-sizes` GVariant-string bug
+- [x] Extra GNOME extensions — AppIndicator + Tiling Assistant + Just Perfection installed + enabled via `gnome-extra-extensions.sh`
+- [x] Panel features — clock moved to **right** with seconds + date, numeric battery % (`gnome-taskbar.sh`)
+- [x] Panel extras — Caffeine (keep-awake) + Media Controls installed via `gnome-panel-extras.sh`
+- [x] Nautilus — large icon view + image thumbnails (`gnome-desktop-setup.sh`)
+- [x] System tuning notes — `md files/SYSTEM-TUNING.md` (boot/runtime/disk cleanup for this box)
+- [x] GNOME panel — Dash to Panel enabled + configured via `gnome-taskbar.sh`; fixed `panel-positions`/`panel-sizes` GVariant-string bug
 - [x] CopyQ Clipboard extension enabled (top-right clipboard history)
 - [x] Removed accessibility icon from top bar (disabled all a11y features)
 - [x] GNOME extension docs — per-extension daily usage + keybindings in `md files/KEYBOARD-SHORTCUTS.md`

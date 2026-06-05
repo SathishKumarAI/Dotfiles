@@ -162,6 +162,31 @@ UI tweaker — no shortcuts, all GUI. Open its settings to:
 
 Daily: set-and-forget. Revisit settings only when you want to hide an element.
 
+### Caffeine — `caffeine@patapon.info`
+Keep-awake toggle (inhibits screen blank + auto-suspend). Top-right icon: empty
+cup = normal, full cup = caffeinated. No default shortcut — click the icon.
+Settings: auto-enable for specific apps (e.g. fullscreen video), or bind a key
+via Settings → Keyboard → Custom Shortcuts to its toggle if wanted.
+
+### Media Controls — `mediacontrols@cliffniff.github.com`
+Shows current track + play/pause/skip in the panel for any MPRIS player
+(Spotify, browser video, etc.). No keybindings — click the controls. Prefs let
+you set panel position, label width, and which sources to show.
+
+---
+
+## GNOME Files (Nautilus)
+
+Large icon view + image thumbnails are the default (Windows-style big tiles).
+
+| Key | Action |
+|-----|--------|
+| `Ctrl + +` / `Ctrl + -` | Zoom icons bigger / smaller (per folder) |
+| `Ctrl + 0` | Reset zoom |
+| `Ctrl + 1` / `Ctrl + 2` | Switch to list / grid view |
+| `Ctrl + H` | Toggle hidden files |
+| `F2` | Rename · `Delete` | Trash |
+
 ---
 
 ## Rofi — App Launcher
