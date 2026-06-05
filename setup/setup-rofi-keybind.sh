@@ -2,6 +2,16 @@
 # Set up keyboard shortcut for rofi app launcher
 # Binds Super+Space to launch rofi (app search)
 # Run with: bash setup-rofi-keybind.sh
+#
+# NOTE: The canonical, chezmoi-managed launcher is
+#   chezmoi/.chezmoiscripts/run_onchange_after_gnome-launcher.sh
+# which binds Ctrl+Alt+Space (Super absent on some Dell kbds). This script is a
+# standalone Super+Space alternative; running both gives you two launch keys.
+#
+# Both must wrap rofi in `env -u WAYLAND_DISPLAY`: GNOME/Mutter does not
+# implement wlr-layer-shell, so native-Wayland rofi aborts with
+# "Rofi on wayland requires support for the layer shell protocol".
+# Dropping WAYLAND_DISPLAY forces rofi onto its X11 (XWayland) backend.
 
 set -euo pipefail
 
@@ -35,7 +45,7 @@ done
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:${SLOT_PATH} \
     name "Rofi App Launcher"
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:${SLOT_PATH} \
-    command "rofi -show drun -show-icons"
+    command "env -u WAYLAND_DISPLAY rofi -show drun -show-icons"
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:${SLOT_PATH} \
     binding "<Super>space"
 

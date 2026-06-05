@@ -1,6 +1,11 @@
 # Keyboard Shortcuts Reference
 
-> Rocky Linux 10.1 | GNOME 47 Wayland | WezTerm | Zellij | Rofi
+> GNOME (Wayland) | WezTerm | Zellij | Rofi
+> Targets Rocky/Fedora/RHEL; also runs on Arch.
+
+![Cheatsheet](../assets/wezterm-cheatsheet.png)
+
+> Printable one-page version: [`assets/wezterm-cheatsheet.png`](../assets/wezterm-cheatsheet.png)
 
 ---
 
@@ -12,7 +17,8 @@
 | `Super + E` | Files (Nautilus) |
 | `Super + B` | Browser (Brave) |
 | `Super + C` | VS Code |
-| `Super + Space` | Rofi App Launcher |
+| `Ctrl + Alt + Space` | Rofi App Launcher (canonical) |
+| `Super + Space` | Rofi App Launcher (alt, if `setup-rofi-keybind.sh` run) |
 
 ## GNOME — Window Management
 
@@ -80,7 +86,7 @@
 
 ## Rofi — App Launcher
 
-> Triggered by `Super + Space`
+> Triggered by `Ctrl + Alt + Space` (Super + Space if alt keybind installed)
 
 | Key | Action |
 |-----|--------|
@@ -137,8 +143,8 @@
 | `Ctrl + Shift + C` | Copy to clipboard |
 | `Ctrl + Shift + V` | Paste from clipboard |
 | `Ctrl + Shift + F` | Search in terminal |
-| `Ctrl + Shift + U` | Scroll up half page |
-| `Ctrl + Shift + D` | Scroll down half page |
+| `Ctrl + Shift + PageUp` | Scroll up half page |
+| `Ctrl + Shift + PageDown` | Scroll down half page |
 | `Ctrl + +` | Increase font size |
 | `Ctrl + -` | Decrease font size |
 | `Ctrl + 0` | Reset font size |
@@ -202,3 +208,66 @@
 ╚══════════════════════════════════════════════════════════════╝
   C+S = Ctrl+Shift  |  Super = Windows key  |  # = number key
 ```
+
+---
+
+## Known Quirks — GNOME Wayland (why XWayland)
+
+GNOME's compositor (Mutter) does **not** implement the `wlr-layer-shell`
+protocol and ships an **explicit-sync** path that older app builds mishandle.
+Two apps therefore run on **XWayland** instead of native Wayland:
+
+| App | Native-Wayland failure | Fix in repo |
+|-----|------------------------|-------------|
+| **rofi** | `Rofi on wayland requires support for the layer shell protocol` (aborts) | launcher command wrapped in `env -u WAYLAND_DISPLAY` → X11 backend |
+| **wezterm** | `wp_linux_drm_syncobj_surface_v1 ... Protocol error (os error 71)` crash on launch | `config.enable_wayland = false` in `dot_wezterm.lua` → XWayland |
+
+Both are applied automatically by `chezmoi apply`. Trade-off: XWayland loses
+native fractional-scaling/HiDPI niceties, but the apps actually start.
+
+---
+
+## Memorize in This Order (frequency tiers)
+
+Learn top-down. Each tier is the ~5 keys you'll hit most before the next.
+
+**Tier 1 — daily, every session**
+
+| Key | Action |
+|-----|--------|
+| `Ctrl + Alt + Space` | Open app launcher (rofi) |
+| `Ctrl + Shift + D` / `E` | Split pane H / V |
+| `Ctrl + Shift + H/J/K/L` | Move between panes |
+| `Ctrl + Shift + T` / `W` | New / close tab |
+| `Ctrl + Shift + C` / `V` | Copy / paste |
+
+**Tier 2 — many times a day**
+
+| Key | Action |
+|-----|--------|
+| `Ctrl + Tab` / `Ctrl + Shift + Tab` | Next / prev tab |
+| `Alt + 1..9` | Jump to tab N |
+| `Ctrl + Shift + Enter` | Zoom (maximize) pane |
+| `Ctrl + Shift + X` | Close pane |
+| `Super + [` / `]` | Prev / next workspace |
+
+**Tier 3 — handy, weekly**
+
+| Key | Action |
+|-----|--------|
+| `Ctrl + Shift + P` | Launch-menu profiles (Bash/Zsh/Zellij/REPLs) |
+| `Ctrl + Shift + Z` | Zellij in new tab |
+| `Ctrl + Shift + F` | Search scrollback |
+| `Ctrl + Shift + Alt + H/J/K/L` | Resize pane |
+| `Ctrl + + / - / 0` | Font bigger / smaller / reset |
+
+**Tier 4 — occasional**
+
+| Key | Action |
+|-----|--------|
+| `Ctrl + Shift + Alt + P` | Command palette |
+| `Ctrl + Shift + PageUp/PageDown` | Scroll half page |
+| `F11` | Fullscreen |
+| `Ctrl + Click` | Open link under cursor |
+| `Super + Q` | Close window (GNOME) |
+

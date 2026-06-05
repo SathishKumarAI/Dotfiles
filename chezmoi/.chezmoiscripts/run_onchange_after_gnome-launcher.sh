@@ -25,7 +25,10 @@ if command -v rofi >/dev/null 2>&1; then
   P="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/rofi/"
   gsettings set "$KB" custom-keybindings "['$P']"
   gsettings set "${KB}.custom-keybinding:${P}" name 'Rofi App Launcher'
-  gsettings set "${KB}.custom-keybinding:${P}" command 'rofi -show drun'
+  # rofi binary prefers Wayland layer-shell, which GNOME/Mutter does not
+  # implement -> "requires support for the layer shell protocol" crash.
+  # Drop WAYLAND_DISPLAY so rofi falls back to its X11 (XWayland) backend.
+  gsettings set "${KB}.custom-keybinding:${P}" command 'env -u WAYLAND_DISPLAY rofi -show drun'
   gsettings set "${KB}.custom-keybinding:${P}" binding '<Control><Alt>space'
 fi
 

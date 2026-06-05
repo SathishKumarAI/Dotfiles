@@ -39,14 +39,14 @@ inputbar {
 
 prompt {
     text-color:       @accent;
-    font:             "monospace bold 14";
+    font:             "monospace bold 22";
 }
 
 entry {
     placeholder:       "Search apps...";
     placeholder-color: #6c7086;
     text-color:        @fg;
-    font:              "monospace 14";
+    font:              "monospace 22";
 }
 
 listview {
@@ -72,12 +72,12 @@ element selected.normal {
 }
 
 element-icon {
-    size:             24px;
+    size:             38px;
     vertical-align:   0.5;
 }
 
 element-text {
-    font:             "monospace 13";
+    font:             "monospace 20";
     vertical-align:   0.5;
     text-color:       inherit;
 }

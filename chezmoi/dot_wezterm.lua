@@ -7,7 +7,9 @@ local config = wezterm.config_builder()
 config.front_end = "WebGpu"
 config.max_fps = 120
 config.animation_fps = 120
-config.enable_wayland = true
+-- GNOME/Mutter explicit-sync (wp_linux_drm_syncobj) crashes wezterm's native
+-- Wayland backend (Protocol error os error 71). Use XWayland to avoid it.
+config.enable_wayland = false
 
 -- Font
 config.font = wezterm.font_with_fallback({
@@ -63,10 +65,12 @@ config.default_prog = { "/bin/bash", "--login" }
 config.launch_menu = {
   { label = " Bash", args = { "/bin/bash", "--login" } },
   { label = " Zsh", args = { "/bin/zsh", "--login" } },
-  { label = " Zellij", args = { "/home/deva/.local/bin/zellij" } },
-  { label = " Zellij (new session)", args = { "/home/deva/.local/bin/zellij", "-s", "work" } },
-  { label = " Python REPL", args = { "/home/deva/.local/share/mise/installs/python/latest/bin/python3" } },
-  { label = " Node REPL", args = { "/home/deva/.local/share/mise/installs/node/latest/bin/node" } },
+  -- Bare names resolve via PATH so this works on any host (system pkgs,
+  -- mise shims, ~/.local/bin) without hardcoding per-machine absolute paths.
+  { label = " Zellij", args = { "zellij" } },
+  { label = " Zellij (new session)", args = { "zellij", "-s", "work" } },
+  { label = " Python REPL", args = { "python3" } },
+  { label = " Node REPL", args = { "node" } },
   { label = " btop", args = { "btop" } },
 }
 
@@ -123,7 +127,7 @@ config.keys = {
 
   -- Quick Zellij in new tab
   { key = "z", mods = "CTRL|SHIFT", action = act.SpawnCommandInNewTab({
-    args = { "/home/deva/.local/bin/zellij" },
+    args = { "zellij" },
   }) },
 
   -- Command palette

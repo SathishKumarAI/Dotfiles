@@ -11,7 +11,17 @@ configuration {
     hover-select:      false;
     me-select-entry:   "";
     me-accept-entry:   "MousePrimary";
-    kb-cancel:         "Escape,Super_L";
+
+    /* Esc closes. Do NOT add Super_L here: a bare modifier as an action key
+       makes rofi reject the whole kb-cancel binding, so Esc stops working. */
+    kb-cancel:         "Escape";
+
+    /* Most-frequently-used suggestions: keep launch history and sort by it,
+       so your common apps float to the top before you type. */
+    disable-history:   false;
+    sort:              true;
+    sorting-method:    "fzf";
+    matching:          "fuzzy";
 }
 
 @theme "catppuccin-mocha"
