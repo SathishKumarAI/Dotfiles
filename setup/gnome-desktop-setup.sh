@@ -118,6 +118,16 @@ gsettings set org.gnome.nautilus.icon-view  default-zoom-level   'large'
 gsettings set org.gnome.nautilus.preferences default-folder-viewer 'icon-view'
 gsettings set org.gnome.nautilus.preferences show-image-thumbnails 'always'
 
+# Power / idle: dim+blank quickly, suspend sooner on battery than on AC.
+PW=org.gnome.settings-daemon.plugins.power
+gsettings set org.gnome.desktop.session idle-delay 180          # blank screen after 3 min
+gsettings set $PW idle-dim true                                  # dim before blanking
+gsettings set $PW sleep-inactive-battery-type 'suspend'
+gsettings set $PW sleep-inactive-battery-timeout 600             # suspend 10 min on battery
+gsettings set $PW sleep-inactive-ac-type 'suspend'
+gsettings set $PW sleep-inactive-ac-timeout 1800                 # suspend 30 min on AC
+gsettings set $PW power-saver-profile-on-low-battery true        # auto power-save when low
+
 #--- GNOME Extensions ---
 log_info "Installing GNOME extensions..."
 
