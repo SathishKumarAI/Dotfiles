@@ -113,6 +113,11 @@ for i in name command binding; do
   break
 done
 
+# Nautilus (Files): large icon view + image thumbnails, Windows-style big tiles.
+gsettings set org.gnome.nautilus.icon-view  default-zoom-level   'large'
+gsettings set org.gnome.nautilus.preferences default-folder-viewer 'icon-view'
+gsettings set org.gnome.nautilus.preferences show-image-thumbnails 'always'
+
 #--- GNOME Extensions ---
 log_info "Installing GNOME extensions..."
 
