@@ -58,13 +58,14 @@ config.cursor_blink_rate = 600
 -- Scrollback
 config.scrollback_lines = 10000
 
--- Shell
-config.default_prog = { "/bin/bash", "--login" }
+-- Shell — zsh so autosuggestions / syntax-highlighting / fzf+fd are active
+-- (configured in ~/.zshrc; bash does not get them).
+config.default_prog = { "/bin/zsh", "--login" }
 
--- Launch menu: multiple profiles in one click
+-- Launch menu: multiple profiles in one click (Zsh first = default)
 config.launch_menu = {
-  { label = " Bash", args = { "/bin/bash", "--login" } },
   { label = " Zsh", args = { "/bin/zsh", "--login" } },
+  { label = " Bash", args = { "/bin/bash", "--login" } },
   -- Bare names resolve via PATH so this works on any host (system pkgs,
   -- mise shims, ~/.local/bin) without hardcoding per-machine absolute paths.
   { label = " Zellij", args = { "zellij" } },

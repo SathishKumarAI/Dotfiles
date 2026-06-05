@@ -23,11 +23,21 @@ fi
 #    NOTE: panel-* keys are GVariant *strings* (JSON), so they must be wrapped
 #    in single quotes ("'$JSON'"); writing raw JSON makes dconf reject it.
 D=/org/gnome/shell/extensions/dash-to-panel
-dconf write $D/panel-positions    "{'0':'TOP'}"
-dconf write $D/panel-sizes        "{'0':36}"
-dconf write $D/appicon-margin     "'4'"
+dconf write $D/panel-positions    "'{\"0\":\"TOP\"}'"
+dconf write $D/panel-sizes        "'{\"0\":30}'"   # thinner bar (was 36)
+dconf write $D/appicon-margin     "'2'"            # tighter icons (was 4)
+dconf write $D/appicon-padding    "'4'"            # less padding around each icon
 dconf write $D/show-favorites     false      # only OPEN windows, not pinned
 dconf write $D/isolate-workspaces true       # icons = current desktop only
+
+# Prettier / less bulky running-app icons:
+dconf write $D/focus-highlight        false        # drop the heavy box behind focused app
+dconf write $D/dot-position           "'BOTTOM'"   # indicator under the icon
+dconf write $D/dot-style-focused      "'DASHES'"   # thin dash, not a fat dot/box
+dconf write $D/dot-style-unfocused    "'DOTS'"
+dconf write $D/dot-size               1            # 1px indicator
+dconf write $D/group-apps             true         # one icon per app, windows grouped
+dconf write $D/show-window-previews   true         # hover icon -> live thumbnail preview
 ELEMENTS='{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"dateMenu","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"centerMonitor"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"}]}'
 dconf write $D/panel-element-positions "'$ELEMENTS'"
 
