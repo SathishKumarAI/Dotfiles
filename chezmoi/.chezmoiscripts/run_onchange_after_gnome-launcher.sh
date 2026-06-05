@@ -25,10 +25,13 @@ if command -v rofi >/dev/null 2>&1; then
   P="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/rofi/"
   gsettings set "$KB" custom-keybindings "['$P']"
   gsettings set "${KB}.custom-keybinding:${P}" name 'Rofi App Launcher'
-  # rofi binary prefers Wayland layer-shell, which GNOME/Mutter does not
-  # implement -> "requires support for the layer shell protocol" crash.
-  # Drop WAYLAND_DISPLAY so rofi falls back to its X11 (XWayland) backend.
-  gsettings set "${KB}.custom-keybinding:${P}" command 'env -u WAYLAND_DISPLAY rofi -show drun'
+  # Two GNOME/Mutter quirks, two flags:
+  #   env -u WAYLAND_DISPLAY : GNOME has no wlr-layer-shell, so native-Wayland
+  #     rofi aborts; clearing it forces the X11/XWayland backend.
+  #   -normal-window         : Mutter never gives keyboard focus to an XWayland
+  #     override-redirect popup (rofi's default), so Esc and typing are dead.
+  #     A normal managed window gets focus, so Escape closes it.
+  gsettings set "${KB}.custom-keybinding:${P}" command 'env -u WAYLAND_DISPLAY rofi -normal-window -show drun -show-icons'
   gsettings set "${KB}.custom-keybinding:${P}" binding '<Control><Alt>space'
 fi
 

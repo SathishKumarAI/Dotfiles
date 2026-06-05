@@ -78,9 +78,9 @@ CARDS = [
     ]),
 ]
 
-FOOTER = ("GNOME Wayland quirk: rofi + wezterm run on XWayland "
-          "(no wlr-layer-shell / explicit-sync crash). "
-          "rofi via env -u WAYLAND_DISPLAY; wezterm enable_wayland=false.")
+FOOTER = ("GNOME Wayland: rofi + wezterm run on XWayland. rofi = "
+          "env -u WAYLAND_DISPLAY rofi -normal-window (X11 backend + keyboard "
+          "focus so Esc works); wezterm enable_wayland=false (explicit-sync).")
 
 # --- Geometry ---
 COLS = 2

@@ -8,10 +8,12 @@
 # which binds Ctrl+Alt+Space (Super absent on some Dell kbds). This script is a
 # standalone Super+Space alternative; running both gives you two launch keys.
 #
-# Both must wrap rofi in `env -u WAYLAND_DISPLAY`: GNOME/Mutter does not
-# implement wlr-layer-shell, so native-Wayland rofi aborts with
-# "Rofi on wayland requires support for the layer shell protocol".
-# Dropping WAYLAND_DISPLAY forces rofi onto its X11 (XWayland) backend.
+# Both must launch rofi as:  env -u WAYLAND_DISPLAY rofi -normal-window ...
+#   env -u WAYLAND_DISPLAY : GNOME/Mutter has no wlr-layer-shell, so native
+#     Wayland rofi aborts ("requires support for the layer shell protocol").
+#     Clearing it forces the X11/XWayland backend.
+#   -normal-window         : Mutter won't give keyboard focus to an XWayland
+#     override-redirect popup, so Esc/typing die. A normal window gets focus.
 
 set -euo pipefail
 
@@ -45,7 +47,7 @@ done
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:${SLOT_PATH} \
     name "Rofi App Launcher"
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:${SLOT_PATH} \
-    command "env -u WAYLAND_DISPLAY rofi -show drun -show-icons"
+    command "env -u WAYLAND_DISPLAY rofi -normal-window -show drun -show-icons"
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:${SLOT_PATH} \
     binding "<Super>space"
 

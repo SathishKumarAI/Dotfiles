@@ -219,7 +219,8 @@ Two apps therefore run on **XWayland** instead of native Wayland:
 
 | App | Native-Wayland failure | Fix in repo |
 |-----|------------------------|-------------|
-| **rofi** | `Rofi on wayland requires support for the layer shell protocol` (aborts) | launcher command wrapped in `env -u WAYLAND_DISPLAY` → X11 backend |
+| **rofi** | `Rofi on wayland requires support for the layer shell protocol` (aborts) | `env -u WAYLAND_DISPLAY` → X11 backend |
+| **rofi** | opens but `Esc`/typing dead — Mutter won't focus an XWayland override-redirect popup (mouse-click still works) | add `-normal-window` so it's a managed window that gets keyboard focus |
 | **wezterm** | `wp_linux_drm_syncobj_surface_v1 ... Protocol error (os error 71)` crash on launch | `config.enable_wayland = false` in `dot_wezterm.lua` → XWayland |
 
 Both are applied automatically by `chezmoi apply`. Trade-off: XWayland loses

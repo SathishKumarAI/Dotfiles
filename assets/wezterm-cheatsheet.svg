@@ -116,5 +116,5 @@
 <text x="844.75" y="1182" font-family="JetBrains Mono, monospace" font-size="18" font-weight="600" fill="#cdd6f4" text-anchor="middle">Ctrl+A then [</text>
 <text x="945.5" y="1182" font-family="Inter, Segoe UI, sans-serif" font-size="19" font-weight="normal" fill="#a6adc8" text-anchor="start">Scroll mode</text>
 <rect x="40" y="1272" width="1356" height="56" rx="12" fill="#181825" stroke="#f38ba8" stroke-width="1"/>
-<text x="60" y="1306" font-family="Inter, Segoe UI, sans-serif" font-size="17" font-weight="normal" fill="#a6adc8" text-anchor="start">⚠ GNOME Wayland quirk: rofi + wezterm run on XWayland (no wlr-layer-shell / explicit-sync crash). rofi via env -u WAYLAND_DISPLAY; wezterm enable_wayland=false.</text>
+<text x="60" y="1306" font-family="Inter, Segoe UI, sans-serif" font-size="17" font-weight="normal" fill="#a6adc8" text-anchor="start">⚠ GNOME Wayland: rofi + wezterm run on XWayland. rofi = env -u WAYLAND_DISPLAY rofi -normal-window (X11 backend + keyboard focus so Esc works); wezterm enable_wayland=false (explicit-sync).</text>
 </svg>
