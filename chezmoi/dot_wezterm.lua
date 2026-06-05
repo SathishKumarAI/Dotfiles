@@ -129,9 +129,9 @@ config.keys = {
   -- Command palette
   { key = "P", mods = "CTRL|SHIFT|ALT", action = act.ActivateCommandPalette },
 
-  -- Scroll
-  { key = "u", mods = "CTRL|SHIFT", action = act.ScrollByPage(-0.5) },
-  { key = "d", mods = "CTRL|SHIFT", action = act.ScrollByPage(0.5) },
+  -- Scroll (PageUp/Down so Ctrl+Shift+d stays the split-pane key)
+  { key = "PageUp", mods = "CTRL|SHIFT", action = act.ScrollByPage(-0.5) },
+  { key = "PageDown", mods = "CTRL|SHIFT", action = act.ScrollByPage(0.5) },
 
   -- Search
   { key = "f", mods = "CTRL|SHIFT", action = act.Search("CurrentSelectionOrEmptyString") },

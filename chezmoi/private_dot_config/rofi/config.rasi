@@ -2,7 +2,7 @@ configuration {
     modes:             "drun,run,window,filebrowser";
     show-icons:        true;
     icon-theme:        "Adwaita";
-    terminal:          "ghostty";
+    terminal:          "wezterm";
     drun-display-format: "{name}";
     display-drun:      " Apps";
     display-run:       " Run";
