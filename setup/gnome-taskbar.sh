@@ -18,8 +18,8 @@ if command -v pacman >/dev/null && ! pacman -Qi gnome-shell-extension-dash-to-pa
     sudo pacman -S --needed gnome-shell-extension-dash-to-panel
 fi
 
-# 2. Configure: thin panel on top, running-app icons CENTERED, clock left,
-#    system tray right. Native GNOME elements kept.
+# 2. Configure: thin panel on top, running-app icons CENTERED, clock RIGHT
+#    (next to system tray). Native GNOME elements kept.
 #    NOTE: panel-* keys are GVariant *strings* (JSON), so they must be wrapped
 #    in single quotes ("'$JSON'"); writing raw JSON makes dconf reject it.
 D=/org/gnome/shell/extensions/dash-to-panel
@@ -38,8 +38,15 @@ dconf write $D/dot-style-unfocused    "'DOTS'"
 dconf write $D/dot-size               1            # 1px indicator
 dconf write $D/group-apps             true         # one icon per app, windows grouped
 dconf write $D/show-window-previews   true         # hover icon -> live thumbnail preview
-ELEMENTS='{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"dateMenu","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"centerMonitor"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"}]}'
+# dateMenu moved to the RIGHT group (stackedBR), placed just before systemMenu.
+ELEMENTS='{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"centerMonitor"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"}]}'
 dconf write $D/panel-element-positions "'$ELEMENTS'"
+
+# Clock + battery display tweaks (native GNOME interface keys).
+I=org.gnome.desktop.interface
+gsettings set $I clock-show-date       true   # show date next to time
+gsettings set $I clock-show-seconds    true   # show seconds (HH:MM:SS)
+gsettings set $I show-battery-percentage true # battery % as a number
 
 # 3. Enable (may need to run again after logout if the schema isn't loaded yet).
 gnome-extensions enable "$EXT" 2>/dev/null \
