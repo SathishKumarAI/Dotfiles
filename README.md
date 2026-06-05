@@ -132,6 +132,8 @@ These are the actual config files deployed to your home directory via [chezmoi](
 |--------|--------|-------------|
 | `rocky-dev-setup-custom.sh` | `sudo` | **Main script.** Installs mise, chezmoi, Docker, database clients, VS Code, CLI tools, Miniforge, AWS CLI. Rocky 9/10 compatible. |
 | `gnome-desktop-setup.sh` | user | Installs Nerd Fonts, Catppuccin Mocha GTK theme + cursors + Papirus icons, 6 GNOME extensions, keyboard shortcuts. |
+| `gnome-taskbar.sh` | user | Enables + configures Dash to Panel: top panel with clock left, open-window icons centered, system tray + system menu right. |
+| `gnome-extra-extensions.sh` | user | Installs + enables AppIndicator (tray), Tiling Assistant (window tiling), Just Perfection (UI tweaks) via `yay`. |
 | `rocky-dev-setup.sh` | `sudo` | Original reference script (before mise/chezmoi customization). Kept for comparison. |
 | `chezmoi-migration.sh` | user | Migrates existing dotfiles into chezmoi format. One-time use. |
 
@@ -195,7 +197,10 @@ Every tool uses the [Catppuccin Mocha](https://github.com/catppuccin/catppuccin)
 | **Icons** | Papirus Dark |
 | **Cursors** | Catppuccin Mocha Dark |
 | **Fonts** | JetBrainsMono + FiraCode Nerd Fonts |
-| **Extensions** | Blur my Shell, Just Perfection, AppIndicator, Clipboard Indicator, Vitals, Tiling Assistant |
+| **Extensions** | Dash to Panel, CopyQ Clipboard, AppIndicator, Tiling Assistant, Just Perfection (+ Blur my Shell, Vitals via desktop-setup) |
+| **Panel** | `gnome-taskbar.sh` — clock left, window icons centered, tray + system menu right |
+
+> Per-extension daily usage + keybindings: [`md files/KEYBOARD-SHORTCUTS.md`](md%20files/KEYBOARD-SHORTCUTS.md) → "GNOME — Extensions".
 
 ### Keyboard Shortcuts
 
@@ -291,7 +296,14 @@ Full details: [setup/FULL_TOOLS_INVENTORY.md](setup/FULL_TOOLS_INVENTORY.md)
 - [ ] **Ansible playbook** — Convert setup scripts to Ansible roles for enterprise use
 - [ ] **WezTerm Linux config** — Fork the Windows `.wezterm.lua` into a Linux-specific version (remove PowerShell/WSL paths)
 
+### In Progress
+- [ ] **Extra GNOME extensions install** — run `setup/gnome-extra-extensions.sh` (needs sudo): AppIndicator + Tiling Assistant + Just Perfection built via `yay`, install step pending password. Then enable + log out/in. *(picking up tomorrow — see `memory/`)*
+
 ### Completed
+- [x] GNOME panel — Dash to Panel enabled + configured via `gnome-taskbar.sh` (clock left / icons center / tray right); fixed `panel-positions`/`panel-sizes` GVariant-string bug
+- [x] CopyQ Clipboard extension enabled (top-right clipboard history)
+- [x] Removed accessibility icon from top bar (disabled all a11y features)
+- [x] GNOME extension docs — per-extension daily usage + keybindings in `md files/KEYBOARD-SHORTCUTS.md`
 - [x] mise — manages Python 3.12, Node 24 LTS, Go 1.26, Rust 1.95
 - [x] chezmoi — 10 dotfiles tracked and deployable
 - [x] Catppuccin Mocha — applied to starship, wezterm, lazygit, tmux, GTK, cursors
