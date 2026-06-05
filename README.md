@@ -202,6 +202,8 @@ Every tool uses the [Catppuccin Mocha](https://github.com/catppuccin/catppuccin)
 | **Extensions** | Dash to Panel, CopyQ Clipboard, AppIndicator, Tiling Assistant, Just Perfection, Caffeine, Media Controls (+ Blur my Shell, Vitals via desktop-setup) |
 | **Panel** | `gnome-taskbar.sh` — clock **right** (seconds+date), window icons centered, numeric battery %, tray + system menu right |
 | **Files** | Nautilus large icon view + image thumbnails (`gnome-desktop-setup.sh`) |
+| **Battery** | TLP drop-in (`laptop-battery.sh`): turbo off / powersave / Wi-Fi+audio save on battery, performance on AC; + powertop + thermald |
+| **Power idle** | blank 3 min, suspend 10 min (battery) / 30 min (AC), dim before blank, auto power-save when low (`gnome-desktop-setup.sh`) |
 
 > Per-extension daily usage + keybindings: [`md files/KEYBOARD-SHORTCUTS.md`](md%20files/KEYBOARD-SHORTCUTS.md) → "GNOME — Extensions".
 

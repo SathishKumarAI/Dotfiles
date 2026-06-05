@@ -189,6 +189,24 @@ Large icon view + image thumbnails are the default (Windows-style big tiles).
 
 ---
 
+## Power & Battery (TLP)
+
+No keybindings — managed by TLP + GNOME idle settings. Useful commands:
+
+| Command | Shows |
+|---------|-------|
+| `tlp-stat -s` | TLP status + current mode (AC vs BAT) |
+| `tlp-stat -p` | CPU / processor power settings in effect |
+| `tlp-stat -b` | battery info + charge thresholds |
+| `powertop` | live power draw + extra tunables (run on battery) |
+| `sudo tlp start` | re-apply config after editing `/etc/tlp.d/` |
+
+Config drop-in: `setup/tlp/01-battery-saver.conf`. On battery: turbo off,
+governor powersave, Wi-Fi/audio power save. On AC: full performance. GNOME
+blanks the screen at 3 min and suspends at 10 min (battery) / 30 min (AC).
+
+---
+
 ## Rofi — App Launcher
 
 > Triggered by `Ctrl + Space`
