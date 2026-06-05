@@ -135,6 +135,7 @@ These are the actual config files deployed to your home directory via [chezmoi](
 | `gnome-taskbar.sh` | user | Enables + configures Dash to Panel: top panel with clock **right** (seconds + date), open-window icons centered, numeric battery %, system tray + system menu right. |
 | `gnome-extra-extensions.sh` | user | Installs + enables AppIndicator (tray), Tiling Assistant (window tiling), Just Perfection (UI tweaks) via `yay`. |
 | `gnome-panel-extras.sh` | user | Installs + enables Caffeine (keep-awake toggle) + Media Controls (play/pause + track in panel) via `yay` + `gext`. |
+| `laptop-battery.sh` | user | Battery saver: installs TLP drop-in (`tlp/01-battery-saver.conf`) + powertop + thermald, masks power-profiles-daemon, applies. Turbo off / governor powersave / Wi-Fi+audio power save on battery. |
 | `rocky-dev-setup.sh` | `sudo` | Original reference script (before mise/chezmoi customization). Kept for comparison. |
 | `chezmoi-migration.sh` | user | Migrates existing dotfiles into chezmoi format. One-time use. |
 
@@ -300,6 +301,7 @@ Full details: [setup/FULL_TOOLS_INVENTORY.md](setup/FULL_TOOLS_INVENTORY.md)
 
 ### In Progress
 - [ ] **Log out / back in** — apply latest GNOME changes (clock-right, Caffeine, Media Controls). Wayland can't hot-reload the shell.
+- [ ] **Run `setup/laptop-battery.sh`** — applies TLP battery-saver drop-in + powertop + thermald (needs sudo).
 - [ ] **GNOME dconf backup** — `dconf dump /` into chezmoi so the whole desktop is restorable.
 
 ### Completed
