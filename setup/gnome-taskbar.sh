@@ -20,22 +20,16 @@ fi
 
 # 2. Configure: thin panel on top, running-app icons CENTERED, clock left,
 #    system tray right. Native GNOME elements kept.
+#    NOTE: panel-* keys are GVariant *strings* (JSON), so they must be wrapped
+#    in single quotes ("'$JSON'"); writing raw JSON makes dconf reject it.
 D=/org/gnome/shell/extensions/dash-to-panel
-dconf write $D/panel-positions '{"0":"TOP"}'
-dconf write $D/panel-sizes     '{"0":36}'
-dconf write $D/appicon-margin  4
-dconf write $D/show-favorites   false          # only OPEN windows, not pinned
-dconf write $D/isolate-workspaces true          # icons = current desktop only
-dconf write $D/panel-element-positions '{"0":[
-  {"element":"showAppsButton","visible":false,"position":"stackedTL"},
-  {"element":"activitiesButton","visible":false,"position":"stackedTL"},
-  {"element":"leftBox","visible":true,"position":"stackedTL"},
-  {"element":"dateMenu","visible":true,"position":"stackedTL"},
-  {"element":"taskbar","visible":true,"position":"centerMonitor"},
-  {"element":"centerBox","visible":true,"position":"stackedBR"},
-  {"element":"rightBox","visible":true,"position":"stackedBR"},
-  {"element":"systemMenu","visible":true,"position":"stackedBR"}
-]}'
+dconf write $D/panel-positions    "{'0':'TOP'}"
+dconf write $D/panel-sizes        "{'0':36}"
+dconf write $D/appicon-margin     "'4'"
+dconf write $D/show-favorites     false      # only OPEN windows, not pinned
+dconf write $D/isolate-workspaces true       # icons = current desktop only
+ELEMENTS='{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"dateMenu","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"centerMonitor"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"}]}'
+dconf write $D/panel-element-positions "'$ELEMENTS'"
 
 # 3. Enable (may need to run again after logout if the schema isn't loaded yet).
 gnome-extensions enable "$EXT" 2>/dev/null \
