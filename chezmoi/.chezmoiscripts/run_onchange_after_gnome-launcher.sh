@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Configure GNOME (Wayland) keyboard launching:
-#  - Super+Space            -> rofi app launcher (drun)
+#  - Ctrl+Alt+Space         -> rofi app launcher (drun)
 #  - default terminal       -> wezterm
 # Idempotent; safe to run repeatedly. No-ops outside GNOME.
 # chezmoi re-runs this whenever the body below changes.
@@ -19,18 +19,14 @@ if command -v wezterm >/dev/null 2>&1; then
   gsettings set org.gnome.desktop.default-applications.terminal exec-arg 'start --'
 fi
 
-# --- Free Super+Space (GNOME binds it to input-source switch) ---
-gsettings set org.gnome.desktop.wm.keybindings switch-input-source "[]"
-gsettings set org.gnome.desktop.wm.keybindings switch-input-source-backward "[]"
-
-# --- Super+Space -> rofi launcher ---
+# --- Ctrl+Alt+Space -> rofi launcher (Super key absent on some Dell kbds) ---
 if command -v rofi >/dev/null 2>&1; then
   KB="org.gnome.settings-daemon.plugins.media-keys"
   P="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/rofi/"
   gsettings set "$KB" custom-keybindings "['$P']"
   gsettings set "${KB}.custom-keybinding:${P}" name 'Rofi App Launcher'
   gsettings set "${KB}.custom-keybinding:${P}" command 'rofi -show drun'
-  gsettings set "${KB}.custom-keybinding:${P}" binding '<Super>space'
+  gsettings set "${KB}.custom-keybinding:${P}" binding '<Control><Alt>space'
 fi
 
 echo "GNOME launcher settings applied."
