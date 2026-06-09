@@ -64,8 +64,8 @@ Dotfiles/
 │       ├── lazygit/config.yml          #   → ~/.config/lazygit/config.yml
 │       ├── mise/config.toml            #   → ~/.config/mise/config.toml
 │       ├── remote-desktop/             #   → ~/.config/remote-desktop/ (RustDesk feature)
-│       ├── rofi/                       #   → ~/.config/rofi/ (X11 launcher, see ROADMAP)
-│       └── wofi/                       #   → ~/.config/wofi/ (Wayland launcher — NEW)
+│       ├── rofi/                       #   → ~/.config/rofi/ (X11/XWayland launcher — laptop)
+│       └── wofi/                       #   → ~/.config/wofi/ (Wayland launcher — this host, NEW)
 │
 ├── setup/                              # Machine provisioning scripts + docs
 │   ├── rocky-dev-setup.sh              #   Original setup script (reference)
@@ -199,9 +199,11 @@ Mocha themed, bound to `Super+Space`. See
 [`wofi/README.md`](chezmoi/private_dot_config/wofi/README.md) and
 [`wofi/docs/finish-on-this-machine.md`](chezmoi/private_dot_config/wofi/docs/finish-on-this-machine.md).
 
-#### `rofi/` — X11 launcher (retiring)
-The original `.rasi` config + Catppuccin Mocha theme. Kept as a fallback
-while wofi proves out; decision tracked in [ROADMAP.md](ROADMAP.md).
+#### `rofi/` — XWayland launcher (laptop)
+`.rasi` config + Catppuccin Mocha theme with fuzzy matching, MRU sort, and a
+custom modes list. Used on the Dell laptop where Super is unavailable —
+bound to `Ctrl+Alt+Space`, runs under XWayland. On Wayland-only hosts (this
+one) wofi takes its place.
 
 ---
 

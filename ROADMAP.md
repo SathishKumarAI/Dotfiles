@@ -45,9 +45,12 @@ Three live files differ from the repo. Decide per-file which side wins.
 ### A4. Optional cleanup (blocked by deny list — user runs)
 - [ ] `rm -rf ~/.local/share/chezmoi` — orphaned second clone (chezmoi now reads `~/coding/Dotfiles`)
 - [ ] `rm -rf ~/coding/rofi-wayland-build` — abandoned source clone if retiring rofi-wayland
-- [ ] Retire X11 rofi: decide on `setup/setup-rofi-wayland.sh`, `setup/setup-rofi-keybind.sh`, `~/.config/rofi/`
-  - Keep rofi-wayland as a fallback launcher, **or**
-  - Delete the scripts + drop the rofi feature dir + clear `~/.config/rofi/`
+- [ ] Decide the rofi vs wofi split per-machine — rofi is actively used on the
+  Dell laptop (XWayland fallback, `Ctrl+Alt+Space`); this Rocky host runs wofi
+  on `Super+Space`. Both feature dirs stay in the repo; pick one launcher per
+  host. Possibly drop `setup/setup-rofi-wayland.sh` + the
+  `~/coding/rofi-wayland-build/` clone since rofi is now installed from the
+  distro/XWayland on the laptop and wofi covers Wayland here
 
 ---
 
@@ -98,9 +101,15 @@ Full Phase 1–7 plan lives in that file. Top-level rollup with subtasks:
   - [ ] iOS Shortcuts / Android automation, VNC/RDP fallback, perf benchmarks
 - **Ideas backlog** (9 items) — Sunshine/Moonlight comparison, Apache Guacamole, RustDesk API, Ansible playbook, NixOS module, upstream contributions, RustDesk Pro eval, GPU passthrough, VS Code Remote pairing
 
-### Rofi (X11 launcher) — `chezmoi/private_dot_config/rofi/`
+### Rofi — `chezmoi/private_dot_config/rofi/`
 
-- [ ] **Decide its future** (see A4 above): keep as X11 fallback, or retire entirely
+Actively used on the Dell laptop via XWayland (`Ctrl+Alt+Space`). The shared
+config has fuzzy matching, MRU sort, and a custom `modes` list.
+
+- [ ] Document the per-machine launcher choice (rofi on laptop, wofi here) in
+  the rofi README so future machines pick correctly
+- [ ] Investigate whether `rofi-wayland` (lbonn fork) could replace XWayland
+  rofi on the laptop and unify the launcher across hosts
 
 ### Other chezmoi-managed configs (no task lists yet)
 
