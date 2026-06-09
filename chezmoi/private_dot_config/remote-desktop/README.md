@@ -137,7 +137,7 @@ bash ~/.config/remote-desktop/scripts/install-rustdesk.sh
 ```bash
 # 1. Clone the repo
 git clone https://github.com/SathishKumarAI/Dotfiles.git
-cd Dotfiles/private_dot_config/remote-desktop
+cd Dotfiles/chezmoi/private_dot_config/remote-desktop
 
 # 2. Run the installer
 bash scripts/install-rustdesk.sh

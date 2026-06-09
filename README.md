@@ -27,15 +27,31 @@ bash setup/gnome-desktop-setup.sh
 
 ---
 
+## What's New (2026-06-08)
+
+| Change | Where | Why |
+|--------|-------|-----|
+| **Wofi launcher** added to this machine | `chezmoi/private_dot_config/wofi/` | Mainline rofi can't run on GNOME Wayland (no layer-shell support). Wofi is a Wayland-native GTK launcher with the same Catppuccin Mocha look. Bound to `Super+Space`. |
+| **chezmoi source root fixed** | `.chezmoiroot` (=`chezmoi`) | Repo had no `.chezmoiroot`; chezmoi was about to scatter repo docs into `$HOME`. The marker scopes the source tree to `chezmoi/` only. |
+| **Feature dirs consolidated** under `chezmoi/` | `chezmoi/private_dot_config/{remote-desktop,rofi,wofi}/` | Single source root, single edit path. The old root-level `private_dot_config/` is gone. |
+| **Single source of truth** for chezmoi | `~/.config/chezmoi/chezmoi.toml` | `sourceDir = ~/coding/Dotfiles` — edits no longer have to be mirrored into `~/.local/share/chezmoi`. |
+| **Aggregated roadmap** | [`ROADMAP.md`](ROADMAP.md) | Every pending action + per-feature future tasks + cross-cutting work in one place. |
+
+Detail and reasoning: [`chezmoi/private_dot_config/wofi/docs/finish-on-this-machine.md`](chezmoi/private_dot_config/wofi/docs/finish-on-this-machine.md).
+
+---
+
 ## Repository Structure
 
 ```
 Dotfiles/
 │
 ├── README.md                           # You are here
+├── ROADMAP.md                          # Aggregated future tasks across all features
 ├── TOOLS_LINKS.md                      # Official URLs for every tool
+├── .chezmoiroot                        # Scopes chezmoi's source to the chezmoi/ subdir
 │
-├── chezmoi/                            # Dotfile configs (chezmoi source format)
+├── chezmoi/                            # Single chezmoi source root (per .chezmoiroot)
 │   ├── dot_bashrc                      #   → ~/.bashrc
 │   ├── dot_zshrc                       #   → ~/.zshrc
 │   ├── dot_gitconfig                   #   → ~/.gitconfig
@@ -46,7 +62,10 @@ Dotfiles/
 │       ├── zellij/config.kdl           #   → ~/.config/zellij/config.kdl
 │       ├── nvim/init.lua               #   → ~/.config/nvim/init.lua
 │       ├── lazygit/config.yml          #   → ~/.config/lazygit/config.yml
-│       └── mise/config.toml            #   → ~/.config/mise/config.toml
+│       ├── mise/config.toml            #   → ~/.config/mise/config.toml
+│       ├── remote-desktop/             #   → ~/.config/remote-desktop/ (RustDesk feature)
+│       ├── rofi/                       #   → ~/.config/rofi/ (X11 launcher, see ROADMAP)
+│       └── wofi/                       #   → ~/.config/wofi/ (Wayland launcher — NEW)
 │
 ├── setup/                              # Machine provisioning scripts + docs
 │   ├── rocky-dev-setup.sh              #   Original setup script (reference)
@@ -75,13 +94,6 @@ Dotfiles/
 │   │   ├── Daily Note.md               #     Daily dev log template
 │   │   └── Project Note.md             #     Per-project note template
 │   └── daily/                          #   Daily dev logs (empty, user-filled)
-│
-├── private_dot_config/                 # Additional chezmoi-managed configs
-│   └── remote-desktop/                 #   RustDesk remote desktop setup
-│       ├── README.md
-│       ├── docs/                       #     Connection + setup guides
-│       ├── scripts/                    #     Multi-distro install scripts
-│       └── logs/                       #     Setup logs + task tracking
 │
 ├── dotfiles/                           # Legacy configs (Windows origin)
 │   ├── starship/starship.toml          #   Original starship config
@@ -169,9 +181,27 @@ Open this directory as a vault in Obsidian (`~/coding/Dotfiles/vault/` or `~/cod
 
 Original configs from the Windows setup (GlazeWM + WezTerm + Starship + Zellij). Kept for reference. The `chezmoi/` directory contains the current cross-platform versions.
 
-### `private_dot_config/remote-desktop/` — RustDesk Setup
+### `chezmoi/private_dot_config/` — Feature directories
 
-Multi-distro RustDesk remote desktop scripts (Rocky, Fedora, Ubuntu, Arch) with connection guides and setup documentation.
+Self-contained feature dirs that follow a consistent layout
+(`README.md` + `scripts/` + `docs/` + `logs/`). Each one is chezmoi-applied
+to `~/.config/<name>/`.
+
+#### `remote-desktop/` — RustDesk
+Multi-distro RustDesk remote desktop scripts (Rocky, Fedora, Ubuntu, Arch)
+with connection guides and setup documentation. See
+[`remote-desktop/README.md`](chezmoi/private_dot_config/remote-desktop/README.md).
+
+#### `wofi/` — Wayland app launcher (NEW)
+Wayland-native replacement for rofi on GNOME Wayland. Builds wofi +
+gtk-layer-shell from source (neither is packaged on Rocky 10), Catppuccin
+Mocha themed, bound to `Super+Space`. See
+[`wofi/README.md`](chezmoi/private_dot_config/wofi/README.md) and
+[`wofi/docs/finish-on-this-machine.md`](chezmoi/private_dot_config/wofi/docs/finish-on-this-machine.md).
+
+#### `rofi/` — X11 launcher (retiring)
+The original `.rasi` config + Catppuccin Mocha theme. Kept as a fallback
+while wofi proves out; decision tracked in [ROADMAP.md](ROADMAP.md).
 
 ---
 
@@ -215,6 +245,7 @@ Every tool uses the [Catppuccin Mocha](https://github.com/catppuccin/catppuccin)
 | `Super+E` | Open file manager |
 | `Super+B` | Open browser (Brave) |
 | `Super+C` | Open VS Code |
+| `Super+Space` | Wofi app launcher (Wayland-native; was rofi, which crashes on Wayland) |
 | `Super+Q` | Close window |
 | `Super+Up` | Maximize window |
 | `Super+Down` | Minimize window |
@@ -271,6 +302,10 @@ Full details: [setup/FULL_TOOLS_INVENTORY.md](setup/FULL_TOOLS_INVENTORY.md)
 | [setup/SCRIPT_EXPLAINED.md](setup/SCRIPT_EXPLAINED.md) | Setup script deep-dive, Rocky 10 compatibility, risk flags | Sysadmins / anyone auditing the scripts |
 | [setup/OPEN_SOURCE_TOOLS.md](setup/OPEN_SOURCE_TOOLS.md) | 30+ alternatives compared: mise, chezmoi, Devbox, Nix, Omakub | Decision-makers choosing tools |
 | [TOOLS_LINKS.md](TOOLS_LINKS.md) | Official URLs for every tool | Quick reference |
+| [ROADMAP.md](ROADMAP.md) | Aggregated future tasks (per-feature + cross-cutting) with subtasks | Planning / picking next work |
+| [wofi/README.md](chezmoi/private_dot_config/wofi/README.md) | Wayland app launcher: install, theme, troubleshoot | Anyone running Wayland |
+| [wofi/docs/finish-on-this-machine.md](chezmoi/private_dot_config/wofi/docs/finish-on-this-machine.md) | What's done on this host, what's left, the chezmoi-root fix | This-machine reference |
+| [remote-desktop/README.md](chezmoi/private_dot_config/remote-desktop/README.md) | RustDesk overview + per-distro quick start | Anyone setting up remote desktop |
 
 ---
 
@@ -328,6 +363,9 @@ Full details: [setup/FULL_TOOLS_INVENTORY.md](setup/FULL_TOOLS_INVENTORY.md)
 - [x] GNOME keyboard shortcuts — Super+T/E/B/C/Q, workspaces, tiling
 - [x] 6 documentation guides — covering every tool, app, and setup decision
 - [x] RustDesk — multi-distro remote desktop scripts
+- [x] **Wofi** — Wayland app launcher (2026-05-27): builds wofi + gtk-layer-shell from source, Catppuccin Mocha themed, bound to Super+Space
+- [x] **chezmoi source root fixed** (2026-05-27): added `.chezmoiroot`, moved feature dirs under `chezmoi/`, single source of truth via `sourceDir = ~/coding/Dotfiles`
+- [x] **ROADMAP.md** added (2026-06-08): single aggregated view of every pending and future task with subtasks
 
 ---
 
