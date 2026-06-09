@@ -37,6 +37,12 @@ run install-automation-tools.sh
 step "Launcher menu tools (clipboard/emoji/calc)"
 run install-extras.sh
 
+step "Workflow CLI tools (zoxide/fzf/delta/uv/ruff/…)"
+run install-workflow-tools.sh
+
+step "Productivity apps (LibreOffice/ONLYOFFICE/Pomodoro/…)"
+run install-productivity.sh
+
 step "GNOME desktop — theme / fonts / keybindings"
 run gnome-desktop-setup.sh
 
