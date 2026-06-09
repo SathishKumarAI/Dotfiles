@@ -149,6 +149,24 @@ eval "$(direnv hook bash)"
 
 ---
 
+## Validating the install
+
+After running `setup.sh` (or any installer), check everything landed:
+
+```bash
+bash setup/validate-install.sh          # PASS/FAIL/WARN per tool + app, logs result
+bash setup/validate-install.sh --fix     # re-run idempotent installers for anything missing, then re-check
+bash setup/validate-install.sh --quiet    # summary only
+```
+
+- Read-only by default (no sudo); `--fix` re-runs the installers (sudo).
+- Exit code `0` only when nothing failed — usable in CI / a Stop hook.
+- Optional/hardware-dependent tools (e.g. `nvtop`, needs a GPU) report **WARN**, not FAIL.
+- Logs are written to `setup/logs/validate-<timestamp>.log` (gitignored).
+- `setup.sh` runs this automatically as its final step.
+
+---
+
 ## Managing Flatpak Apps
 
 ```bash

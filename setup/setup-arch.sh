@@ -58,6 +58,9 @@ run gnome-extra-extensions.sh
 step "Laptop battery saver (TLP)"
 run laptop-battery.sh
 
+step "Validate install (health check + log)"
+run validate-install.sh
+
 cat <<'EOF'
 
 == Done ✓ ==
