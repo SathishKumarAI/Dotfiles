@@ -1,0 +1,80 @@
+---
+title: Pros & Cons of this Setup
+description: Honest trade-off analysis of the chezmoi + mise + modular-shell-script install architecture — what it buys, what it costs, and when a different approach would be better.
+status: live
+tags: [setup, architecture, analysis, trade-offs]
+---
+
+# Pros & Cons of this Setup
+
+**Intro.** This box is built from three layers: **modular bash installers**
+(software), **chezmoi** (dotfiles), and **mise** (runtimes), with a
+**validation script** closing the loop. The design is deliberate; so are its
+limits. This page is the honest ledger — read it before extending the system or
+choosing it for a new machine class (servers, ephemeral CI, teammates).
+
+> **TL;DR.** Excellent for *one power user replicating across a few personal
+> Linux machines*. The cost is bash brittleness and no rollback. If you ever
+> need fleet-scale, multi-user, or guaranteed-reproducible builds, graduate the
+> software layer to Ansible/Nix — but keep chezmoi + mise.
+
+## Architecture being judged
+
+| Layer | Tool | Responsibility |
+|-------|------|----------------|
+| Software | modular `setup/*.sh` + OS dispatch | Install apps/CLI tools (sudo, OS-specific) |
+| Dotfiles | chezmoi | Apply `$HOME` config, per-machine templating |
+| Runtimes | mise | Pin Python/Node/Go/Rust versions |
+| Verification | `validate-install.sh` | Confirm + heal + log |
+
+## Pros
+
+| # | Strength | Why it matters |
+|---|----------|----------------|
+| 1 | **Idempotent + re-runnable** | Every installer skips what's present; re-running is safe and fast (<2 min). No "did I already run this?" |
+| 2 | **OS-independent tool layer** | `install-workflow-tools.sh` detects dnf/pacman/apt/zypper/brew and falls back to cargo/uv/go/gh — one script, many distros |
+| 3 | **Continue-on-error** | One failed package never aborts the whole run; you get a complete pass + a validation report of what's missing |
+| 4 | **Clean separation of concerns** | Software (bash) vs config (chezmoi) vs runtimes (mise) — change one without disturbing the others |
+| 5 | **Self-verifying** | `validate-install.sh` turns "did it work?" into a logged PASS/FAIL/WARN report with `--fix` auto-healing |
+| 6 | **Transparent & hackable** | Plain bash + Flatpak/dnf — no DSL to learn, every step is greppable and editable in place |
+| 7 | **Versioned & replayable** | All of it lives in git; chezmoi gives diff/apply; a new machine is ~3 commands |
+| 8 | **Documented inline + in MDX** | APPS_GUIDE + docs tree explain *what* and *why*, not just *how* |
+| 9 | **No vendor lock-in** | Standard package managers and Flathub; nothing proprietary to migrate off later |
+
+## Cons
+
+| # | Weakness | Impact | Mitigation in place / possible |
+|---|----------|--------|-------------------------------|
+| 1 | **Bash brittleness** | `set -uo pipefail` + `eval` method strings are easy to break; no type safety | Syntax-checked (`bash -n`); keep functions small; consider `shellcheck` in CI |
+| 2 | **No rollback / no transactions** | A half-failed install leaves partial state; no `nix-rollback` | Idempotent re-run + validation; not true rollback |
+| 3 | **Non-deterministic versions** | Package-manager + `cargo install` pull *latest* — two machines built a month apart differ | mise pins runtimes; tools are unpinned. Pin with `--version` or a lockfile if reproducibility matters |
+| 4 | **Slow cold install** | Cargo builds from source (yazi/atuin/…) + large Flatpaks → 30–60 min | One-time cost; re-runs are instant. Prefer system pkgs where available |
+| 5 | **`curl \| sh` trust surface** | ollama and the duckdb fallback execute remote scripts | Documented; pin/checksum or vendor the installer if you harden |
+| 6 | **Single-user assumption** | Installs to `$HOME` (`~/.local`, `~/.cargo`); not designed for multi-user or system images | Fine for personal machines; use Ansible/images for fleets |
+| 7 | **OS coverage is partial** | Rocky fully wired; Arch mostly; Debian/macOS only via the tool layer (no base orchestrator) | `setup.sh` warns + points to the dual-OS installers |
+| 8 | **Tool sprawl** | ~45 tools — discoverability and "do I actually use this?" risk | APPS_GUIDE documents purpose; prune periodically |
+| 9 | **Flatpak quirks** | Sandboxed apps need portal config; some need XWayland | Noted in docs "Known Quirks" |
+
+## When to keep this vs. change
+
+| Scenario | Verdict |
+|----------|---------|
+| 1–5 personal Linux machines, one user (you) | ✅ Keep — this is the sweet spot |
+| Need exact byte-for-byte reproducibility | ⚠️ Add version pins / lockfile, or move software layer to **Nix** |
+| Many machines / teammates / onboarding | ⚠️ Move software layer to **Ansible**; keep chezmoi + mise |
+| Ephemeral CI / containers | ⚠️ Use a **Dockerfile/image**; this is for long-lived workstations |
+| Air-gapped / strict security | ⚠️ Remove `curl \| sh` steps; vendor + checksum everything |
+
+## Net assessment
+
+The setup optimizes for **the right thing for its actual use**: a single
+engineer who wants fast, transparent, re-runnable replication across a handful
+of personal Linux boxes, with a clear audit trail and self-healing checks. Its
+weaknesses (no rollback, unpinned tool versions, bash fragility) are real but
+**bounded** — they bite at fleet scale and strict-reproducibility scenarios this
+box doesn't target. The clean three-layer split means the weakest layer
+(software/bash) can be swapped for Ansible or Nix later **without touching**
+chezmoi or mise. That upgrade path is the design's quiet best feature.
+
+See also: [Installation Reference](./installation-reference.mdx) ·
+[chezmoi](../automation/chezmoi.mdx) · [mise](../automation/mise.mdx)

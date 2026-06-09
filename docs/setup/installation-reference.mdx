@@ -1,0 +1,147 @@
+---
+title: Installation Reference
+description: Per-script inventory (sizes, line counts, role), what each installs, install methods, time estimates, and the chezmoi setup detail — a future-proof snapshot of how this machine is built.
+status: live
+tags: [setup, installation, chezmoi, reference]
+---
+
+# Installation Reference
+
+**Intro.** A single snapshot of *how this machine is built from scratch*: every
+setup script, its size, what it installs, how long it takes, and how the
+chezmoi config layer is applied on top. Use this to replicate the box, audit
+what runs, or estimate a fresh install.
+
+> **Snapshot:** 2026-06-09 · Rocky Linux 10.1 (also drives a Dell/Arch laptop) ·
+> setup payload **232 KB** across 20 scripts · installs ~45 tools/apps.
+> Entry point: `bash setup/setup.sh` (auto-detects OS).
+
+## Build flow at a glance
+
+```
+setup.sh  --detect OS-->  setup-rocky.sh  (or setup-arch.sh)
+  1. rocky-dev-setup-custom.sh   base dev env (dnf groups, git, python, node…)
+  2. install-wezterm.sh          terminal (Flatpak)
+  3. install-modern-cli.sh       rg fd bat eza delta fzf
+  4. install-automation-tools.sh direnv just pre-commit
+  5. install-extras.sh           clipboard / emoji / calc launcher tools
+  6. install-workflow-tools.sh   33 workflow + Tier-2 tools (OS-independent)
+  7. install-productivity.sh     6 office / deep-work Flatpaks
+  8. gnome-desktop-setup.sh      theme / fonts / keybindings
+  9. validate-install.sh         health check + log (final step)
+--- then, run by you ---
+  chezmoi init --apply           dotfiles into $HOME
+  mise install                   pinned runtimes
+```
+
+## Script inventory
+
+Sizes/line counts as of the snapshot date. Sorted by role.
+
+| Script | Size | Lines | Role |
+|--------|-----:|------:|------|
+| `setup.sh` | 2.2 KB | 66 | OS-detecting entry point; dispatches per-distro |
+| `setup-rocky.sh` | 1.9 KB | 56 | Rocky/Fedora/RHEL orchestrator (dnf) |
+| `setup-arch.sh` | 2.4 KB | 72 | Arch/Manjaro orchestrator (pacman/yay) |
+| `rocky-dev-setup-custom.sh` | 18.6 KB | 483 | Base developer environment (largest; dnf groups, langs) |
+| `rocky-dev-setup.sh` | 7.5 KB | 210 | Earlier/base variant of the dev setup |
+| `install-modern-cli.sh` | 3.3 KB | 75 | rg, fd, bat, eza, delta, fzf |
+| `install-automation-tools.sh` | 2.4 KB | 72 | direnv, just, pre-commit |
+| `install-extras.sh` | 2.0 KB | 49 | clipboard, emoji, calc (launcher menu) |
+| `install-workflow-tools.sh` | 5.5 KB | 127 | 33 workflow + Tier-2 tools, OS-independent |
+| `install-productivity.sh` | 2.1 KB | 61 | LibreOffice, ONLYOFFICE, Calibre, Solanum, Flameshot, Joplin |
+| `install-wezterm.sh` | 1.2 KB | 42 | WezTerm (Flatpak) + launcher wrapper |
+| `validate-install.sh` | 4.9 KB | 135 | Post-install health check, logging, `--fix` |
+| `gnome-desktop-setup.sh` | 9.3 KB | 181 | GNOME theme, fonts, keybindings |
+| `gnome-taskbar.sh` | 3.6 KB | 59 | Dash-to-Panel (Arch) |
+| `gnome-panel-extras.sh` | 1.7 KB | 44 | Panel tweaks (Arch) |
+| `gnome-extra-extensions.sh` | 1.1 KB | 37 | Extra GNOME extensions (Arch) |
+| `chezmoi-migration.sh` | 9.1 KB | 281 | One-shot migration helper for the chezmoi layout |
+| `setup-rofi-wayland.sh` | 1.5 KB | 54 | Build rofi for Wayland |
+| `setup-rofi-keybind.sh` | 3.1 KB | 74 | Bind the rofi launcher |
+| `laptop-battery.sh` | 1.6 KB | 39 | TLP battery saver (Arch laptop) |
+
+## What gets installed (counts)
+
+| Category | Count | Source |
+|----------|------:|--------|
+| Modern CLI | 6 | `install-modern-cli.sh` |
+| Automation | 3 | `install-automation-tools.sh` |
+| Workflow CLI (core) | 20 | `install-workflow-tools.sh` |
+| Workflow CLI (Tier 2: data/AI/extras) | 13 | `install-workflow-tools.sh` |
+| Productivity Flatpaks | 6 | `install-productivity.sh` |
+| GUI Flatpaks (pre-existing) | 9 | manual / earlier runs |
+| **Validated total** | **45** | `validate-install.sh` |
+
+## Install methods (OS-independence)
+
+`install-workflow-tools.sh` is the cross-distro layer. It picks the first method
+that works, so the same script runs on Rocky, Arch, Debian, openSUSE, or macOS:
+
+| Method | Used for | Needs |
+|--------|----------|-------|
+| System package manager | rg, fd, fzf, jq, btop, entr, … | `dnf`/`pacman`/`apt`/`zypper`/`brew` (auto-detected) |
+| `cargo install` | atuin, yazi, xh, navi, watchexec, git-cliff, dust, … | Rust (via mise) |
+| `uv tool install` | visidata, llm, ruff, pre-commit | uv (bootstrapped if absent) |
+| `go install` | duf, glow, gum, mlr, croc, lazydocker, yq | Go (via mise) |
+| `gh extension` | gh-dash | gh CLI |
+| Vendor `curl \| sh` | ollama, duckdb (fallback) | network |
+| Flatpak (Flathub) | all GUI apps | flatpak |
+
+## Time estimate (fresh machine)
+
+Wall-clock dominated by **cargo source builds** and **Flatpak downloads** — both
+bandwidth/CPU dependent. Re-runs are near-instant (everything is idempotent).
+
+| Phase | Est. time | Notes |
+|-------|-----------|-------|
+| Base dev env (dnf) | 3–8 min | Package downloads + groupinstall |
+| Modern CLI + automation + extras | 2–5 min | Mostly packages |
+| Workflow tools — cargo builds | 15–30 min | yazi/atuin/watchexec compile from source |
+| Workflow tools — go/uv/gh | 2–5 min | Fast |
+| ollama | 1–3 min | ~hundreds of MB + service |
+| Productivity Flatpaks | 5–20 min | LibreOffice/ONLYOFFICE runtimes are large (~1–3 GB total) |
+| GNOME + validation | 1–2 min | gsettings + checks |
+| **Total (cold)** | **~30–60 min** | **Re-run: <2 min** |
+
+## chezmoi setup detail
+
+Dotfiles are **not** installed by the setup scripts — they are applied separately
+by chezmoi, keeping *config* (chezmoi) cleanly separate from *software* (setup).
+See [chezmoi automation doc](../automation/chezmoi.mdx) for daily usage.
+
+| Aspect | Value |
+|--------|-------|
+| Source of truth | `~/coding/Dotfiles` |
+| Source root | `chezmoi/` (set by `.chezmoiroot` — scopes apply to this subdir only) |
+| Naming | `dot_bashrc` → `~/.bashrc`; `private_` → mode 600; `executable_` → +x; `run_onchange_` → re-run on change |
+| Tracked tops | `dot_bashrc`, `dot_zshrc`, `dot_gitconfig`, `dot_tmux.conf`, `dot_wezterm.lua`, `private_dot_config/`, `private_dot_local/bin/` |
+| Configs under `~/.config` | mise, nvim, starship, zellij, lazygit, rofi, wofi, autostart, remote-desktop |
+| Run-scripts | `.chezmoiscripts/run_onchange_after_gnome-launcher.sh` |
+| Apply command | `sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply SathishKumarAI/Dotfiles` |
+
+**Why the split:** software install is destructive/sudo-heavy and OS-specific;
+dotfile apply is idempotent, per-user, and machine-aware via chezmoi templating.
+Keeping them separate means you can re-apply configs without reinstalling, and
+reinstall software without clobbering local config edits.
+
+## Replicate this machine (future use)
+
+```bash
+# 1. Software (per-OS, auto-detected, ends with a validation report)
+gh repo clone SathishKumarAI/Dotfiles ~/coding/Dotfiles
+bash ~/coding/Dotfiles/setup/setup.sh
+
+# 2. Dotfiles into $HOME
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply SathishKumarAI/Dotfiles
+
+# 3. Pinned runtimes
+mise install
+
+# 4. Confirm everything landed
+bash ~/coding/Dotfiles/setup/validate-install.sh        # add --fix to heal gaps
+```
+
+See also: [Pros & Cons of this setup](./pros-and-cons.mdx) ·
+[Applications Guide](../../setup/APPS_GUIDE.md) ·
+[chezmoi](../automation/chezmoi.mdx) · [mise](../automation/mise.mdx)

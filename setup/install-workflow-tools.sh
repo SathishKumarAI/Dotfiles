@@ -13,10 +13,14 @@ set -uo pipefail
 
 DRY=0
 [ "${1:-}" = "--dry-run" ] && DRY=1
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 have() { command -v "$1" >/dev/null 2>&1; }
 step() { printf '\n\033[1;35m== %s ==\033[0m\n' "$1"; }
 note() { printf '  %s\n' "$1"; }
+
+# Delegate to a sibling installer (single source of truth — no duplicated logic).
+delegate() { local s="$HERE/$1"; [ -f "$s" ] && bash "$s" || note "skip (missing): $1"; }
 
 # ---- detect system package manager -----------------------------------------
 PM=""; PM_INSTALL=""
@@ -57,18 +61,25 @@ if ! have uv && [ "$DRY" != 1 ]; then
 fi
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 
+# ---- prerequisites owned by sibling installers (NOT duplicated here) --------
+# delta + fzf live in install-modern-cli.sh; direnv + just + pre-commit live in
+# install-automation-tools.sh. setup.sh runs those first, so these checks are a
+# no-op there; for a standalone run we delegate (only if something's missing).
+step "Prerequisite CLI (delegated — single source of truth)"
+if [ "$DRY" = 1 ]; then
+  note "[dry-run] would ensure (via siblings): delta, fzf, direnv, just, pre-commit"
+else
+  { have delta && have fzf; }                       || delegate install-modern-cli.sh
+  { have direnv && have just && have pre-commit; }  || delegate install-automation-tools.sh
+fi
+
 step "Shell & navigation"
 install zoxide   "pm_get zoxide"            "cargo_get zoxide"
 install atuin    "cargo_get atuin"          "pm_get atuin"
-install fzf      "pm_get fzf"               "cargo_get fzf"
 install yazi     "cargo_get yazi-fm yazi-cli"
 install tldr     "cargo_get tealdeer"       "pm_get tealdeer"
 
 step "Git & dev loop"
-install delta    "pm_get git-delta"         "cargo_get git-delta"
-install direnv   "pm_get direnv"            "cargo_get direnv"
-install just     "pm_get just"              "cargo_get just"
-install pre-commit "uv_get pre-commit"      "pm_get pre-commit"
 install lazydocker "go_get github.com/jesseduffield/lazydocker@latest"
 install entr     "pm_get entr"
 
