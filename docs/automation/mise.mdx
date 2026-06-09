@@ -1,0 +1,44 @@
+---
+title: mise
+description: Runtime version manager — Python/Node/Go/Rust pinned per project, activated in both shells.
+status: live
+tags: [automation, mise, runtimes]
+---
+
+# mise
+
+**Intro.** mise (formerly rtx) manages language runtime versions and activates
+them automatically per directory. Global defaults:
+`chezmoi/private_dot_config/mise/config.toml` → Python 3.12, Node LTS, Go latest
+(the workspace also uses Rust). Activated in bash/zsh via `mise activate`.
+
+> Status: installed ✅; global config **diverged** —
+> `chezmoi diff ~/.config/mise/config.toml`.
+
+## Why this
+
+One tool replaces pyenv + nvm + gvm + rustup-as-switcher, with **per-project**
+`.mise.toml` pinning so each repo gets the right versions automatically. Chosen
+for speed (Rust), a single config format, and a large plugin ecosystem.
+
+## Usage
+
+| Command | Does |
+|---------|------|
+| `mise use python@3.12` | Pin a tool in the current project |
+| `mise install` | Install everything in `.mise.toml` |
+| `mise ls` | Show installed/active versions |
+| `mise upgrade` | Update runtimes (also run by `update-all`) |
+| `mise exec -- <cmd>` | Run with the project's toolchain |
+
+## Customization
+
+- Global: `~/.config/mise/config.toml` (`experimental = true` is on).
+- Per-project: commit a `.mise.toml` (the repo's `setup/.mise.toml` is an
+  example).
+
+## Links
+
+- Config: `chezmoi/private_dot_config/mise/config.toml`
+- Upstream: <https://mise.jdx.dev>
+- Related: [direnv](./recommended.mdx) (pairs for env vars)

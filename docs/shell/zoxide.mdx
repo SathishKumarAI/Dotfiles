@@ -1,0 +1,44 @@
+---
+title: zoxide
+description: Frecency-based smart cd — jump to directories by partial name.
+status: live
+tags: [shell, navigation, zoxide]
+---
+
+# zoxide
+
+**Intro.** A smarter `cd` that remembers the directories you visit and ranks them
+by *frecency* (frequency + recency), so `z proj` jumps straight to your most-used
+matching directory. Initialized in both shells (`eval "$(zoxide init bash|zsh)"`).
+
+## Why this
+
+Replaces manual `cd ../../some/deep/path` with `z path`. Pairs naturally with
+fzf (interactive pick via `zi`). Chosen over `autojump`/`z.sh` because it's a
+single Rust binary, actively maintained, and shell-agnostic.
+
+## Install / enable
+
+```bash
+# binary at ~/.local/bin/zoxide; shells auto-init it when present
+z --version
+```
+
+## Usage
+
+| Command | Does |
+|---------|------|
+| `z foo` | cd to highest-ranked dir matching "foo" |
+| `z foo bar` | match on multiple keywords |
+| `zi foo` | interactive fzf pick among matches |
+| `z -` | previous directory |
+
+## Customization
+
+- The database lives at `~/.local/share/zoxide/db.zo`.
+- Optionally alias `cd=z` (not done by default to keep muscle memory).
+
+## Links
+
+- Upstream: <https://github.com/ajeetdsouza/zoxide>
+- Related: [zsh](./zsh.mdx) (fzf integration)

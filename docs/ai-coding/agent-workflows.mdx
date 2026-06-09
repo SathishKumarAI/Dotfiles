@@ -1,0 +1,62 @@
+---
+title: Parallel Agent Workflows
+description: Git-worktree isolation for running multiple AI agents on large projects without conflicts.
+status: recommended
+tags: [ai, agents, git, worktree, large-scale]
+---
+
+# Parallel Agent Workflows
+
+**Intro.** For large-scale projects and broad refactors, run **multiple coding
+agents in parallel**, each in its own **git worktree** — separate working
+directories that share one `.git` object store. Agents never overwrite each
+other; conflicts are deferred to intentional merge points.
+
+> Status: **recommended** (not yet wired). Draft helper:
+> `chezmoi/private_dot_local/bin/executable_agent-worktree` (planned — see
+> [automation](../automation/index.mdx)).
+
+## Why git worktrees
+
+Per 2026 practice, worktrees are the **dominant isolation primitive** for
+parallel AI agents — Anthropic's Claude Code docs and Cursor's Parallel Agents
+both build on them
+([MindStudio](https://www.mindstudio.ai/blog/git-worktrees-parallel-ai-coding-agents)):
+
+- **No file conflicts** — each agent edits its own checkout.
+- **Cheap** — shares the `.git` store; no full re-clone.
+- **Clean merges** — integrate finished worktrees as branches when ready.
+- Beats multiple full clones (disk + drift) and beats one-agent-at-a-time
+  (throughput).
+
+## The workflow
+
+```bash
+# one worktree per task/agent, each on its own branch
+git worktree add ../proj-feat-a -b feat-a
+git worktree add ../proj-feat-b -b feat-b
+# run an agent in each dir (separate terminals / zellij tabs)
+# when done:
+git worktree remove ../proj-feat-a     # after merging feat-a
+```
+
+In Claude Code, the Agent/Workflow tools can take `isolation: "worktree"` to do
+this automatically per sub-agent.
+
+## Caveats (and the fix)
+
+- **Disk bloat:** in monorepos with big build caches (Bazel/Pants/Nx), each
+  worktree multiplies cache — a 2GB repo session was measured at ~10GB.
+- **Mitigation:** `git sparse-checkout set <paths>` per worktree so each agent
+  only checks out what it needs; clean up worktrees promptly.
+
+## Planned helper
+
+`agent-worktree` (draft): `create <name>` / `list` / `clean` wrappers around
+`git worktree` with sensible branch naming and sparse-checkout support — so the
+flow is one command. Documented here; written during the automation pass.
+
+## Links
+
+- Research: [MindStudio — git worktrees for parallel agents](https://www.mindstudio.ai/blog/git-worktrees-parallel-ai-coding-agents)
+- Related: [claude-code](./claude-code.mdx) · [prompts/project-bootstrap](../prompts/project-bootstrap.mdx)

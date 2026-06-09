@@ -1,0 +1,50 @@
+---
+title: starship
+description: Cross-shell prompt — Catppuccin Mocha, powerline segments for OS/dir/git/languages/conda.
+status: diverged
+tags: [shell, prompt, starship]
+---
+
+# starship
+
+**Intro.** A single fast prompt shared by bash and zsh. Powerline-style segments
+show OS icon, user, directory, git branch/status, active language version
+(Rust/Go/C/Java/Python/…), conda env, and command duration — all themed
+Catppuccin Mocha. Config: `chezmoi/private_dot_config/starship.toml` →
+`~/.config/starship.toml`.
+
+> Status: **diverged** — reconcile with `chezmoi diff ~/.config/starship.toml`.
+
+## Why this
+
+One prompt config that works in **both** shells (and any other), written in Rust
+so it's fast even with git + language detection. Beats maintaining separate
+bash/zsh prompt code. The four Catppuccin palettes (Mocha/Frappe/Latte/
+Macchiato) are all defined; Mocha is active via `palette = 'catppuccin_mocha'`.
+
+## Install / enable
+
+```bash
+# starship is on PATH at ~/.local/bin/starship; both rc files run:
+eval "$(starship init bash)"   # / zsh
+```
+
+## Usage / customization
+
+- **Segments** are toggled per-language in the `[python]`, `[rust]`, … blocks.
+  `nodejs` is disabled by default (`disabled = true`).
+- **Long-command notifications:** `cmd_duration` fires a desktop notification for
+  commands over 45s (`min_time_to_notify = 45000`).
+- **Switch theme:** change `palette` to `catppuccin_latte` etc. (all four are
+  defined at the bottom of the file).
+- **Directory:** truncated to 3 path segments with custom folder icons.
+
+## Troubleshooting
+
+- Missing glyphs (boxes) → install a Nerd Font (JetBrainsMono Nerd Font is the
+  terminal font); see [wezterm](../terminal/wezterm.mdx).
+
+## Links
+
+- Config: `chezmoi/private_dot_config/starship.toml`
+- Upstream: <https://starship.rs>

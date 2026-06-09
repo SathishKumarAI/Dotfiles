@@ -1,0 +1,67 @@
+---
+title: Project Bootstrap Prompts
+description: Scaffold large projects and run the parallel-agent (git worktree) workflow.
+status: live
+tags: [prompts, project, bootstrap, agents, large-scale]
+---
+
+# Project Bootstrap Prompts
+
+## Scaffold a new project
+
+```
+Scaffold a <stack> project named <name> in ~/coding/<name>. Include: mise
+.mise.toml (pin runtimes), a justfile (test/fmt/dev tasks), .pre-commit-config
+(ruff + gitleaks), a README, and a CLAUDE.md capturing stack + architecture.
+Don't install global packages. Show the tree before creating files.
+```
+
+## Plan a large change
+
+```
+Goal: <large change across the codebase>. Produce a plan that decomposes it into
+independent workstreams that can run in parallel without conflicting. For each:
+the files touched, the branch name, and the definition of done.
+```
+
+## Run parallel agents via git worktrees
+
+```
+Split this into N independent tasks. For each, create a git worktree on its own
+branch (git worktree add ../<repo>-<task> -b <task>), and outline what an agent
+should do in each. Use sparse-checkout if the repo is large. List the merge order
+and how to clean up worktrees when done.
+```
+
+(Background: [agent-workflows](../ai-coding/agent-workflows.mdx). In Claude Code,
+sub-agents can take `isolation: "worktree"` to do this automatically.)
+
+## Bring up a new machine
+
+The fast path is the OS-detecting orchestrator (all entries live in `setup/`):
+
+```bash
+# Linux (Rocky/Fedora or Arch/Manjaro)
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply SathishKumarAI/Dotfiles
+curl https://mise.run | sh && mise install
+bash setup/setup.sh --dry-run     # preview per-OS steps
+bash setup/setup.sh               # Rocky -> setup-rocky.sh, Arch -> setup-arch.sh
+```
+
+```powershell
+# Windows 10/11 (PowerShell)
+powershell -ExecutionPolicy Bypass -File .\setup\setup.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File .\setup\setup.ps1   # winget + scoop -> setup-windows.ps1
+```
+
+Or drive it with Claude:
+
+```
+I'm setting up a fresh <distro> machine from this Dotfiles repo. Run
+`bash setup/setup.sh --dry-run` to show the per-OS plan, then walk me through:
+chezmoi init, mise install, what's safe to apply vs. reconcile, and the
+per-machine launcher choice (wofi on Rocky, rofi on the Arch laptop). Use
+docs/feature-catalog.mdx as the checklist.
+```
+
+See also: [feature-catalog](../feature-catalog.mdx) · [chezmoi](../automation/chezmoi.mdx).

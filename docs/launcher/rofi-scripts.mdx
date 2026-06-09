@@ -1,0 +1,50 @@
+---
+title: rofi menu scripts
+description: Clipboard, emoji, calculator, power, and SSH menus — rofi-dmenu helpers in ~/.local/bin.
+status: pending
+tags: [launcher, rofi, scripts]
+---
+
+# rofi menu scripts
+
+**Intro.** Small `~/.local/bin` scripts that turn rofi into purpose-built menus.
+All force the X11 backend (`env -u WAYLAND_DISPLAY`) so they work under GNOME
+Wayland, and add `-normal-window` for keyboard focus. Source:
+`chezmoi/private_dot_local/bin/`.
+
+> Status: **pending** on this host — apply all at once:
+> `chezmoi apply ~/.local/bin`
+
+## The scripts
+
+| Script | Alias key | What it does | Needs |
+|--------|-----------|--------------|-------|
+| `rofi-clip` | `Super+Shift+V` | Clipboard history picker → re-copies selection | `cliphist`, `wl-clipboard` |
+| `rofi-emoji` | `Super+.` | Emoji/unicode picker → copies | `rofimoji` |
+| `rofi-calc-menu` | `Super+=` | Calculator; Enter copies result | `libqalculate`, `rofi-calc` |
+| `rofi-power` | `Super+Escape` | Lock/logout/suspend/reboot/shutdown | systemd/loginctl |
+| `rofi-ssh` | `Super+\` | Pick host from `~/.ssh/config`, open in wezterm | — |
+
+## Why this design
+
+- **rofi `-dmenu`** is the simplest way to get a themed picker over any list.
+- **`env -u WAYLAND_DISPLAY`** routes rofi through XWayland (Mutter lacks
+  layer-shell) while keeping `wl-copy` on Wayland for the clipboard.
+- Each script **degrades gracefully** — missing dependency → a `notify-send`
+  telling you exactly what to install.
+
+## Install / enable
+
+```bash
+chezmoi apply ~/.local/bin                 # stage the scripts
+bash ~/coding/Dotfiles/setup/install-extras.sh   # cliphist/rofimoji/qalc tools
+# GNOME custom shortcuts are set by the chezmoi run-once gnome-launcher script
+```
+
+`rofi-clip` relies on the storing daemon from
+`~/.config/autostart/cliphist.desktop` — see [clipboard](../desktop/clipboard.mdx).
+
+## Links
+
+- Scripts: `chezmoi/private_dot_local/bin/executable_rofi-*`
+- Shortcuts: [desktop/gnome](../desktop/gnome.mdx) · [keybindings](../keybindings.mdx)

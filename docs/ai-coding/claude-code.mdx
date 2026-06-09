@@ -1,0 +1,65 @@
+---
+title: Claude Code
+description: The CLI, permission deny-list, workspace CLAUDE.md context, and the memory system.
+status: live
+tags: [ai, claude, cli, security]
+---
+
+# Claude Code
+
+**Intro.** Claude Code is Anthropic's agentic coding CLI. On this machine it's
+configured for **safety and low-friction**: a permission allow/deny list, a
+workspace `CLAUDE.md` that pre-loads context, and a file-based memory system.
+Settings: `~/.claude/settings.json` (machine-local, **not** chezmoi-tracked yet —
+a [ROADMAP](../../ROADMAP.md) item).
+
+## Why this configuration
+
+| Choice | Why |
+|--------|-----|
+| **Deny-list** for destructive bash | Prevents accidental data loss from agent commands; you run risky ops yourself |
+| `Bash(*)` allowed, deletes denied | Frictionless for safe work, hard-stop on the dangerous subset |
+| Workspace `CLAUDE.md` | Pre-loads machine/user context so you don't re-explain setup each session (token saver) |
+| Memory system | Persists durable facts across sessions |
+
+## The deny-list (`~/.claude/settings.json`)
+
+Blocked: `rm`/`rmdir`/`unlink`/`sudo rm`, `git reset --hard`, `git clean -f`,
+`git checkout -- `, `git push --force`/`-f`, `git branch -D`, `shred`,
+`truncate`, output redirection `> *`, and package uninstalls
+(`flatpak uninstall`, `dnf remove/erase`, `pip uninstall`, `npm uninstall -g`).
+
+Allowed: `Read`, `Edit`, `Write`, `WebFetch`, `WebSearch`, `Bash(*)`.
+
+> Net effect: agents can do everything *constructive* freely, but anything that
+> destroys or force-overwrites is refused — surfaced to you to run deliberately.
+
+## Workspace context
+
+`~/coding/CLAUDE.md` records: user/stack, mise runtimes, chezmoi, the vetted
+skill set, the docs workflow, and the house **rules** (`.sh` for sudo, never
+delete without asking, Catppuccin theme, `/document` at session end). Per-project
+`CLAUDE.md` files add stack/architecture specifics.
+
+## Memory system
+
+Durable facts live under `~/.claude/projects/<slug>/memory/` with an indexed
+`MEMORY.md`. Use `/remember` to add. Types: `user`, `feedback`, `project`,
+`reference`.
+
+## CLI essentials
+
+| Command | Does |
+|---------|------|
+| `/clear` / `/compact` | Reset / summarize context |
+| `/cost` | Token + cost this session |
+| `/init` | Generate a project `CLAUDE.md` |
+| `/document` | Append a worklog entry ([hooks](./hooks.mdx)) |
+| `/code-review`, `/simplify` | Review / cleanup the diff |
+
+## Links
+
+- Settings: `~/.claude/settings.json`
+- Guide: [`setup/CLAUDE_TOOLS_GUIDE.md`](../../setup/CLAUDE_TOOLS_GUIDE.md)
+- Context: [`~/coding/CLAUDE.md`](../../../CLAUDE.md)
+- Related: [skills](./skills.mdx) · [hooks](./hooks.mdx) · [mcp-servers](./mcp-servers.mdx)

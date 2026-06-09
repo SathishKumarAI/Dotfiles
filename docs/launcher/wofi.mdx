@@ -1,0 +1,54 @@
+---
+title: wofi
+description: Native Wayland app launcher for this host — Catppuccin style, Super+Space.
+status: missing
+tags: [launcher, wofi, wayland]
+---
+
+# wofi
+
+**Intro.** A native Wayland application launcher (gtk-layer-shell based). Config
++ Catppuccin style are staged; bound to `Super+Space`. Config:
+`chezmoi/private_dot_config/wofi/` (config + style.css + scripts + docs).
+
+> Status: **binary not built** — the only remaining step on this host:
+> ```bash
+> bash ~/.config/wofi/scripts/install-wofi.sh   # needs sudo
+> ```
+> Everything else (config, keybind, chezmoi) is already done.
+
+## Why this (vs rofi here)
+
+`XDG_SESSION_TYPE=wayland` on this host. rofi requires `wlr-layer-shell`, which
+GNOME's Mutter does **not** implement, so rofi only runs via XWayland with focus
+quirks. wofi speaks Wayland natively — the right launcher for this desktop. The
+laptop keeps [rofi](./rofi.mdx).
+
+## Install / enable
+
+`gtk-layer-shell` isn't packaged on Rocky 10, so the script builds both it and
+wofi:
+
+```bash
+bash ~/.config/wofi/scripts/install-wofi.sh
+wofi --show drun        # verify (Catppuccin-themed)
+# press Super+Space      # already rebound from rofi to wofi
+```
+
+## Usage / config
+
+Defaults in `~/.config/wofi/config`: `mode=drun`, 600×420, centered, images on,
+case-insensitive, `term=wezterm`. Override per-invocation on the CLI
+(`wofi --show run`, `--show window`, etc.).
+
+## Customization
+
+- Style: `~/.config/wofi/style.css` (Catppuccin).
+- Extra modes / per-mode styles are on the [ROADMAP](../../ROADMAP.md) (window
+  switcher, clipboard via `cliphist | wofi --dmenu`, power menu).
+
+## Links
+
+- Config + scripts + docs: `chezmoi/private_dot_config/wofi/`
+- Finish guide: `chezmoi/private_dot_config/wofi/docs/finish-on-this-machine.md`
+- Upstream: <https://hg.sr.ht/~scoopta/wofi>

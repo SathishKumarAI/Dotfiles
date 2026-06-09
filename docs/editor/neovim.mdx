@@ -1,0 +1,45 @@
+---
+title: neovim
+description: Terminal editor — Space leader, relative numbers, system clipboard, vim-tmux-friendly nav.
+status: live
+tags: [editor, neovim, vim]
+---
+
+# neovim
+
+**Intro.** A lean, dependency-free `init.lua`: sensible options (relative
+numbers, 4-space expandtab, persistent undo, system clipboard), Space leader, and
+a handful of high-value keymaps. It's the default `$EDITOR` for git and lazygit.
+Config: `chezmoi/private_dot_config/nvim/init.lua` → `~/.config/nvim/init.lua`.
+
+## Why this
+
+A single-file config that's **fast and portable** — no plugin manager to break on
+a fresh machine. It's intentionally minimal; growing into a structured config
+(LSP, treesitter, formatting) is a tracked [ROADMAP](../../ROADMAP.md) item.
+
+## Keybindings
+
+Leader = `Space`:
+
+| Key | Action |
+|-----|--------|
+| `Space w` / `Space q` | Save / quit |
+| `Space e` | File explorer (`:Ex`) |
+| `Ctrl + h/j/k/l` | Move between windows (matches wezterm/tmux/zellij) |
+| `J` / `K` (visual) | Move selection down / up (re-indent) |
+| `Ctrl + d` / `Ctrl + u` | Half-page scroll, cursor centered |
+| `n` / `N` | Next/prev search, centered |
+| `Space p` (visual) | Paste without clobbering the clipboard |
+| `Esc` | Clear search highlight |
+
+## Customization
+
+Options live at the top of `init.lua`; keymaps below via `vim.keymap.set`. Add
+LSP/plugins by introducing a manager (e.g. `lazy.nvim`) — currently omitted by
+design.
+
+## Links
+
+- Config: `chezmoi/private_dot_config/nvim/init.lua`
+- Related: [git](../git/git-config.mdx) (nvim is the git editor)

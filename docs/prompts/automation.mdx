@@ -1,0 +1,50 @@
+---
+title: Automation Prompts
+description: Prompts for scripts, CI, and dotfiles/setup edits.
+status: live
+tags: [prompts, automation, scripting]
+---
+
+# Automation Prompts
+
+## Write a setup/sudo script
+
+```
+Write a .sh script that <does X> on Rocky Linux 10 (dnf). Make it idempotent
+(safe to re-run), continue-on-error per step with clear labels, and print what
+it changed. I'll run it myself. Don't execute anything that needs sudo.
+```
+
+## Add a chezmoi-managed config
+
+```
+I want <tool>'s config tracked by chezmoi. Show me the source path under
+chezmoi/ (correct dot_/private_ naming), the file contents, and the exact
+`chezmoi add`/`apply` commands. Note any divergence with the live file first.
+```
+
+## Author a GitHub Actions workflow
+
+```
+Create a CI workflow for <repo>: on push/PR, run <lint/test/build> with
+<toolchain via mise>. Cache dependencies. Fail fast. Keep it minimal.
+```
+
+## Add a pre-commit gate
+
+```
+Set up pre-commit for this repo: ruff (lint+format) and gitleaks (secret scan).
+Give me the .pre-commit-config.yaml and the install command.
+```
+
+(See [automation/recommended](../automation/recommended.mdx).)
+
+## Adapt the update-all script for Rocky
+
+```
+The update-all script is Arch-tuned (yay/pacman). Add a distro guard so the
+package step uses `sudo dnf upgrade --refresh` on Rocky and yay/pacman on Arch.
+Keep the other steps (mise/chezmoi/flatpak) unchanged.
+```
+
+See also: [chezmoi](../automation/chezmoi.mdx) · [update-all](../automation/update-all.mdx).

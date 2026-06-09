@@ -1,0 +1,46 @@
+---
+title: update-all
+description: One-shot, distro-aware updater for system packages, mise runtimes, chezmoi, and flatpaks.
+status: pending
+tags: [automation, update, maintenance, cross-distro]
+---
+
+# update-all
+
+**Intro.** A single command (`up`) that updates everything: OS packages, mise
+runtimes, chezmoi dotfiles (pull + apply), and flatpaks — each as a labeled step.
+The package step is **distro-aware**, so the same script works on both the Rocky
+host and the Arch laptop. Source:
+`chezmoi/private_dot_local/bin/executable_update-all`.
+
+> Status: **pending** on this host (`chezmoi apply ~/.local/bin`).
+
+## Why this
+
+Keeping four update mechanisms in sync manually is error-prone. One idempotent
+script (continue-on-error) means routine maintenance is a single `up` — and one
+script that **auto-detects the OS** means the same `up` works everywhere instead
+of maintaining a per-machine variant.
+
+## What it runs
+
+1. **Packages** — auto-detected:
+   - Arch/Manjaro → `yay -Syu` (falls back to `sudo pacman -Syu`)
+   - Rocky/Fedora/RHEL → `sudo dnf upgrade --refresh -y`
+   - Debian/Ubuntu → `sudo apt update && sudo apt upgrade -y`
+   - openSUSE → `sudo zypper dup`
+2. **mise** — `mise upgrade`.
+3. **chezmoi** — `chezmoi update --apply`.
+4. **flatpak** — `flatpak update -y`.
+
+## How OS detection works
+
+A small `update_packages()` function checks `command -v` for `yay`/`pacman` →
+`dnf` → `apt` → `zypper`, in that order, and runs the matching upgrade. Each of
+mise/chezmoi/flatpak is independently guarded, so missing tools are skipped, not
+errors.
+
+## Links
+
+- Script: `chezmoi/private_dot_local/bin/executable_update-all`
+- Related: [mise](./mise.mdx) · [chezmoi](./chezmoi.mdx)

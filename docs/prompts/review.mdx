@@ -1,0 +1,48 @@
+---
+title: Review & Refactor Prompts
+description: Review, refactor, and simplify prompts — pairs with /code-review and /simplify.
+status: live
+tags: [prompts, review, refactor]
+---
+
+# Review & Refactor Prompts
+
+## Review the current diff
+
+```
+Review my current diff for correctness bugs and reuse/simplification
+opportunities. High-confidence findings only; cite file:line. Don't rewrite —
+list findings with suggested fixes.
+```
+
+(Or just run the `/code-review` skill.)
+
+## Refactor safely
+
+```
+Refactor <target> to <goal> (e.g. extract <X>, remove duplication). Preserve
+behavior exactly — no functional change. Keep diffs minimal and reviewable. Run
+the tests after.
+```
+
+## Simplify
+
+```
+Simplify <file/area> for readability and reuse without changing behavior. Prefer
+existing utilities over new code. Show before/after for each change.
+```
+
+(Or run the `/simplify` skill.)
+
+## Security pass
+
+```
+Audit <area> for security issues: injection, secrets in code, unsafe
+deserialization (pickle/eval), SSRF, authz gaps. Rank by severity with concrete
+fixes.
+```
+
+(The `skill-security-auditor` skill + the advanced-skills PreToolUse hook back
+this — see [skills](../ai-coding/skills.mdx).)
+
+See also: [coding](./coding.mdx).

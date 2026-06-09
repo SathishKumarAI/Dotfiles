@@ -1,0 +1,53 @@
+---
+title: Claude Code Skills
+description: Vetted skill marketplaces and plugins, installed via a security-reviewed script.
+status: live
+tags: [ai, claude, skills, plugins]
+---
+
+# Claude Code Skills
+
+**Intro.** Skills/plugins extend Claude Code with reusable workflows. This setup
+installs a **narrow, security-reviewed** set via
+`~/coding/scripts/install-claude-skills.sh` (vetted 2026-05-27). The script is
+interactive (it calls the `claude` CLI), so **you run it yourself** — Claude Code
+can't.
+
+## Why these (and why a script)
+
+- A **curated set** beats installing everything — fewer surprises, less prompt
+  bloat.
+- The script is **idempotent** and documents the *why* inline, so re-running is
+  safe and the security rationale travels with it.
+- **caveman via the plugin path**, never the `curl|bash` one-liner — the
+  one-liner edits `settings.json`, auto-installs into every detected agent, and
+  adds an unvetted `caveman-shrink` MCP. We avoid all of that.
+
+## Installed set
+
+| Skill / plugin | Marketplace | Purpose |
+|----------------|-------------|---------|
+| `caveman` | `JuliusBrussee/caveman` | (plugin) |
+| `engineering-skills` | `alirezarezvani/claude-skills` | Core engineering workflows |
+| `engineering-advanced-skills` | same | Advanced workflows + a PreToolUse security hook |
+| `skill-security-auditor` | same | Security auditing skill |
+
+> `engineering-advanced-skills` ships a **PreToolUse hook** that warns/blocks
+> edits containing `pickle` / `eval` / f-string SQL. If it interrupts ML work:
+> `export ENABLE_SECURITY_REMINDER=0` (add to your shell rc to persist).
+
+## Install / enable
+
+```bash
+bash ~/coding/scripts/install-claude-skills.sh   # interactive — run yourself
+claude plugin list                                # verify
+```
+
+Also available (built-in/other): `/document`, `/code-review`, `/simplify`, and
+the Vercel plugin (`vercel@claude-plugins-official`).
+
+## Links
+
+- Script: `~/coding/scripts/install-claude-skills.sh`
+- Review notes: `~/coding/docs/WORKLOG.md` (2026-05-27 entry)
+- Related: [claude-code](./claude-code.mdx) · [hooks](./hooks.mdx)

@@ -1,0 +1,50 @@
+---
+title: Coding Prompts
+description: Implement, debug, and test prompts.
+status: live
+tags: [prompts, coding]
+---
+
+# Coding Prompts
+
+## Implement a feature
+
+```
+Implement <feature> in <path>. Follow the existing patterns in <neighbor file>.
+Constraints: <constraints>. Don't add dependencies without asking.
+Definition of done: <tests pass / endpoint returns X / UI shows Y>.
+Show me a short plan first, then implement.
+```
+
+## Debug a failure
+
+```
+<command> fails with:
+<paste error>
+Find the root cause before changing anything. Explain what's happening, then
+propose the minimal fix. Don't mask the symptom.
+```
+
+## Add tests
+
+```
+Add tests for <module/function> covering: happy path, <edge cases>, and the
+failure mode <X>. Match the existing test style in <test dir>. Run them and show
+the output.
+```
+
+## Explain unfamiliar code
+
+```
+Walk me through <file/function>: what it does, its inputs/outputs, and any
+non-obvious behavior or gotchas. Reference line numbers.
+```
+
+## Safe-by-default reminder
+
+```
+Before any destructive step (delete, overwrite, force-push), stop and ask. For
+anything needing sudo, write a .sh script I run myself.
+```
+
+See also: [review](./review.mdx) · [agent-workflows](../ai-coding/agent-workflows.mdx).

@@ -4,6 +4,8 @@
 
 One repo. All configs, setup scripts, desktop theming, and dev knowledge. Drop onto any Rocky Linux / Fedora / RHEL machine and have a fully configured development environment in minutes.
 
+📚 **Full documentation:** [`docs/`](docs/index.mdx) — a browsable, no-gaps reference for every tool, feature, customization, keybinding, AI/agent workflow, and a prompt library. Start at [`docs/index.mdx`](docs/index.mdx); the live status of every feature is in [`docs/feature-catalog.mdx`](docs/feature-catalog.mdx).
+
 ---
 
 ## Quick Start (New Machine)
@@ -16,14 +18,40 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply SathishKumarAI/Dotfiles
 curl https://mise.run | sh
 mise install
 
-# 3. Full system setup (Rocky Linux — run as root)
-sudo bash setup/rocky-dev-setup-custom.sh
-
-# 4. Desktop UI/UX (fonts, theme, extensions — run as user)
-bash setup/gnome-desktop-setup.sh
+# 3. One-command system setup — auto-detects the OS and runs the right steps
+bash setup/setup.sh                # Rocky/Fedora -> setup-rocky.sh, Arch -> setup-arch.sh
+bash setup/setup.sh --dry-run      # preview the steps first, change nothing
+bash setup/setup.sh --os arch      # force a target if detection is wrong
 
 # Done. Log out and back in.
 ```
+
+### Windows
+
+```powershell
+# From the repo's setup/ folder, in PowerShell:
+powershell -ExecutionPolicy Bypass -File .\setup.ps1 -DryRun   # preview, change nothing
+powershell -ExecutionPolicy Bypass -File .\setup.ps1           # ensure winget+scoop, then install
+
+# then:
+chezmoi init --apply SathishKumarAI/Dotfiles
+mise install
+```
+
+> **Per-OS scripts:** the main entry detects the OS and runs the matching
+> orchestrator — all in [`setup/`](setup/):
+>
+> | OS | Entry | Orchestrator | Package managers |
+> |----|-------|--------------|------------------|
+> | Rocky / Fedora / RHEL | `setup.sh` | `setup-rocky.sh` | dnf + WezTerm + GNOME theme |
+> | Arch / Manjaro | `setup.sh` | `setup-arch.sh` | pacman/yay + GNOME extensions + TLP |
+> | Windows 10/11 | `setup.ps1` | `setup-windows.ps1` | winget + scoop (+ `update-user-path.ps1`) |
+>
+> All three orchestrators install the same toolset (modern CLI, starship,
+> zellij, mise, neovim, lazygit, WezTerm, chezmoi). The Linux pair shares the
+> dual-OS installers (`install-modern-cli.sh`, `install-automation-tools.sh`,
+> `install-extras.sh`). See [`docs/index.mdx`](docs/index.mdx) for the full
+> reference and `dotfiles/windows_setup/` for the conda + PATH notes.
 
 ---
 

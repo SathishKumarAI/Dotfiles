@@ -1,0 +1,62 @@
+---
+title: GNOME
+description: Extensions, custom keyboard shortcuts, panel/taskbar, and idle/power tuning.
+status: live
+tags: [desktop, gnome, extensions]
+---
+
+# GNOME
+
+**Intro.** The desktop is GNOME 47 (Wayland) tuned by setup scripts and a chezmoi
+run-once hook: a taskbar-style panel, a curated extension set, custom keyboard
+shortcuts (launcher menus, window/workspace management), and idle/suspend
+tuning. Theme: Catppuccin Mocha.
+
+## Setup scripts
+
+| Script | Provisions |
+|--------|-----------|
+| `setup/gnome-desktop-setup.sh` | Fonts, Catppuccin GTK theme, icons, base extensions, shortcuts |
+| `setup/gnome-taskbar.sh` | Dash-to-Panel taskbar layout |
+| `setup/gnome-panel-extras.sh` | Clock/battery%/tray panel extras |
+| `setup/gnome-extra-extensions.sh` | Additional extensions |
+| `setup/install-extras.sh` | cliphist / rofimoji / qalc tools for the menus |
+| `chezmoi/.chezmoiscripts/run_onchange_after_gnome-launcher.sh` | Custom keyboard shortcuts (run-once on `chezmoi apply`) |
+
+> After installing extensions you must **log out + back in** — Wayland can't
+> hot-reload the shell.
+
+## Enabled extensions (live)
+
+blur-my-shell · clipboard-indicator · just-perfection-desktop · tiling-assistant
+· appindicatorsupport · Vitals · background-logo. (Dash-to-Panel, CopyQ,
+Caffeine, Media Controls are provisioned by the scripts.) Manage via the
+**Extensions** app or `gnome-extensions list --enabled`.
+
+## Custom shortcuts (set by this repo)
+
+| Shortcut | Action |
+|----------|--------|
+| `Super + Space` | wofi launcher (this host) |
+| `Super + Shift + V` | Clipboard history |
+| `Super + .` / `Super + =` | Emoji / calculator |
+| `Super + \` | SSH menu |
+| `Super + Escape` | Power menu |
+| `Super + Return` / `Super + E` | wezterm / Files |
+| `Super + Shift + S` | Region screenshot → clipboard |
+
+Window/workspace/multi-monitor keys: see the full
+[`md files/KEYBOARD-SHORTCUTS.md`](../../md%20files/KEYBOARD-SHORTCUTS.md#gnome--window-management).
+
+## Idle / power tuning
+
+GNOME blanks at 3 min and suspends at 10 min on battery / 30 min on AC (battery
+saving). On laptops this pairs with **TLP** (`setup/laptop-battery.sh`,
+`setup/tlp/01-battery-saver.conf`). Deep dive:
+[`md files/SYSTEM-TUNING.md`](../../md%20files/SYSTEM-TUNING.md).
+
+## Links
+
+- Scripts: `setup/gnome-*.sh`
+- Full keys: [`md files/KEYBOARD-SHORTCUTS.md`](../../md%20files/KEYBOARD-SHORTCUTS.md)
+- Tuning: [`md files/SYSTEM-TUNING.md`](../../md%20files/SYSTEM-TUNING.md)

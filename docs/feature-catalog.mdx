@@ -1,0 +1,88 @@
+---
+title: Feature Catalog
+description: Master table of every feature/tool on this machine with live status and links to its doc.
+status: live
+tags: [catalog, parity, status]
+---
+
+# Feature Catalog
+
+Every feature tracked in this repo, its **live status on this machine**, and a
+link to its doc. This is the no-gaps parity reference when bringing up a new
+host. Status checked **2026-06-08** against `chezmoi status` + tool availability.
+
+Legend: ✅ live · ⚠️ diverged (live ≠ repo) · ⏳ pending (in repo, not applied) · ❌ missing (install/build)
+
+## Shell & prompt
+
+| Feature | Status | Doc |
+|---------|--------|-----|
+| bash (`~/.bashrc`) | ✅ | [shell/bash](./shell/bash.mdx) |
+| zsh (`~/.zshrc`) | ⚠️ diverged | [shell/zsh](./shell/zsh.mdx) |
+| starship prompt | ⚠️ diverged | [shell/starship](./shell/starship.mdx) |
+| zoxide (smart cd) | ✅ | [shell/zoxide](./shell/zoxide.mdx) |
+
+## Terminal & multiplexer
+
+| Feature | Status | Doc |
+|---------|--------|-----|
+| wezterm | ⚠️ diverged | [terminal/wezterm](./terminal/wezterm.mdx) |
+| tmux | ✅ | [terminal/tmux](./terminal/tmux.mdx) |
+| zellij + dev layout + `zellij-pick` | ⚠️ diverged / ⏳ layout | [terminal/zellij](./terminal/zellij.mdx) |
+
+## Editor & git
+
+| Feature | Status | Doc |
+|---------|--------|-----|
+| neovim (`init.lua`) | ✅ | [editor/neovim](./editor/neovim.mdx) |
+| VS Code (Flatpak) | ✅ | [editor/vscode](./editor/vscode.mdx) |
+| git config | ✅ | [git/git-config](./git/git-config.mdx) |
+| lazygit | ✅ | [git/lazygit](./git/lazygit.mdx) |
+
+## Launcher & desktop
+
+| Feature | Status | Doc |
+|---------|--------|-----|
+| wofi (Wayland launcher) | ❌ binary not built | [launcher/wofi](./launcher/wofi.mdx) |
+| rofi (XWayland launcher) | ⚠️ diverged | [launcher/rofi](./launcher/rofi.mdx) |
+| rofi menu scripts (clip/emoji/calc/power/ssh) | ⏳ pending | [launcher/rofi-scripts](./launcher/rofi-scripts.mdx) |
+| GNOME tweaks + extensions | ✅ live (extensions) | [desktop/gnome](./desktop/gnome.mdx) |
+| cliphist clipboard autostart | ⏳ pending | [desktop/clipboard](./desktop/clipboard.mdx) |
+| RustDesk remote desktop | ✅ binary / ⏳ deploy | [remote-desktop](./remote-desktop/index.mdx) |
+
+## AI / agent coding
+
+| Feature | Status | Doc |
+|---------|--------|-----|
+| Claude Code CLI + settings + deny-list | ✅ | [ai-coding/claude-code](./ai-coding/claude-code.mdx) |
+| Vetted skills (caveman, engineering-*) | ✅ (install script) | [ai-coding/skills](./ai-coding/skills.mdx) |
+| Worklog Stop hook + `/document` | ✅ | [ai-coding/hooks](./ai-coding/hooks.mdx) |
+| MCP servers (Vercel/Gmail/GDrive/GCal + recommended) | ✅ / 🆕 recommended | [ai-coding/mcp-servers](./ai-coding/mcp-servers.mdx) |
+| Git-worktree parallel-agent workflow | 🆕 recommended | [ai-coding/agent-workflows](./ai-coding/agent-workflows.mdx) |
+| Anthropic SDK (Python/Node) | ✅ | [ai-coding/sdk](./ai-coding/sdk.mdx) |
+
+## Automation & modern CLI
+
+| Feature | Status | Doc |
+|---------|--------|-----|
+| chezmoi (dotfile manager) | ✅ | [automation/chezmoi](./automation/chezmoi.mdx) |
+| mise (runtime manager) | ✅ / ⚠️ config | [automation/mise](./automation/mise.mdx) |
+| `update-all` updater | ⏳ pending (Arch-tuned) | [automation/update-all](./automation/update-all.mdx) |
+| direnv / just / pre-commit | 🆕 recommended | [automation/recommended](./automation/recommended.mdx) |
+| ripgrep / fd / bat / eza / delta / fzf | ❌ mostly missing | [modern-cli](./modern-cli/index.mdx) |
+
+## How status was determined
+
+```bash
+# Installed binaries
+for t in chezmoi mise starship zellij nvim lazygit wofi rofi wezterm tmux \
+         zoxide rustdesk fzf rg fd bat eza delta direnv just pre-commit; do
+  command -v "$t" >/dev/null && echo "✅ $t" || echo "❌ $t"
+done
+
+# Repo vs live divergence
+chezmoi status      # M = live differs, A = would add (pending), R = run script
+```
+
+> The legacy per-machine checklist (`FEATURES.md`) now points here. To refresh
+> this table, re-run the commands above after any setup change.

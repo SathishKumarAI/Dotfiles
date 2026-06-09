@@ -1,0 +1,38 @@
+---
+title: Clipboard history
+description: cliphist Wayland clipboard-history daemon with autostart, picked via rofi.
+status: pending
+tags: [desktop, clipboard, cliphist]
+---
+
+# Clipboard history
+
+**Intro.** Persistent clipboard history on Wayland via **cliphist**. A
+`wl-paste --watch cliphist store` daemon (started by an autostart desktop entry)
+records every copy; [`rofi-clip`](../launcher/rofi-scripts.mdx) (`Super+Shift+V`)
+lets you pick an older entry back to the clipboard.
+
+> Status: autostart entry **pending** —
+> `chezmoi apply ~/.config/autostart/cliphist.desktop` (ensure `cliphist` +
+> `wl-clipboard` installed via `setup/install-extras.sh`).
+
+## Why this
+
+cliphist is the standard Wayland clipboard-history store (Wayland has no
+persistent clipboard by itself). It pairs with rofi for a fast picker. The CopyQ
+GNOME extension is an alternative GUI path — both can coexist; cliphist drives
+the keyboard/rofi flow.
+
+## How it works
+
+1. Autostart (`~/.config/autostart/cliphist.desktop`) runs
+   `wl-paste --watch cliphist store` at login.
+2. Copy anything as normal.
+3. `Super+Shift+V` → `rofi-clip` → `cliphist list | rofi -dmenu` →
+   `cliphist decode | wl-copy`.
+
+## Links
+
+- Autostart: `chezmoi/private_dot_config/autostart/cliphist.desktop`
+- Picker: [rofi-scripts](../launcher/rofi-scripts.mdx)
+- Tools: `setup/install-extras.sh`

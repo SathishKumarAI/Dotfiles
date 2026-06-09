@@ -1,0 +1,26 @@
+---
+title: Launcher
+description: App launchers — wofi (Wayland) and rofi (XWayland) — plus the rofi menu scripts.
+status: live
+tags: [launcher, overview]
+---
+
+# Launcher
+
+| Page | What |
+|------|------|
+| [wofi](./wofi.mdx) | Native Wayland launcher (this host, `Super+Space`) |
+| [rofi](./rofi.mdx) | XWayland launcher (laptop, `Ctrl+Alt+Space`) + the launcher config |
+| [rofi-scripts](./rofi-scripts.mdx) | Menu scripts: clipboard, emoji, calc, power, SSH |
+
+## Per-machine launcher choice
+
+Launchers are **chosen per host**, not globally:
+
+- **This Rocky/Wayland desktop → wofi** on `Super+Space`. rofi can't use
+  `wlr-layer-shell` (Mutter doesn't implement it), so a native Wayland launcher
+  is cleaner.
+- **Dell laptop → rofi** on `Ctrl+Alt+Space` via XWayland.
+
+Both feature dirs stay in the repo; the menu scripts ([rofi-scripts](./rofi-scripts.mdx))
+work under either by forcing the X11 backend with `env -u WAYLAND_DISPLAY`.

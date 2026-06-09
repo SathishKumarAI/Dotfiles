@@ -1,0 +1,60 @@
+---
+title: zellij
+description: Primary multiplexer — Ctrl+a prefix, dev layout, fzf session picker (zellij-pick).
+status: diverged
+tags: [terminal, zellij, multiplexer]
+---
+
+# zellij
+
+**Intro.** The primary terminal multiplexer: persistent sessions, panes/tabs, and
+**declarative layouts**. Rebound to a `Ctrl+a` prefix to avoid vim's `Ctrl+b`.
+Ships a `dev` workspace layout and a `zellij-pick` fzf launcher. Config:
+`chezmoi/private_dot_config/zellij/config.kdl`; layout:
+`.../zellij/layouts/dev.kdl`.
+
+> Status: config **diverged** (`chezmoi diff ~/.config/zellij/config.kdl`);
+> dev layout **pending** (`chezmoi apply ~/.config/zellij/layouts/dev.kdl`).
+
+## Why this
+
+Over tmux for local use: discoverable on-screen keybinding hints, first-class
+**KDL layouts** (reproducible workspaces), and a cleaner default UX. tmux stays
+as the remote fallback.
+
+## Keybindings
+
+Prefix `Ctrl+a` enters Normal mode; `Ctrl+a` again locks/unlocks:
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+a` | Enter command (Normal) mode |
+| then `h/j/k/l` | Navigate panes |
+| then `n` / `p` | Next / previous tab |
+| then `c` / `x` | New / close pane |
+| then `d` | Detach session |
+| then `[` | Scroll mode |
+
+## Usage — sessions & layouts
+
+| Command / alias | Does |
+|-----------------|------|
+| `zj` (`zellij-pick`) | fzf picker: attach an existing session or create new |
+| `dev` (`zellij --layout dev`) | open the dev workspace |
+| `zellij attach <name>` | reattach |
+| `zellij list-sessions` | list |
+
+**`dev` layout** (`layouts/dev.kdl`): tab **code** = `nvim .` (68%) above two
+stacked shells (`shell` + `logs`); tab **git** = `lazygit`.
+
+## Customization
+
+- Edit `config.kdl` keybinds inside the `keybinds { ... }` block.
+- Add layouts under `layouts/` and launch with `zellij --layout <name>`.
+
+## Links
+
+- Config: `chezmoi/private_dot_config/zellij/config.kdl`
+- Layout: `chezmoi/private_dot_config/zellij/layouts/dev.kdl`
+- Picker: `chezmoi/private_dot_local/bin/executable_zellij-pick`
+- Upstream: <https://zellij.dev>

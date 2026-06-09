@@ -1,0 +1,83 @@
+---
+title: Dotfiles Documentation
+description: Canonical, browsable reference for every tool, feature, customization, keybinding, and AI/agent workflow on this machine.
+status: live
+tags: [index, overview]
+---
+
+# Dotfiles Documentation
+
+The single source of truth for **what is installed on this machine, how it is
+configured, how to use it, and why each choice was made**. Everything here is
+authored as plain `.mdx` (markdown-compatible — no JSX), so it renders in
+GitHub, your editor, or any future docs site without changes.
+
+> **Machine profile:** Rocky Linux 10.1 · GNOME 47 · Wayland (XWayland for a few
+> apps — see [Known Quirks](#known-quirks)). Also drives a Dell/Arch laptop.
+> Dotfiles are managed by **chezmoi**; runtimes by **mise**; theme is
+> **Catppuccin Mocha** everywhere.
+
+## How to navigate
+
+| Section | What's in it |
+|---------|--------------|
+| [Feature Catalog](./feature-catalog.mdx) | Master table of every feature + live status + links |
+| [Keybindings](./keybindings.mdx) | Cross-tool keyboard cheatsheet (hub) |
+| [Shell](./shell/index.mdx) | bash, zsh, starship prompt, zoxide |
+| [Terminal](./terminal/index.mdx) | wezterm, tmux, zellij |
+| [Editor](./editor/index.mdx) | neovim, VS Code |
+| [Git](./git/index.mdx) | git config, lazygit |
+| [Launcher](./launcher/index.mdx) | wofi, rofi, rofi menu scripts |
+| [Desktop](./desktop/index.mdx) | GNOME tweaks, extensions, clipboard |
+| [Remote Desktop](./remote-desktop/index.mdx) | RustDesk |
+| [AI Coding](./ai-coding/index.mdx) | Claude Code, skills, hooks, MCP, agent workflows, SDK |
+| [Automation](./automation/index.mdx) | chezmoi, mise, update-all, recommended tools |
+| [Modern CLI](./modern-cli/index.mdx) | ripgrep, fd, bat, eza, delta, fzf |
+| [Prompts](./prompts/index.mdx) | Reusable prompt library |
+
+## Doc conventions
+
+Each feature page follows the same template:
+
+1. **Intro** — what it is, in one paragraph
+2. **Why this (vs alternatives)** — the rationale and trade-off
+3. **Install / enable** — exact commands or chezmoi path
+4. **Usage** — day-to-day
+5. **Keybindings** — table (where relevant)
+6. **Customization** — what to tweak and where
+7. **Troubleshooting** — known gotchas
+8. **Links** — repo config path, deep-dive guide, upstream
+
+**Status legend** (in each page's frontmatter): `live` (installed + matches
+repo) · `diverged` (live config differs from repo — reconcile) · `pending` (in
+repo, not yet applied here) · `missing` (needs install/build).
+
+## Relationship to the other docs
+
+This tree is the **canonical** entry point. Longer reference guides under
+`setup/*.md` (`TOOLS_GUIDE.md`, `CLAUDE_TOOLS_GUIDE.md`,
+`FULL_TOOLS_INVENTORY.md`, `APPS_GUIDE.md`, `OPEN_SOURCE_TOOLS.md`,
+`SCRIPT_EXPLAINED.md`) remain as **deep-dive references** and are linked from the
+matching section. The repo-wide task tracker is [`ROADMAP.md`](../ROADMAP.md);
+the per-machine parity checklist content now lives in the
+[Feature Catalog](./feature-catalog.mdx).
+
+## Known quirks
+
+GNOME's Mutter compositor does not implement `wlr-layer-shell` and ships an
+explicit-sync path that crashes some apps' native Wayland backends. **rofi** and
+**wezterm** therefore run on **XWayland** (applied automatically by chezmoi).
+Full detail in [`md files/KEYBOARD-SHORTCUTS.md`](../md%20files/KEYBOARD-SHORTCUTS.md#known-quirks--gnome-wayland-why-xwayland).
+
+## References (research behind the recommendations)
+
+The recommended-tools pages ([Modern CLI](./modern-cli/index.mdx),
+[Automation › Recommended](./automation/recommended.mdx),
+[AI Coding › MCP](./ai-coding/mcp-servers.mdx),
+[AI Coding › Agent Workflows](./ai-coding/agent-workflows.mdx)) are backed by
+2026 sources:
+
+- [awesome-cli-coding-agents](https://github.com/bradAGI/awesome-cli-coding-agents) — terminal-native AI agents directory
+- [TurboDocx — Best Claude Code Skills/Plugins/MCP 2026](https://www.turbodocx.com/blog/best-claude-code-skills-plugins-mcp-servers)
+- [MindStudio — Git Worktrees for parallel AI coding agents](https://www.mindstudio.ai/blog/git-worktrees-parallel-ai-coding-agents)
+- [linuxteck — Modern Linux tools that replace old commands (2026)](https://www.linuxteck.com/modern-linux-tools/)

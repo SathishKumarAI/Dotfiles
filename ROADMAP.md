@@ -133,9 +133,22 @@ config has fuzzy matching, MRU sort, and a custom `modes` list.
 - [ ] **Cross-machine replication test**
   - [ ] Reproduce setup on a clean VM (Rocky, Arch, Ubuntu)
   - [ ] Time the from-zero workflow and document gaps
-- [ ] **Top-level README index**
-  - [ ] Add a "Features" table linking each `chezmoi/private_dot_config/<name>/README.md`
-  - [ ] Add a "Status" column wired to the feature task boards
+- [x] **Top-level README index / docs tree** — built the `docs/` MDX tree
+  (`docs/index.mdx` + per-feature pages); README now links it.
+  - [x] Feature catalog with status column → [`docs/feature-catalog.mdx`](docs/feature-catalog.mdx)
+  - [ ] Keep the catalog's status values fresh after each setup change
+- [ ] **Adopt the recommended tooling drafted in `docs/`** (run when ready)
+  - [ ] `bash setup/install-modern-cli.sh` — ripgrep/fd/bat/eza/delta/fzf
+        (zsh already aliases them; install lights them up). Then add the delta
+        pager block to `~/.gitconfig`.
+  - [ ] `bash setup/install-automation-tools.sh` — direnv/just/pre-commit;
+        add the `direnv hook` line to `dot_zshrc`/`dot_bashrc`
+  - [ ] Apply the `agent-worktree` helper (`chezmoi apply ~/.local/bin`) and try
+        the parallel-agent flow ([`docs/ai-coding/agent-workflows.mdx`](docs/ai-coding/agent-workflows.mdx))
+  - [ ] Add MCP servers GitHub / Postgres / Playwright (cap 5–7) —
+        [`docs/ai-coding/mcp-servers.mdx`](docs/ai-coding/mcp-servers.mdx)
+  - [ ] Make `update-all` distro-aware (dnf on Rocky) —
+        [`docs/automation/update-all.mdx`](docs/automation/update-all.mdx)
 - [ ] **Worklog hygiene** (from CLAUDE.md)
   - [ ] Run `/document` after every meaningful session (Stop hook reminds you)
 - [ ] **Secrets handling**

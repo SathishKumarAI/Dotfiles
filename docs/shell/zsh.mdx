@@ -1,0 +1,78 @@
+---
+title: zsh
+description: Rich interactive shell — autosuggestions, syntax highlighting, fzf+fd+bat, eza/bat aliases.
+status: diverged
+tags: [shell, zsh, fzf]
+---
+
+# zsh
+
+**Intro.** The daily-driver interactive shell. On top of the shared mise /
+starship / zoxide bootstrap it adds fish/Warp-style **inline autosuggestions**,
+live **syntax highlighting**, and **fzf** wired to fd + bat. wezterm launches
+`/bin/zsh --login` so these are always on. Config: `chezmoi/dot_zshrc` →
+`~/.zshrc`.
+
+> Status: **diverged** — the live `~/.zshrc` differs from the repo. Reconcile
+> with `chezmoi diff ~/.zshrc` then `chezmoi apply ~/.zshrc` (repo wins) or
+> `chezmoi add ~/.zshrc` (live wins).
+
+## Why this
+
+zsh's plugin ecosystem gives the biggest interactive wins with the least config:
+- **zsh-autosuggestions** — grey ghost-text from history; accept with `→`.
+- **zsh-syntax-highlighting** — valid command = green, typo = red, as you type
+  (must be sourced **last** — it wraps the line editor).
+- **fzf + fd + bat** — fuzzy file/history search with syntax-highlighted preview.
+
+## Install / enable
+
+Plugins come from system packages:
+
+```bash
+sudo dnf install -y zsh-autosuggestions zsh-syntax-highlighting   # if packaged
+# else clone into /usr/share/zsh/plugins/ (the rc sources from there)
+```
+
+fzf/fd/bat power the search — see [Modern CLI](../modern-cli/index.mdx).
+
+## Keybindings
+
+| Key | Action |
+|-----|--------|
+| `→` / `End` / `Ctrl + Space` | Accept whole autosuggestion |
+| `Ctrl + T` | Fuzzy file search (fd source, bat preview) |
+| `Ctrl + R` | Fuzzy history search |
+| `Alt + C` | Fuzzy `cd` into a subdirectory |
+| `Tab` | Menu completion (arrow-select) |
+
+## Usage — extra aliases (beyond bash)
+
+| Alias / fn | Does |
+|------------|------|
+| `ls`/`ll`/`la`/`lt` | eza variants (icons, git, `--tree`) when eza present |
+| `cat` | `bat --paging=never --style=plain` when bat present |
+| `ga`/`gco`/`gb`/`gcm`/`gst` | git add/checkout/branch/commit -m/stash |
+| `zj` | `zellij-pick` (fzf session picker) |
+| `dev` | `zellij --layout dev` |
+| `up` | `update-all` |
+| `mkcd <dir>` | mkdir + cd in one |
+
+## Customization
+
+- History: 10k lines, dedup, shared across sessions (`SHARE_HISTORY`).
+- `FZF_DEFAULT_OPTS` / preview command are set in the rc — tweak height/preview.
+- Toggle eza/bat aliases by installing/removing those tools (guarded by
+  `command -v`).
+
+## Troubleshooting
+
+- No suggestions/highlighting → the plugin files aren't at
+  `/usr/share/zsh/plugins/...`; install the packages or fix the path.
+- `Ctrl+T`/`Alt+C` do nothing → fzf not installed or `fzf --zsh` failed.
+
+## Links
+
+- Config: `chezmoi/dot_zshrc`
+- Related: [Modern CLI (fzf/fd/bat/eza)](../modern-cli/index.mdx) · [starship](./starship.mdx)
+- Keys: [`md files/KEYBOARD-SHORTCUTS.md`](../../md%20files/KEYBOARD-SHORTCUTS.md#zsh--shell-autosuggestions-fuzzy-find)

@@ -1,0 +1,90 @@
+---
+title: wezterm
+description: GPU-accelerated terminal — Catppuccin Mocha, vim-style panes/tabs, profile launch menu.
+status: diverged
+tags: [terminal, wezterm]
+---
+
+# wezterm
+
+**Intro.** A GPU-accelerated, Lua-configured terminal emulator. JetBrainsMono
+Nerd Font, Catppuccin Mocha, 92% background opacity, bottom tab bar, and a
+**launch menu** of shell/REPL profiles. Defaults to `zsh --login` so all the
+interactive zsh features are active. Config: `chezmoi/dot_wezterm.lua` →
+`~/.wezterm.lua`.
+
+> Status: **diverged** — reconcile with `chezmoi diff ~/.wezterm.lua`.
+
+## Why this
+
+- **GPU (WebGpu) rendering** at up to 120fps — smooth scroll/animation.
+- **Lua config** — full programmability (keys, launch menu, per-host logic)
+  versus INI-style configs in alacritty/kitty.
+- **Runs on XWayland deliberately** (`config.enable_wayland = false`): GNOME's
+  explicit-sync path crashes wezterm's native Wayland backend with
+  `wp_linux_drm_syncobj ... os error 71`. XWayland trades native fractional
+  scaling for actually launching.
+
+## Install / enable
+
+```bash
+bash ~/coding/Dotfiles/setup/install-wezterm.sh   # build/install
+chezmoi apply ~/.wezterm.lua
+```
+
+## Keybindings
+
+Panes (vim-style), `C+S` = `Ctrl+Shift`:
+
+| Key | Action |
+|-----|--------|
+| `C+S + D` / `E` | Split horizontal / vertical |
+| `C+S + H/J/K/L` | Focus pane left/down/up/right |
+| `C+S+Alt + H/J/K/L` | Resize pane |
+| `C+S + Enter` | Toggle pane zoom |
+| `C+S + X` | Close pane |
+
+Tabs:
+
+| Key | Action |
+|-----|--------|
+| `C+S + T` / `W` | New / close tab |
+| `Ctrl + Tab` / `C+S + Tab` | Next / prev tab |
+| `Alt + 1..9` | Jump to tab N |
+
+General:
+
+| Key | Action |
+|-----|--------|
+| `C+S + C` / `V` | Copy / paste |
+| `C+S + F` | Search scrollback |
+| `Ctrl + +` / `-` / `0` | Font bigger / smaller / reset |
+| `C+S + P` | Launch menu (profiles) |
+| `C+S+Alt + P` | Command palette |
+| `C+S + Z` | Zellij in a new tab |
+| `F11` | Fullscreen |
+| `Ctrl + Click` | Open link under cursor |
+
+## Launch menu profiles (`Ctrl+Shift+P`)
+
+Zsh (default) · Bash · Zellij · Zellij (new "work" session) · Python REPL ·
+Node REPL · btop. Profiles use bare command names so they resolve via PATH on
+any host.
+
+## Customization
+
+- Font/size: `config.font`, `config.font_size` (12.5), `line_height` (1.15).
+- Opacity: `window_background_opacity = 0.92`.
+- Add a profile: append to `config.launch_menu`.
+- Add a key: append to `config.keys`.
+
+## Troubleshooting
+
+- Crash on launch under Wayland → confirm `enable_wayland = false`.
+- Missing glyphs → install JetBrainsMono Nerd Font.
+
+## Links
+
+- Config: `chezmoi/dot_wezterm.lua` · Install: `setup/install-wezterm.sh`
+- Full keys: [`md files/KEYBOARD-SHORTCUTS.md`](../../md%20files/KEYBOARD-SHORTCUTS.md#wezterm--pane-management)
+- Upstream: <https://wezterm.org>

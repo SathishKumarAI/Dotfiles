@@ -1,0 +1,86 @@
+---
+title: Recommended Automation Tools
+description: direnv, just, and pre-commit — what they are, how to adopt, and why chosen.
+status: recommended
+tags: [automation, direnv, just, pre-commit, recommended]
+---
+
+# Recommended Automation Tools
+
+**Intro.** Three additions that make project work **faster and safer**:
+per-project environment (direnv), a project task runner (just), and a commit-time
+safety gate (pre-commit). Documented here with a draft installer
+(`setup/install-automation-tools.sh`, written during adoption).
+
+> Status: **recommended** — none installed yet. Nothing changes until you run the
+> installer.
+
+## direnv — per-project environment
+
+**What:** auto-loads/unloads env vars from a `.envrc` when you `cd` into a
+project. **Why:** pairs perfectly with [mise](./mise.mdx) (versions) to give each
+repo its own env (API endpoints, paths, secrets via a manager) without polluting
+your shell. Chosen as the de-facto standard, single-binary, shell-agnostic.
+
+```bash
+# shell hook (added to dot_bashrc / dot_zshrc on adoption):
+eval "$(direnv hook zsh)"
+# per project:
+echo 'export DATABASE_URL=...' > .envrc && direnv allow
+```
+
+## just — project task runner
+
+**What:** a `make`-like command runner using a `justfile`. **Why:** a clean home
+for project commands (`just test`, `just deploy`) without Makefile tab/phony
+quirks; self-documenting (`just --list`). Chosen over Make for readability and
+over npm-scripts for language-agnosticism.
+
+```make
+# justfile
+default: test
+test:        pytest -q
+fmt:         ruff format .
+dev:         zellij --layout dev
+```
+
+## pre-commit — commit-time safety gate
+
+**What:** runs linters/formatters/secret-scanners before each commit via git
+hooks. **Why:** stops bad code and **leaked secrets** at the door — the cheapest
+place to catch them. Directly supports the "safer coding" goal. Chosen as the
+standard multi-language hook framework.
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.0
+    hooks: [{id: ruff}, {id: ruff-format}]
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks: [{id: gitleaks}]
+```
+
+```bash
+pre-commit install      # wire into .git/hooks
+```
+
+## Why these three together
+
+They cover the three recurring friction/risk points in project work — **env**
+(direnv), **commands** (just), **commit safety** (pre-commit) — are each a single
+dependency, and integrate with the existing mise/git/chezmoi stack without
+overlap.
+
+## Draft installer
+
+`setup/install-automation-tools.sh`: **distro-aware** (dnf/pacman/apt with
+pipx/cargo fallbacks), so it installs all three on both the Rocky host and the
+Arch laptop, prints the direnv shell-hook line to add, and provides starter
+`justfile` / `.pre-commit-config.yaml` templates.
+
+## Links
+
+- Related: [mise](./mise.mdx) · [git](../git/git-config.mdx) · [Modern CLI](../modern-cli/index.mdx)
+- direnv <https://direnv.net> · just <https://just.systems> · pre-commit <https://pre-commit.com>

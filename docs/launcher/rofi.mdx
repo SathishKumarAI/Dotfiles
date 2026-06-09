@@ -1,0 +1,47 @@
+---
+title: rofi
+description: XWayland app launcher (laptop) — fuzzy/MRU drun, custom modes, Catppuccin theme.
+status: diverged
+tags: [launcher, rofi, xwayland]
+---
+
+# rofi
+
+**Intro.** A versatile launcher used on the Dell laptop (XWayland,
+`Ctrl+Alt+Space`) and as the engine behind the [menu scripts](./rofi-scripts.mdx)
+on every host. Modes: `drun,run,window,filebrowser`; fuzzy matching, fzf-style
+sort, launch history. Config: `chezmoi/private_dot_config/rofi/config.rasi` +
+theme `themes/catppuccin-mocha.rasi`.
+
+> Status: **diverged** — reconcile with `chezmoi diff ~/.config/rofi/config.rasi`.
+
+## Why this
+
+rofi is the most scriptable launcher (`-dmenu` turns any list into a picker),
+which is why the clipboard/emoji/calc/power/SSH menus all use it even on the
+wofi host. On the laptop it's the primary launcher via XWayland.
+
+## Key config choices
+
+- `matching: fuzzy`, `sorting-method: fzf`, `disable-history: false`,
+  `sort: true` — common apps float to the top before you type.
+- `terminal: wezterm`.
+- `kb-cancel: Escape` only — **do not** add a bare `Super_L`: a lone modifier as
+  an action key makes rofi reject the whole binding and Esc stops working.
+- The menu scripts add `-normal-window` so Mutter gives the XWayland popup
+  keyboard focus (otherwise typing/Esc are dead).
+
+## Usage (launcher)
+
+| Key | Action |
+|-----|--------|
+| type | Fuzzy search |
+| `Enter` | Launch |
+| `Tab` | Cycle mode (drun→run→window→files) |
+| `Esc` | Dismiss |
+
+## Links
+
+- Config: `chezmoi/private_dot_config/rofi/config.rasi`
+- Menus: [rofi-scripts](./rofi-scripts.mdx)
+- Why XWayland: [`md files/KEYBOARD-SHORTCUTS.md`](../../md%20files/KEYBOARD-SHORTCUTS.md#known-quirks--gnome-wayland-why-xwayland)

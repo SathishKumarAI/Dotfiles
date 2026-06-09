@@ -1,0 +1,37 @@
+---
+title: VS Code
+description: GUI editor (Flatpak) for heavier IDE work — debuggers, notebooks, extensions.
+status: live
+tags: [editor, vscode, gui]
+---
+
+# VS Code
+
+**Intro.** The GUI editor for tasks where a full IDE helps: visual debugging,
+Jupyter notebooks, rich extension ecosystems, and pair-friendly UI. Installed as
+a **Flatpak** by the desktop setup.
+
+## Why this
+
+neovim covers fast terminal editing; VS Code covers the GUI-heavy 20% (graphical
+debuggers, notebook UIs, extension-driven workflows). Flatpak keeps it sandboxed
+and update-managed separately from system packages.
+
+## Install / enable
+
+```bash
+flatpak install -y flathub com.visualstudio.code   # (handled by desktop setup)
+```
+
+See [`setup/APPS_GUIDE.md`](../../setup/APPS_GUIDE.md) for the GUI app set.
+
+## Usage / customization
+
+- Mise-managed runtimes are on PATH, so VS Code's integrated terminal inherits
+  Python/Node/Go versions.
+- Keep settings/extensions list in sync manually (not currently chezmoi-tracked).
+
+## Links
+
+- Deep dive: [`setup/APPS_GUIDE.md`](../../setup/APPS_GUIDE.md)
+- Related: [mise](../automation/mise.mdx)

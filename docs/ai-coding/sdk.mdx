@@ -1,0 +1,47 @@
+---
+title: Anthropic SDK
+description: Python and Node SDKs for building with Claude — used by the ML/RAG projects.
+status: live
+tags: [ai, sdk, anthropic, python, node]
+---
+
+# Anthropic SDK
+
+**Intro.** Beyond the CLI, the **Anthropic SDK** (Python `anthropic`, Node
+`@anthropic-ai/sdk`) is available for building Claude into applications — used by
+the Pickleball-Vision-LLM, RAG, and Medical-Research projects. Auth via
+`ANTHROPIC_API_KEY`.
+
+## Why this
+
+The CLI is for interactive coding; the SDK is for **programmatic** use — agents,
+RAG pipelines, batch classification, LLM-as-judge. Both Python and Node are
+installed so projects in either stack can call Claude directly.
+
+## Setup
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."   # keep in a secret store, not in git
+python -c "import anthropic; print(anthropic.__version__)"
+```
+
+Use the **latest, most capable** models for app building. Model IDs and pricing
+change — check the `claude-api` skill / official docs rather than hardcoding from
+memory.
+
+## Patterns worth knowing
+
+- **Prompt caching** — cache large static context (system prompts, docs) to cut
+  cost/latency on repeated calls.
+- **Tool use** — give Claude typed tools; validate inputs at the call boundary.
+- **Structured output** — force a JSON schema for reliable parsing.
+
+## Safety
+
+- Never commit `ANTHROPIC_API_KEY` — use env/secret manager (see the repo's
+  secrets stance on the [ROADMAP](../../ROADMAP.md)).
+
+## Links
+
+- Guide: [`setup/CLAUDE_TOOLS_GUIDE.md`](../../setup/CLAUDE_TOOLS_GUIDE.md) (SDK test snippets)
+- Reference: the `claude-api` skill (model ids, pricing, caching, tool use)

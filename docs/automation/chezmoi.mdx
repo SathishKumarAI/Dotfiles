@@ -1,0 +1,50 @@
+---
+title: chezmoi
+description: The dotfile manager — single source of truth at ~/coding/Dotfiles, .chezmoiroot layout.
+status: live
+tags: [automation, chezmoi, dotfiles]
+---
+
+# chezmoi
+
+**Intro.** chezmoi manages every tracked dotfile from one source repo, applying
+them into `$HOME` with templating and per-machine logic. The source root is
+`chezmoi/` (set by `.chezmoiroot`); the single source of truth is
+`~/coding/Dotfiles` (`sourceDir` in `~/.config/chezmoi/chezmoi.toml`).
+
+## Why this (and the .chezmoiroot fix)
+
+chezmoi gives **versioned, replayable** dotfiles across machines with `dot_*`
+naming and run-scripts. A subtle past bug: with no `.chezmoiroot`, chezmoi
+treated the **repo root** as source and would scatter `README.md`, `assets/`,
+etc. into `$HOME`. Fix: `.chezmoiroot=chezmoi` scopes the source to
+`chezmoi/` only, so repo docs/scaffolding are ignored.
+
+## Daily commands
+
+| Command | Does |
+|---------|------|
+| `chezmoi edit ~/.zshrc` | Edit the source of a tracked file |
+| `chezmoi diff` | Preview what `apply` would change |
+| `chezmoi status` | `M` live differs · `A` would add · `R` run-script |
+| `chezmoi apply ~/.foo` | Apply one file |
+| `chezmoi add ~/.foo` | Pull a live file into the repo |
+| `chezmoi update --apply` | Pull from git + apply |
+
+## Safety rule
+
+> **Never run a blanket `chezmoi apply`** while configs are diverged — decide
+> per-file which side wins (see the diverged list in the
+> [Feature Catalog](../feature-catalog.mdx)). Additive applies (new files only)
+> are safe.
+
+## Run-scripts
+
+`.chezmoiscripts/run_onchange_after_gnome-launcher.sh` sets GNOME custom
+shortcuts on apply (run-once-on-change).
+
+## Links
+
+- Source: `~/coding/Dotfiles/chezmoi/`
+- Config: `~/.config/chezmoi/chezmoi.toml`
+- Upstream: <https://chezmoi.io>

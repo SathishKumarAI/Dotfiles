@@ -1,0 +1,28 @@
+---
+title: Shell
+description: bash, zsh, the starship prompt, and zoxide — the interactive shell stack.
+status: live
+tags: [shell, overview]
+---
+
+# Shell
+
+Two shells are configured identically where it matters, with **zsh as the rich
+interactive shell** (autosuggestions, syntax highlighting, fzf) and **bash as
+the portable fallback**. Both source mise, starship, and zoxide.
+
+| Page | What |
+|------|------|
+| [bash](./bash.mdx) | Portable login shell, aliases, mise/starship/zoxide bootstrap |
+| [zsh](./zsh.mdx) | Rich interactive shell: autosuggestions, syntax highlight, fzf+fd+bat, eza/bat aliases |
+| [starship](./starship.mdx) | Cross-shell prompt (Catppuccin Mocha, language/git/conda segments) |
+| [zoxide](./zoxide.mdx) | Frecency-based `cd` replacement |
+
+## Why two shells
+
+- **zsh** is the daily driver — wezterm launches `/bin/zsh --login` so
+  autosuggestions/highlighting/fzf are always active.
+- **bash** stays fully configured so scripts, SSH targets, and minimal
+  environments behave. Aliases and tool bootstrap are mirrored.
+
+Config source: `chezmoi/dot_bashrc`, `chezmoi/dot_zshrc`.

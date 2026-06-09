@@ -1,0 +1,40 @@
+---
+title: tmux
+description: Fallback terminal multiplexer — Ctrl+a prefix, vim navigation, Catppuccin status bar.
+status: live
+tags: [terminal, tmux, multiplexer]
+---
+
+# tmux
+
+**Intro.** The fallback multiplexer (zellij is primary). Configured with a
+`Ctrl+a` prefix, mouse on, vim-style pane navigation, intuitive split keys, and a
+Catppuccin-inspired status bar. Config: `chezmoi/dot_tmux.conf` → `~/.tmux.conf`.
+
+## Why this
+
+Kept because it's preinstalled almost everywhere — on a remote box without
+zellij, the same `Ctrl+a` + `h/j/k/l` muscle memory works. Locally, prefer
+[zellij](./zellij.mdx) for layouts and a friendlier UI.
+
+## Keybindings
+
+Prefix is `Ctrl+a` (press, release, then the key):
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+a` then `h/j/k/l` | Select pane left/down/up/right |
+| `Ctrl+a` then `|` | Split horizontal (keeps cwd) |
+| `Ctrl+a` then `-` | Split vertical (keeps cwd) |
+| `Ctrl+a` then `r` | Reload config |
+
+## Customization
+
+- Windows/panes start at index 1; `renumber-windows on`.
+- True color via `tmux-256color` + `RGB` override.
+- Status bar colors use Catppuccin hexes — edit the `status-*` lines.
+
+## Links
+
+- Config: `chezmoi/dot_tmux.conf`
+- Related: [zellij](./zellij.mdx) (primary multiplexer)

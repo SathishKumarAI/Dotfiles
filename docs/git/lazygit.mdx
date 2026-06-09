@@ -1,0 +1,43 @@
+---
+title: lazygit
+description: Terminal UI for git — visual staging, committing, branching, interactive rebase.
+status: live
+tags: [git, lazygit, tui]
+---
+
+# lazygit
+
+**Intro.** A keyboard-driven terminal UI for git: stage hunks, commit, branch,
+stash, and do interactive rebases visually. Catppuccin Mocha theme, file tree
+view, nvim as the commit editor. Config:
+`chezmoi/private_dot_config/lazygit/config.yml`. Aliases: `lg`.
+
+## Why this
+
+Makes the high-friction git operations (partial staging, interactive rebase,
+cherry-pick) fast and visual without memorizing flags — while staying in the
+terminal. Launched in the zellij `dev` layout's **git** tab.
+
+## Usage
+
+| Key (in lazygit) | Action |
+|------------------|--------|
+| `Space` | Stage/unstage file or hunk |
+| `c` | Commit |
+| `P` / `p` | Push / pull |
+| `b` | Branch menu |
+| `r` | Rebase menu |
+| `z` / `Z` | Undo / redo |
+| `?` | Help (all keybinds) |
+
+## Customization
+
+- Theme colors are Catppuccin hexes under `gui.theme`.
+- `gui.showFileTree: true`, `git.paging.pager: less -FRX` — swap pager for
+  **delta** for nicer diffs (see [Modern CLI](../modern-cli/index.mdx)).
+- `os.editPreset: nvim`.
+
+## Links
+
+- Config: `chezmoi/private_dot_config/lazygit/config.yml`
+- Upstream: <https://github.com/jesseduffield/lazygit>

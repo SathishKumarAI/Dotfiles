@@ -1,0 +1,24 @@
+---
+title: Terminal
+description: wezterm terminal emulator plus zellij and tmux multiplexers.
+status: live
+tags: [terminal, overview]
+---
+
+# Terminal
+
+| Page | What |
+|------|------|
+| [wezterm](./wezterm.mdx) | GPU terminal emulator (default), Catppuccin, vim-style panes, launch menu |
+| [zellij](./zellij.mdx) | Primary multiplexer (`Ctrl+a` prefix), dev layout, `zellij-pick` |
+| [tmux](./tmux.mdx) | Fallback multiplexer (`Ctrl+a` prefix), vim nav |
+
+## The stack
+
+- **wezterm** is the emulator (window, GPU rendering, fonts, tabs/panes).
+- **zellij** is the primary multiplexer for persistent, layout-driven sessions.
+- **tmux** is kept as a fallback (e.g. on remote hosts) with a matching
+  `Ctrl+a` prefix and vim navigation so muscle memory carries over.
+
+Both multiplexers use **`Ctrl+a`** as prefix (not the default `Ctrl+b`) to avoid
+clashing with vim's `Ctrl+b` page-up.

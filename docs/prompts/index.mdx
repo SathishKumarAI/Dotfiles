@@ -1,0 +1,33 @@
+---
+title: Prompt Library
+description: Reusable, copy-pasteable prompts for coding, review, automation, and project bootstrap.
+status: live
+tags: [prompts, ai, library]
+---
+
+# Prompt Library
+
+Reusable prompts to drive Claude Code faster and more consistently. Each is
+copy-pasteable; replace `<angle-bracket>` placeholders. Grouped by intent.
+
+| Page | When to use |
+|------|-------------|
+| [coding](./coding.mdx) | Implement, debug, test |
+| [review](./review.mdx) | Review, refactor, simplify |
+| [automation](./automation.mdx) | Scripts, CI, chezmoi/setup edits |
+| [project-bootstrap](./project-bootstrap.mdx) | Scaffold large projects; parallel-agent flow |
+
+## How to use these
+
+- Pair with the installed skills/commands: `/code-review`, `/simplify`,
+  `/document` (see [ai-coding/skills](../ai-coding/skills.mdx)).
+- Keep prompts **specific and outcome-oriented** — name files, constraints, and
+  the definition of done.
+- For big tasks, prefer the
+  [parallel-agent workflow](../ai-coding/agent-workflows.mdx).
+
+## House rules baked into prompts
+
+This setup's rules (from `~/coding/CLAUDE.md`): create `.sh` scripts for sudo
+work, never delete without asking, document in markdown, use mise/chezmoi,
+Catppuccin Mocha. The prompts below assume these.

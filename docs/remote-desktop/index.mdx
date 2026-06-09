@@ -1,0 +1,45 @@
+---
+title: Remote Desktop (RustDesk)
+description: Self-hostable remote desktop — cross-distro install scripts, phased rollout plan.
+status: pending
+tags: [remote-desktop, rustdesk]
+---
+
+# Remote Desktop (RustDesk)
+
+**Intro.** RustDesk is an open-source, self-hostable remote-desktop tool (a
+TeamViewer/AnyDesk alternative). The repo ships cross-distro install scripts and
+a phased rollout plan. The binary is installed on this host; the config dir and
+deployment phases are pending. Source:
+`chezmoi/private_dot_config/remote-desktop/`.
+
+> Status: binary **installed** (`/usr/bin/rustdesk`); scripts/docs **pending**
+> (`chezmoi apply ~/.config/remote-desktop`); Phase 2 deployment **not started**.
+
+## Why RustDesk
+
+Open source and **self-hostable** (own relay via `hbbs`/`hbbr`), cross-platform,
+works over Wayland via the PipeWire portal. Chosen over proprietary tools for
+control and no per-seat licensing.
+
+## Install / enable
+
+Per-distro scripts under `.../remote-desktop/scripts/`:
+
+```bash
+chezmoi apply ~/.config/remote-desktop
+bash ~/.config/remote-desktop/scripts/install-rustdesk-rocky.sh   # or -arch/-fedora/-ubuntu
+```
+
+## Rollout plan
+
+Phases 1–7 (Foundation → Deployment → Hardening → Multi-machine fleet →
+Self-hosted relay → Monitoring → Advanced) are tracked in
+`chezmoi/private_dot_config/remote-desktop/logs/tasks.md` and rolled up in the
+[ROADMAP](../../ROADMAP.md#remote-desktop-rustdesk).
+
+## Links
+
+- Scripts/docs: `chezmoi/private_dot_config/remote-desktop/`
+- Tasks: `.../remote-desktop/logs/tasks.md`
+- Upstream: <https://rustdesk.com>

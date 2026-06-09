@@ -1,0 +1,56 @@
+---
+title: Hooks & Worklog
+description: The throttled Stop hook that nudges /document, and the worklog workflow.
+status: live
+tags: [ai, claude, hooks, worklog]
+---
+
+# Hooks & Worklog
+
+**Intro.** A Claude Code **Stop hook** reminds you to run `/document` at the end
+of a session so work gets logged to `docs/WORKLOG.md`. Hook:
+`~/.claude/hooks/worklog-reminder.sh`, wired in `~/.claude/settings.json` under
+`hooks.Stop`.
+
+## Why this
+
+Worklogs rot when logging is manual. A gentle, **throttled, opt-in** nudge keeps
+`docs/WORKLOG.md` current without nagging:
+
+- **Opt-in per project** — silent unless `docs/WORKLOG.md` already exists.
+- **Throttled** — at most one reminder per 30 min per project (state under
+  `~/.claude/.worklog-reminder/`).
+- **Non-blocking** — surfaces as a `systemMessage`, never interrupts.
+
+## How it works
+
+```json
+// ~/.claude/settings.json
+"hooks": {
+  "Stop": [{ "hooks": [{ "type": "command",
+    "command": "bash \"$HOME/.claude/hooks/worklog-reminder.sh\"",
+    "timeout": 5 }] }]
+}
+```
+
+On session stop → the script checks for a stale `docs/WORKLOG.md` → if stale,
+prints a one-line reminder to run `/document`.
+
+## The `/document` workflow
+
+`/document` (the `document` skill) summarizes the session — files changed,
+decisions, follow-ups — and appends a dated entry to `docs/WORKLOG.md`. Entry
+format: date+time, summary, changes, decisions, follow-ups.
+
+## Cross-machine note
+
+The hook + `document` skill are **machine-local** today. Tracking
+`~/.claude/hooks/worklog-reminder.sh` and `~/.claude/skills/document/` in chezmoi
+for replication is a [ROADMAP](../../ROADMAP.md) item.
+
+## Links
+
+- Hook: `~/.claude/hooks/worklog-reminder.sh`
+- Settings: `~/.claude/settings.json`
+- Worklog: `~/coding/docs/WORKLOG.md`
+- More on hooks: see the [update-config skill] and Claude Code docs

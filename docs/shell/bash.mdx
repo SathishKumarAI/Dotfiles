@@ -1,0 +1,46 @@
+---
+title: bash
+description: Portable login shell — tool bootstrap and aliases, mirrored with zsh.
+status: live
+tags: [shell, bash]
+---
+
+# bash
+
+**Intro.** The portable fallback shell. Sources `/etc/bashrc`, prepends
+`~/.local/bin` and `~/bin` to `PATH`, and bootstraps mise, starship, zoxide,
+fzf, and conda. Config: `chezmoi/dot_bashrc` → `~/.bashrc`.
+
+## Why this
+
+bash is everywhere — keeping it fully configured means scripts and remote/minimal
+sessions behave the same as your daily zsh. The fancy interactive features
+(ghost-text suggestions, syntax highlighting) live only in [zsh](./zsh.mdx); bash
+keeps the shared essentials.
+
+## Install / enable
+
+Managed by chezmoi — already live. To re-apply: `chezmoi apply ~/.bashrc`.
+
+## Usage — aliases
+
+| Alias | Expands to |
+|-------|-----------|
+| `ll` / `la` / `l` | `ls -alF` / `ls -A` / `ls -CF` (color) |
+| `lg` | `lazygit` |
+| `v` | `nvim` |
+| `g` / `gs` / `gd` / `gp` / `gl` | `git` / `status` / `diff` / `push` / `log --oneline -20` |
+| `dc` | `docker compose` |
+| `..` / `...` | `cd ..` / `cd ../..` |
+| `cls` | `clear` |
+
+## Customization
+
+- **Drop-ins:** put extra snippets in `~/.bashrc.d/*` — they're sourced
+  automatically at the end (machine-local, not tracked by chezmoi).
+- Edit the tracked file via `chezmoi edit ~/.bashrc` then `chezmoi apply`.
+
+## Links
+
+- Config: `chezmoi/dot_bashrc`
+- Related: [zsh](./zsh.mdx) · [starship](./starship.mdx) · [zoxide](./zoxide.mdx)

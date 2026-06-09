@@ -1,0 +1,42 @@
+---
+title: AI Coding
+description: Claude Code, vetted skills, hooks, MCP servers, parallel-agent workflows, and the Anthropic SDK.
+status: live
+tags: [ai, claude, agents, overview]
+---
+
+# AI Coding
+
+The AI/agent layer for faster, **safer** coding and large-scale project work.
+Built around **Claude Code** with a security-conscious config (deny-list, vetted
+skills only), automated worklogging, MCP integrations, and a git-worktree
+workflow for running multiple agents in parallel.
+
+| Page | What |
+|------|------|
+| [claude-code](./claude-code.mdx) | The CLI, settings, deny-list, memory system |
+| [skills](./skills.mdx) | Vetted skill marketplaces + the install script |
+| [hooks](./hooks.mdx) | Worklog Stop hook + the `/document` workflow |
+| [mcp-servers](./mcp-servers.mdx) | Configured + recommended MCP servers |
+| [agent-workflows](./agent-workflows.mdx) | Git-worktree parallel agents for large projects |
+| [sdk](./sdk.mdx) | Anthropic Python/Node SDK |
+
+## Design principles
+
+1. **Safe by default** — a Claude Code deny-list blocks destructive bash
+   (`rm`, `git reset --hard`, force-push, package uninstalls). Risky work uses
+   `.sh` scripts you run yourself.
+2. **Vetted only** — skills/plugins are security-reviewed before install; the
+   `caveman` plugin uses the plugin path, never the `curl|bash` one-liner.
+3. **Documented** — a Stop hook nudges `/document` so each session lands in
+   `docs/WORKLOG.md`.
+4. **Parallel + isolated** — large refactors fan out across **git worktrees** so
+   agents never clobber each other.
+
+## Sources
+
+Recommendations here are backed by 2026 research — see
+[references](../index.mdx#references-research-behind-the-recommendations). The
+authoritative local guide is
+[`setup/CLAUDE_TOOLS_GUIDE.md`](../../setup/CLAUDE_TOOLS_GUIDE.md) and
+[`~/coding/CLAUDE.md`](../../../CLAUDE.md).

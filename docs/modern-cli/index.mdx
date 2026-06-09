@@ -1,0 +1,73 @@
+---
+title: Modern CLI Tools
+description: ripgrep, fd, bat, eza, delta, fzf — faster, safer replacements for grep/find/cat/ls/diff.
+status: missing
+tags: [cli, modern, ripgrep, fd, bat, eza, delta, fzf, recommended]
+---
+
+# Modern CLI Tools
+
+**Intro.** A set of fast, `.gitignore`-aware, syntax-highlighted replacements for
+the classic Unix tools. The shell configs **already reference** them (zsh aliases
+`ls→eza`, `cat→bat`; fzf uses fd + bat preview), but most aren't installed yet —
+this page covers them and ships a draft installer.
+
+> Status on this host: `fzf` ❌, `rg` ❌, `fd` ❌, `bat` ❌, `eza` ❌, `delta` ❌
+> (zsh already aliases them *when present*, so installing just lights them up).
+
+## Why these (what each replaces, and why)
+
+| Tool | Replaces | Why chosen |
+|------|----------|-----------|
+| **ripgrep** (`rg`) | grep | Orders of magnitude faster; respects `.gitignore` (skips `node_modules`/build dirs) by default |
+| **fd** | find | Simple syntax, smart-case, `.gitignore`-aware; powers fzf's file search |
+| **bat** | cat | Syntax highlighting + line numbers + git gutter; **plain when piped** so scripts are unaffected |
+| **eza** | ls | Icons, git status, `--tree`; the **maintained successor to the deprecated `exa`** |
+| **delta** | diff/pager | Syntax-highlighted, side-by-side git diffs; pairs with git + lazygit |
+| **fzf** | (new) | Interactive fuzzy finder — the glue for `Ctrl-T`/`Ctrl-R`/`Alt-C` and `zellij-pick` |
+
+**Why "safer":** ripgrep/fd respecting `.gitignore` means searches don't wander
+into secrets/build junk; bat staying plain in pipes avoids corrupting scripted
+output. These are the consensus 2026 modern-CLI baseline
+([linuxteck](https://www.linuxteck.com/modern-linux-tools/)).
+
+## Install / enable
+
+Installer: **`setup/install-modern-cli.sh`** — **distro-aware** (dnf on
+Rocky/Fedora, pacman on Arch, apt on Debian/Ubuntu) with a `cargo install` /
+prebuilt-binary fallback for whatever isn't packaged, then verifies each binary.
+
+```bash
+sudo bash setup/install-modern-cli.sh
+# under the hood it picks the right manager, e.g.:
+#   Rocky:  sudo dnf install -y ripgrep fd-find bat fzf ; cargo install eza git-delta
+#   Arch:   sudo pacman -S ripgrep fd bat fzf eza git-delta
+```
+
+After install, the existing zsh aliases activate automatically (they're guarded
+by `command -v`). delta also needs a tiny gitconfig change:
+
+```ini
+[core]
+    pager = delta
+[delta]
+    navigate = true
+    line-numbers = true
+```
+
+## Usage cheatsheet
+
+| Task | Command |
+|------|---------|
+| Search code | `rg "pattern"` (add `-t py`, `-i`, `-l`) |
+| Find files | `fd name` / `fd -e py` |
+| View file | `bat file.py` |
+| List dir | `eza -l --git` / `eza --tree` |
+| Review diff | `git diff` (via delta) |
+| Fuzzy pick | `Ctrl-T` (files), `Ctrl-R` (history), `Alt-C` (cd) |
+
+## Links
+
+- Aliases already in: `chezmoi/dot_zshrc` (eza/bat/fzf blocks)
+- Research: [linuxteck — modern Linux tools 2026](https://www.linuxteck.com/modern-linux-tools/)
+- Related: [zsh](../shell/zsh.mdx) · [git](../git/git-config.mdx)

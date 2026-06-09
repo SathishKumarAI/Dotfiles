@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# agent-worktree — manage git worktrees for parallel AI coding agents.
+# Each agent gets an isolated working dir sharing one .git store, so parallel
+# sessions never clobber each other. See docs/ai-coding/agent-workflows.mdx.
+#
+# Usage:
+#   agent-worktree create <task> [sparse-path...]   # new worktree + branch
+#   agent-worktree list                             # show worktrees
+#   agent-worktree clean <task>                     # remove a finished worktree
+#
+# Worktrees are created as siblings of the repo: ../<repo>-<task> on branch <task>.
+
+set -euo pipefail
+
+die() { printf '\033[1;31merror:\033[0m %s\n' "$1" >&2; exit 1; }
+
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "not inside a git repo"
+
+repo_root=$(git rev-parse --show-toplevel)
+repo_name=$(basename "$repo_root")
+parent=$(dirname "$repo_root")
+
+cmd="${1:-}"; shift || true
+
+case "$cmd" in
+  create)
+    task="${1:-}"; shift || true
+    [ -n "$task" ] || die "usage: agent-worktree create <task> [sparse-path...]"
+    dir="$parent/${repo_name}-${task}"
+    [ -e "$dir" ] && die "$dir already exists"
+
+    if [ "$#" -gt 0 ]; then
+      # Large repo: only check out the given paths to save disk/IO.
+      git worktree add --no-checkout -b "$task" "$dir"
+      git -C "$dir" sparse-checkout init --cone
+      git -C "$dir" sparse-checkout set "$@"
+      git -C "$dir" checkout
+    else
+      git worktree add -b "$task" "$dir"
+    fi
+    printf '\033[1;32m✓\033[0m worktree: %s  (branch: %s)\n' "$dir" "$task"
+    printf '  run your agent there, e.g.:  cd %q && claude\n' "$dir"
+    ;;
+
+  list)
+    git worktree list
+    ;;
+
+  clean)
+    task="${1:-}"; shift || true
+    [ -n "$task" ] || die "usage: agent-worktree clean <task>"
+    dir="$parent/${repo_name}-${task}"
+    git worktree remove "$dir"
+    printf '\033[1;32m✓\033[0m removed %s (branch %s kept — delete with: git branch -d %s)\n' \
+      "$dir" "$task" "$task"
+    ;;
+
+  *)
+    grep '^#' "$0" | sed 's/^# \{0,1\}//'
+    exit 1
+    ;;
+esac

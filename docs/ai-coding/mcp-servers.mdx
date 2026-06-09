@@ -1,0 +1,56 @@
+---
+title: MCP Servers
+description: Configured MCP servers plus recommended additions (GitHub, Postgres, Playwright) with rationale.
+status: live
+tags: [ai, claude, mcp, recommended]
+---
+
+# MCP Servers
+
+**Intro.** MCP (Model Context Protocol) servers connect Claude Code to systems it
+doesn't understand natively — GitHub, databases, browsers, your calendar. This
+page lists what's **configured** and a curated set of **recommended additions**,
+with the reasoning behind each.
+
+## Configured now
+
+| Server | Status | Use |
+|--------|--------|-----|
+| Vercel (`vercel@claude-plugins-official`) | ✅ OAuth | Deploys, logs, projects |
+| Gmail (claude.ai) | ✅ authenticated | Read/send email |
+| Google Drive (claude.ai) | ✅ authenticated | Read/search files |
+| Google Calendar (claude.ai) | ✅ authenticated | Check/create events |
+
+Auth state is tracked in `~/.claude/.credentials.json` /
+`~/.claude/mcp-needs-auth-cache.json` (secrets — never commit).
+
+## Recommended additions (what / how / why)
+
+> **Why cap the count:** 2026 guidance is to run **2–3 to start and keep it under
+> 5–7** — more connected servers create tool-bloat that *degrades* agent
+> performance ([TurboDocx 2026](https://www.turbodocx.com/blog/best-claude-code-skills-plugins-mcp-servers)).
+> Pick the ones matching your daily workflow.
+
+| Server | Why chosen | How |
+|--------|-----------|-----|
+| **GitHub** | Highest-impact for most devs — turns Claude from code generator into a participant in issues/PRs/reviews. You already use `gh`. | `claude mcp add github` (or the official GitHub MCP) + a fine-scoped PAT / `gh` auth |
+| **Postgres** | Explore schema, relationships, and run read queries in natural language without leaving the session — useful for the data/ML projects. | `claude mcp add postgres` with a **read-only** connection string |
+| **Playwright** | Browser automation + E2E checks for the web projects (Pickleball app, portfolio); pairs with the verification skills. | `claude mcp add playwright` (official Microsoft Playwright MCP) |
+
+**Why these three specifically:** they match this machine's actual work — git
+(every repo), databases (RAG/Medical/loan-default projects), and web/E2E (the
+Next.js apps) — and they're the consistently top-ranked, well-maintained servers
+in 2026 round-ups. Figma/Slack/Linear are good but only add them if that tool is
+in your daily loop.
+
+## Safety notes
+
+- Use **read-only** DB credentials for the Postgres server.
+- Scope GitHub tokens minimally; prefer `gh auth` over a broad PAT.
+- Never commit credentials — MCP auth lives outside the repo.
+
+## Links
+
+- Configured state: `~/.claude/.credentials.json` (local, secret)
+- Guide: [`setup/CLAUDE_TOOLS_GUIDE.md`](../../setup/CLAUDE_TOOLS_GUIDE.md)
+- Related: [agent-workflows](./agent-workflows.mdx)

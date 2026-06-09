@@ -1,0 +1,48 @@
+---
+title: git config
+description: Global git settings — aliases, rebase-on-pull, diff3 conflicts, gh credential helper.
+status: live
+tags: [git, config]
+---
+
+# git config
+
+**Intro.** Global `~/.gitconfig` (chezmoi `dot_gitconfig`): identity, `main` as
+default branch, nvim editor, rebase-on-pull, auto-setup-remote on push, diff3
+conflict style, and GitHub auth via the **gh CLI credential helper**.
+
+## Why these choices
+
+| Setting | Why |
+|---------|-----|
+| `pull.rebase = true` | Linear history, no noisy merge commits on pull |
+| `push.autoSetupRemote = true` | `git push` works on new branches without `-u` |
+| `merge.conflictstyle = diff3` | Shows the common ancestor in conflicts — easier resolution |
+| `diff.colorMoved = default` | Distinguishes moved lines from real changes |
+| `core.editor = nvim` | Matches the rest of the setup |
+| gh credential helper | No stored tokens; `gh auth` manages GitHub creds |
+
+## Aliases
+
+| Alias | Expands |
+|-------|---------|
+| `git st` | `status` |
+| `git co` / `br` / `ci` | `checkout` / `branch` / `commit` |
+| `git lg` | `log --oneline --graph --decorate -20` |
+| `git last` | `log -1 HEAD --stat` |
+| `git unstage` | `reset HEAD --` |
+| `git amend` | `commit --amend --no-edit` |
+
+(Shell-level shortcuts `g`, `gs`, `gd`, `gp`, `gl`, `ga`, `gco`… are in
+[bash](../shell/bash.mdx)/[zsh](../shell/zsh.mdx).)
+
+## Customization
+
+- Pager is `less -FRX`; switch to **delta** for syntax-highlighted diffs once
+  installed — see [Modern CLI](../modern-cli/index.mdx).
+- Edit via `chezmoi edit ~/.gitconfig`.
+
+## Links
+
+- Config: `chezmoi/dot_gitconfig`
+- Related: [lazygit](./lazygit.mdx) · [delta](../modern-cli/index.mdx)

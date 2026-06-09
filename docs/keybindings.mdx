@@ -1,0 +1,75 @@
+---
+title: Keybindings Cheatsheet
+description: Cross-tool keyboard reference hub — the essentials, with links to full per-tool tables.
+status: live
+tags: [keybindings, cheatsheet]
+---
+
+# Keybindings Cheatsheet
+
+The most-used keys across every tool. This is a **hub** — full per-tool tables
+live in each feature doc and in the canonical
+[`md files/KEYBOARD-SHORTCUTS.md`](../md%20files/KEYBOARD-SHORTCUTS.md) (with a
+printable cheatsheet image). `C+S` = `Ctrl+Shift`; `Super` = Windows key.
+
+## Tier 1 — every session
+
+| Key | Action | Tool |
+|-----|--------|------|
+| `Ctrl + Space` | App launcher | rofi (`Super + Space` → wofi on this host) |
+| `Ctrl + Shift + D` / `E` | Split pane H / V | [wezterm](./terminal/wezterm.mdx) |
+| `Ctrl + Shift + H/J/K/L` | Move between panes | wezterm |
+| `Ctrl + Shift + T` / `W` | New / close tab | wezterm |
+| `Ctrl + Shift + C` / `V` | Copy / paste | wezterm |
+| `Ctrl + A` then key | Multiplexer prefix | [zellij](./terminal/zellij.mdx) / tmux |
+
+## Shell (zsh)
+
+| Key | Action |
+|-----|--------|
+| `→` / `End` / `Ctrl + Space` | Accept autosuggestion |
+| `Ctrl + T` | Fuzzy file search (fzf + fd, bat preview) |
+| `Ctrl + R` | Fuzzy history search |
+| `Alt + C` | Fuzzy `cd` into subdir |
+
+See [shell/zsh](./shell/zsh.mdx).
+
+## Editor (neovim, leader = Space)
+
+| Key | Action |
+|-----|--------|
+| `Space w` / `Space q` | Save / quit |
+| `Space e` | File explorer |
+| `Ctrl + h/j/k/l` | Move between windows |
+| `J` / `K` (visual) | Move selection down / up |
+
+See [editor/neovim](./editor/neovim.mdx).
+
+## Launcher menus (GNOME custom shortcuts)
+
+| Key | Action |
+|-----|--------|
+| `Super + Space` | wofi app launcher (this host) |
+| `Super + Shift + V` | Clipboard history (cliphist) |
+| `Super + .` | Emoji picker |
+| `Super + =` | Calculator |
+| `Super + \` | SSH menu |
+| `Super + Escape` | Power menu |
+
+See [launcher/rofi-scripts](./launcher/rofi-scripts.mdx) and
+[desktop/gnome](./desktop/gnome.mdx).
+
+## Window management (GNOME)
+
+| Key | Action |
+|-----|--------|
+| `Super + Q` | Close window |
+| `Super + ↑ / ↓` | Maximize / minimize |
+| `Super + ← / →` | Snap left / right |
+| `Super + [ / ]` | Prev / next workspace |
+| `Alt + Tab` | Switch windows |
+
+## Full references
+
+- [`md files/KEYBOARD-SHORTCUTS.md`](../md%20files/KEYBOARD-SHORTCUTS.md) — complete, with frequency tiers + cheatsheet image
+- [wezterm](./terminal/wezterm.mdx#keybindings) · [zellij](./terminal/zellij.mdx#keybindings) · [neovim](./editor/neovim.mdx#keybindings) · [git](./git/git-config.mdx) · [lazygit](./git/lazygit.mdx)
