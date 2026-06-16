@@ -118,9 +118,7 @@ if [ -f "$HOME/.wezterm.lua" ]; then
     log_success "Added: ~/.wezterm.lua"
 else
     DOTFILES_REPO="$REPO_ROOT"
-    # Seed from the canonical chezmoi-managed config, NOT dotfiles/wizterm/ —
-    # that copy is the original Windows variant (enable_wayland=true crashes on
-    # this GNOME box, and Ctrl+Shift+D collides scroll vs split-pane).
+    # Seed from the canonical chezmoi-managed config (single source of truth).
     if [ -f "$DOTFILES_REPO/chezmoi/dot_wezterm.lua" ]; then
         cp "$DOTFILES_REPO/chezmoi/dot_wezterm.lua" "$HOME/.wezterm.lua"
         chezmoi add "$HOME/.wezterm.lua"

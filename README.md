@@ -125,7 +125,6 @@ Dotfiles/
 │
 ├── dotfiles/                           # Legacy configs (Windows origin)
 │   ├── starship/starship.toml          #   Original starship config
-│   ├── wizterm/.wezterm.lua            #   Original WezTerm config (Windows)
 │   ├── Zellij/config.kdl               #   Original Zellij config
 │   └── windows_setup/                  #   Windows-specific setup docs
 │       ├── conda/setup.md
