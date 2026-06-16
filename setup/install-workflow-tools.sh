@@ -38,6 +38,35 @@ cargo_get() { have cargo || return 1; cargo install --locked "$@"; }
 uv_get()    { have uv    || return 1; uv tool install "$@"; }
 go_get()    { have go    || return 1; go install "$@"; }
 
+# Fetch a prebuilt release archive from GitHub and drop named binaries into
+# ~/.local/bin — no compiler, no sudo. Works on any glibc x86_64 Linux.
+#   gh_release_bin <owner/repo> <asset-substring> <bin1> [bin2] ...
+gh_release_bin() {
+  local repo="$1" asset="$2"; shift 2
+  command -v curl >/dev/null 2>&1 || return 1
+  local url
+  url=$(curl -fsSL "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null \
+        | grep -oE '"browser_download_url": *"[^"]*'"$asset"'[^"]*"' \
+        | head -1 | grep -oE 'https://[^"]*') || return 1
+  [ -n "$url" ] || return 1
+  local tmp; tmp=$(mktemp -d) || return 1
+  local f="$tmp/${url##*/}"
+  curl -fsSL -o "$f" "$url" || { rm -rf "$tmp"; return 1; }
+  case "$f" in
+    *.zip)         ( cd "$tmp" && unzip -qo "$f" ) ;;
+    *.tar.gz|*.tgz) tar -xzf "$f" -C "$tmp" ;;
+    *.tar.xz)      tar -xJf "$f" -C "$tmp" ;;
+  esac
+  mkdir -p "$HOME/.local/bin"
+  local b src
+  for b in "$@"; do
+    src=$(find "$tmp" -type f -name "$b" | head -1) || true
+    [ -n "$src" ] && install -m755 "$src" "$HOME/.local/bin/$b"
+  done
+  rm -rf "$tmp"
+  have "$1"   # success iff the first requested binary is now on PATH
+}
+
 # install <bin-to-check> <method1> [method2] ...
 # Tries each method (a quoted shell snippet) until one succeeds.
 install() {
@@ -76,7 +105,10 @@ fi
 step "Shell & navigation"
 install zoxide   "pm_get zoxide"            "cargo_get zoxide"
 install atuin    "cargo_get atuin"          "pm_get atuin"
-install yazi     "cargo_get yazi-fm yazi-cli"
+# yazi-fm/yazi-cli on crates.io now panic under `cargo install` (upstream
+# packaging change), so prefer the prebuilt binary; cargo path is the fallback.
+install yazi     "gh_release_bin sxyazi/yazi x86_64-unknown-linux-gnu.zip yazi ya" \
+                 "pm_get yazi"
 install tldr     "cargo_get tealdeer"       "pm_get tealdeer"
 
 step "Git & dev loop"
@@ -109,7 +141,7 @@ step "Data science"
 install vd       "uv_get visidata"                       # visidata -> `vd`
 install csvlens  "cargo_get csvlens"
 install duckdb   "pm_get duckdb"            "curl https://install.duckdb.org | sh"
-install mlr      "pm_get miller"            "go_get github.com/johnkerl/miller/cmd/mlr@latest"
+install mlr      "pm_get miller"            "go_get github.com/johnkerl/miller/v6/cmd/mlr@latest"
 
 step "Local AI / LLM"
 install ollama   "curl -fsSL https://ollama.com/install.sh | sh"

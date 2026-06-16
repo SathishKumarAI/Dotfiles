@@ -30,8 +30,17 @@ config.text_background_opacity = 0.9
 config.window_padding = { left = 8, right = 8, top = 6, bottom = 6 }
 config.window_decorations = "RESIZE"
 config.window_close_confirmation = "NeverPrompt"
+-- Fallback geometry if the mux can't maximize (e.g. headless / no GUI).
 config.initial_cols = 140
 config.initial_rows = 38
+
+-- Start maximized so the window fills the screen on every launch. Maximize
+-- (not ToggleFullScreen) keeps the tab bar + window controls visible; F11
+-- still toggles true borderless fullscreen on demand.
+wezterm.on("gui-startup", function(cmd)
+  local _, _, window = wezterm.mux.spawn_window(cmd or {})
+  window:gui_window():maximize()
+end)
 
 -- Tab bar
 config.enable_tab_bar = true
@@ -118,8 +127,11 @@ config.keys = {
   { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
   { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
 
-  -- Font size
-  { key = "+", mods = "CTRL", action = act.IncreaseFontSize },
+  -- Font size. `+` is Shift+`=` on US layouts, so a bare CTRL+`+` never
+  -- matches (the real event is CTRL|SHIFT). Bind the physical `=` for the
+  -- easy press and `+` under CTRL|SHIFT so both key combos work.
+  { key = "=", mods = "CTRL", action = act.IncreaseFontSize },
+  { key = "+", mods = "CTRL|SHIFT", action = act.IncreaseFontSize },
   { key = "-", mods = "CTRL", action = act.DecreaseFontSize },
   { key = "0", mods = "CTRL", action = act.ResetFontSize },
 
