@@ -73,6 +73,7 @@ Window management (snap / size). `Super` = the OS meta key:
 | `Super + Left` / `Right` | Snap window to left / right half |
 | `Super + Up` / `Down` | Maximize / restore |
 | `Super + Enter` / `F11` | Fullscreen toggle |
+| `Super + h` / `Leader + ,` | Minimize window (`act.Hide`) |
 | `Leader + h` / `l` | Snap left / right half |
 | `Leader + m` / `c` | Maximize / center |
 
@@ -94,6 +95,26 @@ Leader layer (tmux-style). `Leader` = `Ctrl+a`, press then the next key:
 | `Leader + w` / `n` | Switch / create-named workspace |
 | `Leader + Tab` / `]` | Next workspace (`Shift+Tab` = previous) |
 | `Leader + b` | Toggle the tab bar on/off |
+| `Leader + ,` | Minimize window |
+| `Leader + u` | Attach the persistent `unix` mux session |
+| `Leader + o` | Keyboard URL hints — label links, type to open |
+| `Leader + Shift+O` | Toggle background opacity (0.92 ↔ solid) |
+
+Mouse: drag to select **copies to clipboard + primary**; **middle-click pastes**
+the primary selection; `Ctrl+Click` opens a link.
+
+## Persistent sessions (`unix` mux)
+
+A background mux server keeps panes/tabs alive across GUI restarts/crashes.
+
+```bash
+wezterm connect unix     # launch attached to the persistent server
+# or, in a running window: Leader+u (act.AttachDomain "unix")
+```
+
+Close the window and the shells keep running; reconnect with the same command.
+Plain `wezterm` stays non-persistent (kept opt-in so the normal launch + maximize
+path is unchanged).
 
 The status bar shows the active workspace (left) and a `LEADER` / mode badge
 (right, e.g. `RESIZE`) so you always know which modal layer is live.
@@ -114,6 +135,7 @@ All Catppuccin Mocha:
 - Custom tab titles: `index  <process-icon> title`, active tab in Mauve, `[Z]` when zoomed.
 - Status bar: workspace pill (left), `LEADER` / mode badge (right).
 - Visual bell flash (audible bell stays off); smooth cursor blink.
+- Font ligatures on (`harfbuzz_features` calt/liga/clig): `==` `!=` `=>` `->` connect.
 
 ## Customization
 

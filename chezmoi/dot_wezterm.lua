@@ -20,6 +20,9 @@ config.font = wezterm.font_with_fallback({
 })
 config.font_size = 12.5
 config.line_height = 1.15
+-- Ligatures + contextual alternates (JetBrainsMono Nerd Font ships them):
+-- == -> != => become connected glyphs. calt/clig = context-aware shaping.
+config.harfbuzz_features = { "calt=1", "liga=1", "clig=1" }
 
 -- Catppuccin Mocha
 config.color_scheme = "Catppuccin Mocha"
@@ -109,6 +112,18 @@ wezterm.on("toggle-tab-bar", function(window)
     overrides.enable_tab_bar = true
   else
     overrides.enable_tab_bar = false
+  end
+  window:set_config_overrides(overrides)
+end)
+
+-- Toggle background transparency: flip between the configured 0.92 and fully
+-- solid (1.0) on the fly — handy when a screenshot/readability needs no bleed.
+wezterm.on("toggle-opacity", function(window)
+  local overrides = window:get_config_overrides() or {}
+  if overrides.window_background_opacity == 1.0 then
+    overrides.window_background_opacity = nil  -- back to config default (0.92)
+  else
+    overrides.window_background_opacity = 1.0
   end
   window:set_config_overrides(overrides)
 end)
@@ -253,6 +268,13 @@ config.scrollback_lines = 10000
 -- (configured in ~/.zshrc; bash does not get them).
 config.default_prog = { "/bin/zsh", "--login" }
 
+-- Persistent local sessions. A unix mux domain keeps panes/tabs alive in a
+-- background server, so they survive closing/crashing the GUI. Attach with
+-- `Leader+u` (act.AttachDomain) or from a shell: `wezterm connect unix`.
+-- For always-persistent launches, run `wezterm connect unix` instead of plain
+-- `wezterm` (left opt-in so the normal launch path / maximize stays simple).
+config.unix_domains = { { name = "unix" } }
+
 -- Launch menu: multiple profiles in one click (Zsh first = default)
 config.launch_menu = {
   { label = " Zsh", args = { "/bin/zsh", "--login" } },
@@ -375,6 +397,22 @@ config.keys = {
   { key = "F", mods = "LEADER|SHIFT", action = act.ToggleFullScreen },
   -- Hide/show the tab bar from the keyboard (no hover-reveal exists in WezTerm).
   { key = "b", mods = "LEADER", action = act.EmitEvent("toggle-tab-bar") },
+  -- Minimize the window (act.Hide). Super+H also minimizes via GNOME.
+  { key = "h", mods = "SUPER", action = act.Hide },
+  { key = ",", mods = "LEADER", action = act.Hide },
+  -- Persistent sessions: attach the unix mux domain (survives GUI restart).
+  { key = "u", mods = "LEADER", action = act.AttachDomain("unix") },
+  -- Keyboard URL hints: label every link, type to pick, opens in browser.
+  { key = "o", mods = "LEADER", action = act.QuickSelectArgs({
+    label = "open url",
+    patterns = { "https?://\\S+" },
+    action = wezterm.action_callback(function(window, pane)
+      local url = window:get_selection_text_for_pane(pane)
+      if url and url ~= "" then wezterm.open_with(url) end
+    end),
+  }) },
+  -- Toggle background transparency (0.92 <-> solid).
+  { key = "O", mods = "LEADER|SHIFT", action = act.EmitEvent("toggle-opacity") },
   -- Enter modal resize mode (status bar shows RESIZE); hjkl resize, Esc exits.
   { key = "r", mods = "LEADER", action = act.ActivateKeyTable({ name = "resize_pane", one_shot = false }) },
   -- App/command suggestions: one fuzzy switcher over launch-menu apps, open
@@ -419,6 +457,12 @@ config.key_tables = {
 -- Mouse bindings
 config.mouse_bindings = {
   { event = { Up = { streak = 1, button = "Left" } }, mods = "CTRL", action = act.OpenLinkAtMouseCursor },
+  -- Copy-on-select: finishing a left-drag copies to clipboard + primary.
+  { event = { Up = { streak = 1, button = "Left" } }, mods = "NONE",
+    action = act.CompleteSelection("ClipboardAndPrimarySelection") },
+  -- Middle-click pastes the primary selection (X11-style).
+  { event = { Down = { streak = 1, button = "Middle" } }, mods = "NONE",
+    action = act.PasteFrom("PrimarySelection") },
 }
 
 -- Hyperlinks: keep the built-in URL detection, then add a GitHub issue/PR

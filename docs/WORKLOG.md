@@ -1,5 +1,31 @@
 # Worklog
 
+## 2026-06-16 20:36 — WezTerm: minimize keybind + persistent sessions + URL hints + copy-on-select + ligatures
+
+**Summary:** Additive WezTerm round. Keyboard minimize, a persistent unix mux
+domain, keyboard URL hints, copy-on-select / middle-click paste, opacity toggle,
+and font ligatures. No decorations change (kept the clean borderless look).
+
+**Changes (`chezmoi/dot_wezterm.lua`):**
+- Minimize: `Super+h` / `Leader+,` → `act.Hide` (no titlebar buttons added).
+- Persistent sessions: `config.unix_domains = {{name="unix"}}`; `Leader+u`
+  attaches (`act.AttachDomain`); `wezterm connect unix` for persistent launch.
+- Keyboard URL hints: `Leader+o` → `QuickSelectArgs` over `https?://` + callback `wezterm.open_with`.
+- Opacity toggle: `toggle-opacity` event (0.92 ↔ 1.0), `Leader+Shift+O`.
+- Copy-on-select (`CompleteSelection ClipboardAndPrimarySelection`) + middle-click
+  paste (`PasteFrom PrimarySelection`) mouse bindings.
+- Font ligatures: `harfbuzz_features = calt/liga/clig`.
+- Docs: `docs/terminal/wezterm.mdx` keybind tables + persistent-sessions section.
+
+**Decisions:**
+- Minimize via keybind only (user choice) — `window_decorations="RESIZE"` kept,
+  no Chrome-style buttons (would need TITLE or INTEGRATED_BUTTONS + fancy tab bar).
+- unix mux left opt-in (not `default_gui_startup_args`) so the maximize-on-launch
+  path stays simple and doesn't double-spawn windows.
+
+**Verified:** `wezterm ls-fonts` valid; `chezmoi apply --force`; spawned a live new
+window clean.
+
 ## 2026-06-16 20:19 — personalize.sh orchestrator + provisioning architecture doc
 
 **Summary:** Added a single re-runnable "make this machine mine" script that
