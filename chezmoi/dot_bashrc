@@ -63,6 +63,7 @@ alias gl='git log --oneline -20'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias cls='clear'
+alias wtp='wezterm connect unix'   # persistent wezterm mux session
 
 # bashrc.d drop-in
 if [ -d ~/.bashrc.d ]; then

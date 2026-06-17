@@ -111,6 +111,8 @@ alias gco='git checkout'
 alias gb='git branch'
 alias gcm='git commit -m'
 alias gst='git stash'
+# wezterm persistent session (unix mux — survives GUI close/crash)
+alias wtp='wezterm connect unix'
 # zellij + maintenance
 alias zj='zellij-pick'            # fzf session picker (attach/new)
 alias dev='zellij --layout dev'   # editor + shells + git workspace
