@@ -7,9 +7,11 @@ local config = wezterm.config_builder()
 config.front_end = "WebGpu"
 config.max_fps = 120
 config.animation_fps = 120
--- GNOME/Mutter explicit-sync (wp_linux_drm_syncobj) crashes wezterm's native
--- Wayland backend (Protocol error os error 71). Use XWayland to avoid it.
-config.enable_wayland = false
+-- Native Wayland. XWayland is unavailable in this session (XOpenDisplay fails),
+-- so enable_wayland=false made wezterm fail to start entirely. If the old
+-- Mutter explicit-sync crash ("Protocol error os error 71") returns, upgrade
+-- wezterm or switch front_end below to "OpenGL".
+config.enable_wayland = true
 
 -- Font
 config.font = wezterm.font_with_fallback({
@@ -41,7 +43,11 @@ config.window_background_gradient = {
 
 -- Window
 config.window_padding = { left = 8, right = 8, top = 6, bottom = 6 }
-config.window_decorations = "RESIZE"
+-- Borderless. Under native Wayland (GNOME/Mutter) "RESIZE" still let Mutter draw
+-- a server-side titlebar; "NONE" removes it for a clean edge. Window starts
+-- maximized and snaps via keybinds, so the lost resize border isn't missed
+-- (GNOME Super+drag still moves/resizes). Revert to "RESIZE" if you want borders.
+config.window_decorations = "NONE"
 config.window_close_confirmation = "NeverPrompt"
 -- Fallback geometry if the mux can't maximize (e.g. headless / no GUI).
 config.initial_cols = 140
@@ -292,6 +298,85 @@ config.launch_menu = {
 -- are untouched; this just adds a second, modal way to drive panes/workspaces.
 config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 1000 }
 
+-- Quick-select copy: type the Leader+Space hint, then a letter, to copy any
+-- match to the clipboard. These ADD to WezTerm's built-in patterns (URLs, etc).
+config.quick_select_patterns = {
+  "[0-9a-f]{7,40}",                     -- git commit SHAs
+  "(?:[0-9]{1,3}\\.){3}[0-9]{1,3}",     -- IPv4 addresses
+  "0x[0-9a-fA-F]+",                     -- hex literals
+  "[~./][\\w./@%+-]+",                  -- file paths
+  "[\\w.+-]+@[\\w.-]+\\.[A-Za-z]{2,}",  -- email addresses
+}
+
+-- Cheatsheet overlay (Leader+?). WezTerm has no text-overlay API, so this writes
+-- the keymap to a temp file and pages it in a new tab (q to close). Keep in sync
+-- with the binds below when you add/remove keys.
+local CHEATSHEET = [[
+  WezTerm keybindings — Leader = Ctrl+a (then a key within 1s)
+
+  PANES
+    Ctrl+Shift+d / e        split horizontal / vertical
+    Leader+| / -            split horizontal / vertical
+    Ctrl+Shift+h/j/k/l      focus pane left/down/up/right
+    Ctrl+Shift+Enter        zoom pane (toggle)   |  Leader+z  zoom
+    Ctrl+Shift+x            close pane           |  Leader+x  close
+    Leader+p                pick pane by letter
+    Leader+r                resize mode (hjkl, Esc exits)
+    Ctrl+Shift+Alt+H/J/K/L  resize pane
+
+  TABS
+    Ctrl+Shift+t            new tab    |  Ctrl+Shift+w / Leader+q  close
+    Ctrl+Tab / Ctrl+Shift+Tab   next / prev tab
+    Alt+1..9                jump to tab 1..9
+
+  WORKSPACES (apps)
+    Leader+n                new named workspace
+    Leader+w                workspace switcher (fuzzy)
+    Leader+Tab / Leader+]   next workspace   |  Leader+Shift+Tab  prev
+    Ctrl+Shift+Space        fuzzy switcher (apps/tabs/workspaces/commands)
+
+  SCROLLBACK & SEARCH  (needs shell integration, on by default)
+    Leader+Up / Down        jump to previous / next shell prompt
+    Leader+y                copy the LAST command's output
+    Leader+[                copy mode (vim motions)
+    Ctrl+Shift+f / Leader+f search
+    Ctrl+Shift+PageUp/Down  scroll half page
+
+  SELECT / COPY
+    Leader+Space            quick-select (URLs, SHAs, IPs, paths, emails)
+    Leader+o                open a URL on screen in the browser
+    Leader+e                char / emoji picker (copies)
+    Ctrl+Shift+c / v        copy / paste     |  drag = copy, middle-click = paste
+
+  WINDOW
+    Super+Left / Right      snap to left / right half   (Leader+h / l too)
+    Super+Up / Down         maximize / restore
+    Leader+m / c            maximize / center
+    Super+Return / F11      fullscreen        |  Leader+Shift+F  fullscreen
+    Super+h / Leader+,      minimize
+    Leader+b                toggle tab bar
+    Leader+Shift+O          toggle transparency
+
+  LAUNCH
+    Ctrl+Shift+p            profile launcher  |  Ctrl+Shift+z  Zellij in new tab
+    Ctrl+Shift+Alt+P        command palette
+    Leader+u                attach persistent mux session  (shell: wtp)
+    Leader+?                this cheatsheet
+
+  Font: Ctrl+= / Ctrl+- / Ctrl+0   bigger / smaller / reset
+]]
+
+local function show_cheatsheet(window, pane)
+  local path = os.tmpname()
+  local f = io.open(path, "w")
+  if not f then return end
+  f:write(CHEATSHEET)
+  f:close()
+  window:perform_action(act.SpawnCommandInNewTab({
+    args = { "bash", "-lc", "less -R " .. path .. "; rm -f " .. path },
+  }), pane)
+end
+
 -- Keybindings
 config.keys = {
   -- Pane splitting
@@ -436,6 +521,24 @@ config.keys = {
       end
     end),
   }) },
+
+  -- Cheatsheet overlay (pages the full keymap in a new tab; q closes it).
+  { key = "?", mods = "LEADER", action = wezterm.action_callback(show_cheatsheet) },
+
+  -- Shell-integration nav (OSC 133): jump between shell prompts in scrollback.
+  { key = "UpArrow", mods = "LEADER", action = act.ScrollToPrompt(-1) },
+  { key = "DownArrow", mods = "LEADER", action = act.ScrollToPrompt(1) },
+  -- Copy the LAST command's output (its semantic "Output" zone) to the clipboard.
+  { key = "y", mods = "LEADER", action = wezterm.action_callback(function(window, pane)
+    local zones = pane:get_semantic_zones("Output")
+    if not zones or #zones == 0 then
+      window:toast_notification("WezTerm", "No command output captured yet", nil, 2000)
+      return
+    end
+    local text = pane:get_text_from_semantic_zone(zones[#zones])
+    window:copy_to_clipboard(text or "", "ClipboardAndPrimarySelection")
+    window:toast_notification("WezTerm", "Copied last command output", nil, 1500)
+  end) },
 }
 
 -- Modal key-tables. Activated by leader chords above; status bar shows the mode.

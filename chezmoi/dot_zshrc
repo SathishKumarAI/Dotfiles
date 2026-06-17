@@ -120,6 +120,22 @@ alias up='update-all'             # pacman+AUR+mise+chezmoi+flatpak
 # mkdir + cd in one
 mkcd() { mkdir -p "$1" && cd "$1"; }
 
+# WezTerm shell integration (OSC 133 semantic prompts). Marks where each prompt
+# and command output begin/end so WezTerm can jump prompt-to-prompt (Leader+Up/
+# Down) and copy the last command's output (Leader+y). Self-contained — this box
+# has no system wezterm.sh. No-op outside WezTerm.
+if [[ "$TERM_PROGRAM" == "WezTerm" || -n "$WEZTERM_PANE" ]]; then
+    __wt_precmd() {
+        local ret=$?
+        printf '\033]133;D;%s\007' "$ret"   # end of previous command's output
+        printf '\033]133;A\007'              # start of a new prompt
+    }
+    __wt_preexec() { printf '\033]133;C\007'; }   # start of command output
+    autoload -Uz add-zsh-hook
+    add-zsh-hook precmd  __wt_precmd
+    add-zsh-hook preexec __wt_preexec
+fi
+
 # Syntax highlighting (valid cmd = green, bad = red as you type).
 # MUST be sourced LAST — it wraps the line editor.
 if [ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
