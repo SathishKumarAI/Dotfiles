@@ -64,6 +64,39 @@ General:
 | `C+S + Z` | Zellij in a new tab |
 | `F11` | Fullscreen |
 | `Ctrl + Click` | Open link under cursor |
+| `C+S + Space` | Fuzzy switcher — apps, tabs, workspaces, commands |
+
+Window management (snap / size). `Super` = the OS meta key:
+
+| Key | Action |
+|-----|--------|
+| `Super + Left` / `Right` | Snap window to left / right half |
+| `Super + Up` / `Down` | Maximize / restore |
+| `Super + Enter` / `F11` | Fullscreen toggle |
+| `Leader + h` / `l` | Snap left / right half |
+| `Leader + m` / `c` | Maximize / center |
+
+> Snapping uses WezTerm's window-geometry API. On GNOME Wayland the compositor
+> may override it — GNOME's own `Super+Left/Right` tiling always works as a fallback.
+
+Leader layer (tmux-style). `Leader` = `Ctrl+a`, press then the next key:
+
+| Key | Action |
+|-----|--------|
+| `Leader + a` | Send a literal `Ctrl+a` to the shell |
+| `Leader + \|` / `-` | Split horizontal / vertical |
+| `Leader + z` / `x` | Zoom / close pane |
+| `Leader + p` | Visual pane picker |
+| `Leader + r` | Resize mode → `hjkl`/arrows resize, `Esc`/`Enter` exits |
+| `Leader + [` / `Space` | Copy mode / quick-select |
+| `Leader + e` | Emoji / glyph picker |
+| `Leader + f` | Search scrollback |
+| `Leader + w` / `n` | Switch / create-named workspace |
+| `Leader + Tab` / `]` | Next workspace (`Shift+Tab` = previous) |
+| `Leader + b` | Toggle the tab bar on/off |
+
+The status bar shows the active workspace (left) and a `LEADER` / mode badge
+(right, e.g. `RESIZE`) so you always know which modal layer is live.
 
 ## Launch menu profiles (`Ctrl+Shift+P`)
 
@@ -71,12 +104,25 @@ Zsh (default) · Bash · Zellij · Zellij (new "work" session) · Python REPL ·
 Node REPL · btop. Profiles use bare command names so they resolve via PATH on
 any host.
 
+## Visuals
+
+All Catppuccin Mocha:
+
+- Vertical gradient background (`#1e1e2e → #181825 → #11111b`) under the existing 0.92 opacity.
+- Inactive panes dimmed (`inactive_pane_hsb`) so the focused pane stands out.
+- Scrollbar enabled; selection / cursor / split-line colors themed.
+- Custom tab titles: `index  <process-icon> title`, active tab in Mauve, `[Z]` when zoomed.
+- Status bar: workspace pill (left), `LEADER` / mode badge (right).
+- Visual bell flash (audible bell stays off); smooth cursor blink.
+
 ## Customization
 
 - Font/size: `config.font`, `config.font_size` (12.5), `line_height` (1.15).
-- Opacity: `window_background_opacity = 0.92`.
+- Opacity: `window_background_opacity = 0.92`; gradient: `window_background_gradient`.
 - Add a profile: append to `config.launch_menu`.
-- Add a key: append to `config.keys`.
+- Add a key: append to `config.keys`; modal keys live in `config.key_tables`.
+- Leader is `Ctrl+a` (`config.leader`); tab-process icons in the `PROC_ICONS` map.
+- Pane dim: `inactive_pane_hsb`. Tab-bar toggle: `Leader+b`.
 
 ## Troubleshooting
 
