@@ -1,5 +1,24 @@
 # Worklog
 
+## 2026-06-16 22:45 — Hover-reveal taskbar (Dash to Panel intellihide)
+
+**Summary:** System-wide auto-hiding taskbar that reveals on mouse hover, for the
+Rocky/GNOME 49 Wayland desktop.
+
+**Changes:**
+- `setup/install-hover-taskbar.sh` (new): installs Dash to Panel from EGO
+  (version-matched, no sudo, idempotent — the existing `gnome-taskbar.sh` is
+  pacman-only and won't run on Rocky) and writes intellihide dconf with
+  `intellihide-use-pressure=false` so the panel reveals on plain hover, not a
+  pressure push. Ran it — installed v73, dconf applied. Activates after logout.
+
+**Decisions:** Dash to Panel (window-button taskbar) over Hide Top Bar — "tab
+hover" implies window buttons, not just the top bar. Noted Hide Top Bar
+(`hidetopbar@mathieu.bidon.ca`) as the top-bar-only alternative in the script.
+
+**Follow-ups:**
+- [ ] Log out / back in to load the taskbar.
+
 ## 2026-06-16 22:37 — WezTerm poweruser layer + niri-like tiling (PaperWM) + AATWS
 
 **Summary:** Built out the WezTerm config (cheatsheet, shell integration,
