@@ -4,8 +4,10 @@
 
 set -euo pipefail
 
-echo "=== Installing WezTerm via Flatpak ==="
-flatpak install -y flathub org.wezfurlong.wezterm
+echo "=== Installing WezTerm via Flatpak (per-user, no sudo) ==="
+# --user keeps this sudo-free: remote + app land in ~/.local/share/flatpak.
+flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install --user -y flathub org.wezfurlong.wezterm
 
 echo ""
 echo "=== Creating wrapper script ==="

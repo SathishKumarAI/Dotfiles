@@ -1,5 +1,30 @@
 # Worklog
 
+## 2026-06-16 22:52 — Main installer: wire in new GNOME scripts + sudo/user phases
+
+**Summary:** Made the Rocky orchestrator actually install the new tiling + hover
+taskbar, and split it into sudo (system/dnf) and user (no-sudo, ~/.local) phases
+selectable from the command line.
+
+**Changes:**
+- `setup/setup-rocky.sh`: every step now tagged `run sudo …` or `run user …`.
+  Added steps for `install-tiling.sh` (PaperWM+AATWS) and `install-hover-taskbar.sh`
+  (Dash to Panel). New flags: `--user-only` / `--no-sudo` (run only no-sudo steps),
+  `--sudo-only` (only dnf steps), default = all. Moved `install-workflow-tools.sh`
+  to the sudo phase (it shells out to `sudo dnf`).
+- `setup/setup.sh`: forwards `--user-only/--no-sudo/--sudo-only` to the per-OS
+  orchestrator (safe empty-array expansion so no-arg runs don't break); dry-run
+  now prints the phase next to each step.
+- `setup/install-wezterm.sh`: `flatpak --user` (+ `--user` flathub remote) so the
+  WezTerm step is genuinely sudo-free and belongs in the user phase.
+
+**Decisions:** One file, two phases via a flag (not two separate scripts) — keeps
+the step order/source of truth in one place. Verified: dry-run lists phases,
+`--user-only` skips all sudo steps.
+
+**Follow-ups:**
+- [ ] Full run on a fresh box: `bash setup/setup.sh` (or `--user-only` without root).
+
 ## 2026-06-16 22:45 — Hover-reveal taskbar (Dash to Panel intellihide)
 
 **Summary:** System-wide auto-hiding taskbar that reveals on mouse hover, for the

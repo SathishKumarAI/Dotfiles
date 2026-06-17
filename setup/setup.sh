@@ -16,11 +16,12 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-DRY=0; FORCE_OS=""
+DRY=0; FORCE_OS=""; PASS=()   # PASS = args forwarded to the per-OS orchestrator
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --dry-run) DRY=1 ;;
     --os)      FORCE_OS="${2:-}"; shift ;;
+    --user-only|--no-sudo|--sudo-only) PASS+=("$1") ;;   # phase selection
     -h|--help) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown arg: $1 (try --help)"; exit 2 ;;
   esac; shift
@@ -56,11 +57,11 @@ target="$HERE/setup-$OS.sh"
 [ -f "$target" ] || { echo "missing orchestrator: $target"; exit 1; }
 
 if [ "$DRY" = 1 ]; then
-  echo "[dry-run] would run: bash $target"
-  echo "--- its steps ---"
-  grep -E '^\s*run ' "$target" | sed -E 's/^[[:space:]]*run /  - /'
+  echo "[dry-run] would run: bash $target ${PASS[*]:-}"
+  echo "--- its steps (phase | script) ---"
+  grep -E '^\s*run (sudo|user) ' "$target" | sed -E 's/^[[:space:]]*run /  - /'
   exit 0
 fi
 
-echo "Running $target ..."
-exec bash "$target"
+echo "Running $target ${PASS[*]:-}..."
+exec bash "$target" ${PASS[@]+"${PASS[@]}"}
