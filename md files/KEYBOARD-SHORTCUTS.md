@@ -268,23 +268,27 @@ blanks the screen at 3 min and suspends at 10 min (battery) / 30 min (AC).
 | `Ctrl + Shift + F` | Search in terminal |
 | `Ctrl + Shift + PageUp` | Scroll up half page |
 | `Ctrl + Shift + PageDown` | Scroll down half page |
-| `Ctrl + +` | Increase font size |
+| `Ctrl + =` (or `Ctrl + +`) | Increase font size |
 | `Ctrl + -` | Decrease font size |
 | `Ctrl + 0` | Reset font size |
-| `F11` | Toggle fullscreen |
+| `F11` | Toggle fullscreen (borderless) |
 | `Ctrl + Shift + P` | Launch menu (profiles) |
 | `Ctrl + Shift + Alt + P` | Command palette |
 | `Ctrl + Shift + Z` | Open Zellij in new tab |
 | `Ctrl + Click` | Open link under cursor |
 
+> WezTerm **starts maximized** (fills the screen) on every launch. Use `F11`
+> for borderless fullscreen, `Super + Up` to un-maximize back to a window.
+
 ## WezTerm — Launch Menu Profiles
 
-> Triggered by `Ctrl + Shift + P`
+> Triggered by `Ctrl + Shift + P`. The default shell is **Zsh** (`default_prog`),
+> so a plain new tab/window opens Zsh; this menu picks any of the others.
 
 | Profile | Description |
 |---------|-------------|
-| Bash | Default login shell |
-| Zsh | Alternative shell |
+| Zsh | Default login shell (autosuggestions, syntax highlighting) |
+| Bash | Alternative login shell |
 | Zellij | Terminal multiplexer session |
 | Zellij (new) | Named zellij session "work" |
 | Python REPL | Python 3.12 interactive |
@@ -321,7 +325,7 @@ blanks the screen at 3 min and suspends at 10 min (battery) / 30 min (AC).
 |----------|--------|
 | (type) → grey ghost text | Inline suggestion from history (fish/Warp-style) |
 | `→` / `End` | Accept the whole suggestion |
-| `Ctrl + Space` | Accept the whole suggestion (explicit binding) |
+| `Ctrl + Space` | Accept suggestion — **but** GNOME grabs `Ctrl+Space` globally for rofi, so it fires the launcher first. Use `→`/`End`, or rebind rofi to `Super+Space`. |
 | `Ctrl + T` | Fuzzy file search (fzf + fd, bat preview) |
 | `Ctrl + R` | Fuzzy history search |
 | `Alt + C` | Fuzzy `cd` into a subdirectory |
@@ -335,11 +339,11 @@ blanks the screen at 3 min and suspends at 10 min (battery) / 30 min (AC).
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  LAUNCH             WINDOWS            WORKSPACES           ║
-║  Super+Space  Rofi  Super+Q    Close   Super+[  Prev WS    ║
-║  Super+T  Terminal  Super+Up   Max     Super+]  Next WS    ║
+║  Ctrl+Space  Rofi   Super+Q    Close   Super+[  Prev WS    ║
+║  Super+Ret Terminal Super+Up   Max     Super+]  Next WS    ║
 ║  Super+B  Browser   Super+Down Min     Super+Home First    ║
 ║  Super+E  Files     Super+←/→  Snap    Super+End  Last     ║
-║  Super+C  VS Code   Alt+Tab    Switch                      ║
+║  Super+\  SSH menu  Alt+Tab    Switch                      ║
 ║                                                             ║
 ║  WEZTERM PANES      WEZTERM TABS       ZELLIJ              ║
 ║  C+S+D  Split H     C+S+T  New tab    Ctrl+A  Prefix      ║

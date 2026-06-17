@@ -1,0 +1,57 @@
+---
+title: atuin
+description: Searchable, context-rich shell history — fuzzy Ctrl-R over every command you've run.
+status: live
+tags: [shell, history, atuin]
+---
+
+# atuin
+
+**Intro.** Replaces the shell's flat history file with a SQLite database that
+records each command plus context (cwd, exit code, duration, host, time). `Ctrl-R`
+opens a full-screen fuzzy search over all of it. Initialized in both shells with
+`atuin init <shell> --disable-up-arrow` so the existing up-arrow prefix-search
+behaviour is preserved and atuin only owns `Ctrl-R`.
+
+## Why this
+
+Default `Ctrl-R` is a single, fragile reverse-i-search. atuin gives ranked fuzzy
+search, filters (this dir / this host / global), exit-code awareness, and optional
+end-to-end-encrypted sync across machines. Single Rust binary, shell-agnostic.
+
+## Install / enable
+
+```bash
+# binary at ~/.cargo/bin/atuin; shells auto-init it when present
+atuin --version
+# one-time: pull existing shell history into atuin's db
+atuin import auto
+```
+
+> The hook sets `$ATUIN_SESSION`. `atuin stats` errors outside an initialized
+> interactive shell — that's expected; open a fresh zsh/bash and it works.
+
+## Usage
+
+| Command / key | Does |
+|---------------|------|
+| `Ctrl-R` | Fuzzy-search history (full screen) |
+| `atuin search <q>` | Search from the command line |
+| `atuin search --cwd . <q>` | Limit to the current directory |
+| `atuin stats` | Top commands / usage stats |
+| `atuin import auto` | Import existing `~/.zsh_history` etc. |
+
+Inside the `Ctrl-R` UI: type to filter, `Tab` cycles scope (global / host / dir),
+`Enter` runs, `Esc` cancels.
+
+## Customization
+
+- Config: `~/.config/atuin/config.toml` (search mode, filter mode, theme).
+- Sync (optional): `atuin register` / `atuin login` then `atuin sync` — history
+  is end-to-end encrypted before upload.
+
+## Links
+
+- Upstream: <https://github.com/atuinsh/atuin>
+- Config source: `chezmoi/dot_zshrc`, `chezmoi/dot_bashrc` (init blocks)
+- Related: [zsh](./zsh.mdx) · [zoxide](./zoxide.mdx)

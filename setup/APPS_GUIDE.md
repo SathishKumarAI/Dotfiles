@@ -21,6 +21,24 @@
 | **Logseq** | Flatpak | Graph-based outliner (Obsidian alternative) | App menu |
 | **draw.io** | Flatpak | Diagrams, flowcharts, architecture drawings | App menu |
 
+### Productivity & Office
+
+Installed via `bash setup/install-productivity.sh` (Flatpak/Flathub).
+
+| App | Install Method | Purpose | How to Launch |
+|-----|---------------|---------|---------------|
+| **LibreOffice** | Flatpak | Full office suite — docs, spreadsheets, slides | `flatpak run org.libreoffice.LibreOffice` |
+| **ONLYOFFICE** | Flatpak | Office suite with strong MS Office (docx/xlsx/pptx) fidelity | App menu |
+| **Calibre** | Flatpak | E-book library management and format conversion | App menu |
+
+### Focus / Deep Work
+
+| App | Install Method | Purpose | How to Launch |
+|-----|---------------|---------|---------------|
+| **Solanum** | Flatpak | Pomodoro timer for focused work sessions | `flatpak run org.gnome.Solanum` |
+| **Flameshot** | Flatpak | Screenshot + annotation, handy for docs/notes | App menu / bind to PrtSc |
+| **Joplin** | Flatpak | Markdown note-taking for session capture | App menu |
+
 ---
 
 ## Why Each App
@@ -70,6 +88,82 @@ Alternative to Obsidian with a different philosophy — outliner-first instead o
 
 ### draw.io
 Architecture diagrams, flowcharts, system design drawings. Export as PNG/SVG for README files or Obsidian notes. Useful for your system-design-interview-prep repo.
+
+---
+
+## Workflow CLI Tools
+
+Installed via `bash setup/install-workflow-tools.sh` — OS-independent (detects
+dnf/pacman/apt/zypper/brew, falls back to cargo/uv/go/gh). Idempotent.
+
+| Tool | Replaces / adds | Purpose |
+|------|-----------------|---------|
+| **zoxide** | `cd` | Jump to frecent dirs: `z proj` |
+| **atuin** | Ctrl-R history | Searchable, syncable shell history |
+| **fzf** | — | Fuzzy finder powering file/branch/history pickers |
+| **yazi** | `ranger` | Fast terminal file manager |
+| **tealdeer** (`tldr`) | `man` | Practical command examples |
+| **delta** | git diff pager | Side-by-side, syntax-highlighted diffs |
+| **direnv** | — | Auto-load per-project env on `cd` |
+| **just** | `make` | Project command runner |
+| **pre-commit** | — | Lint/format git hooks |
+| **lazydocker** | docker CLI | TUI for containers/images |
+| **gh-dash** | — | GitHub PR/issue dashboard (gh extension) |
+| **entr** | — | Run a command when files change |
+| **jq** | — | JSON query/transform |
+| **yq** | — | YAML/TOML query/transform |
+| **xh** | `curl`/httpie | Fast, friendly HTTP client |
+| **uv** | pip + venv | Ultra-fast Python package/venv manager |
+| **ruff** | flake8 + black | Python lint + format (one fast binary) |
+| **btop** | `top` | Resource monitor (CPU/GPU/mem) |
+| **dust** | `du` | Intuitive disk-usage tree |
+| **hyperfine** | `time` | Statistical CLI benchmarking |
+| **procs** | `ps` | Modern process viewer |
+| **duf** | `df` | Friendly disk-free overview |
+
+### Tier 2 — data, local AI & extras
+
+| Tool | Purpose |
+|------|---------|
+| **visidata** (`vd`) | Interactive TUI for CSV/Parquet/JSON/SQLite |
+| **csvlens** | `less` for CSV files |
+| **duckdb** | In-process SQL over CSV/Parquet/JSON |
+| **miller** (`mlr`) | awk/sed/cut for CSV/JSON pipelines |
+| **ollama** | Run local LLMs (Llama/Mistral/…) |
+| **llm** | CLI for querying models, logs to SQLite |
+| **nvtop** | GPU monitor (Linux + GPU) |
+| **glow** | Render Markdown in the terminal |
+| **gum** | Pretty prompts/menus for shell scripts |
+| **navi** | Interactive cheatsheets (Ctrl-G) |
+| **watchexec** | Re-run commands on file change |
+| **git-cliff** | Generate changelogs from commits |
+| **croc** | Secure machine-to-machine file transfer |
+
+**Shell wiring** (add to chezmoi-managed bashrc/zshrc):
+```bash
+eval "$(zoxide init bash)"
+eval "$(atuin init bash)"
+eval "$(direnv hook bash)"
+# ~/.gitconfig: [core] pager = delta
+```
+
+---
+
+## Validating the install
+
+After running `setup.sh` (or any installer), check everything landed:
+
+```bash
+bash setup/validate-install.sh          # PASS/FAIL/WARN per tool + app, logs result
+bash setup/validate-install.sh --fix     # re-run idempotent installers for anything missing, then re-check
+bash setup/validate-install.sh --quiet    # summary only
+```
+
+- Read-only by default (no sudo); `--fix` re-runs the installers (sudo).
+- Exit code `0` only when nothing failed — usable in CI / a Stop hook.
+- Optional/hardware-dependent tools (e.g. `nvtop`, needs a GPU) report **WARN**, not FAIL.
+- Logs are written to `setup/logs/validate-<timestamp>.log` (gitignored).
+- `setup.sh` runs this automatically as its final step.
 
 ---
 

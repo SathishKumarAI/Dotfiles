@@ -1,7 +1,7 @@
 ---
 title: Modern CLI Tools
 description: ripgrep, fd, bat, eza, delta, fzf — faster, safer replacements for grep/find/cat/ls/diff.
-status: missing
+status: live
 tags: [cli, modern, ripgrep, fd, bat, eza, delta, fzf, recommended]
 ---
 
@@ -9,11 +9,12 @@ tags: [cli, modern, ripgrep, fd, bat, eza, delta, fzf, recommended]
 
 **Intro.** A set of fast, `.gitignore`-aware, syntax-highlighted replacements for
 the classic Unix tools. The shell configs **already reference** them (zsh aliases
-`ls→eza`, `cat→bat`; fzf uses fd + bat preview), but most aren't installed yet —
-this page covers them and ships a draft installer.
+`ls→eza`, `cat→bat`; fzf uses fd + bat preview), and they're now **installed and
+active** on this host. This page covers what each does and how to use it.
 
-> Status on this host: `fzf` ❌, `rg` ❌, `fd` ❌, `bat` ❌, `eza` ❌, `delta` ❌
-> (zsh already aliases them *when present*, so installing just lights them up).
+> Status on this host: `fzf` ✅ `rg` ✅ `fd` ✅ `bat` ✅ `eza` ✅ `delta` ✅
+> (zsh aliases them automatically; **delta is now wired as the git pager** —
+> see [git-config](../git/git-config.mdx)).
 
 ## Why these (what each replaces, and why)
 
@@ -45,14 +46,17 @@ sudo bash setup/install-modern-cli.sh
 ```
 
 After install, the existing zsh aliases activate automatically (they're guarded
-by `command -v`). delta also needs a tiny gitconfig change:
+by `command -v`). delta is **already wired** in `chezmoi/dot_gitconfig`:
 
 ```ini
 [core]
     pager = delta
+[interactive]
+    diffFilter = delta --color-only
 [delta]
-    navigate = true
+    navigate = true        ; n / N jump between hunks
     line-numbers = true
+    side-by-side = false    ; set true for two-column diffs
 ```
 
 ## Usage cheatsheet

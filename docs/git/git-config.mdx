@@ -38,8 +38,10 @@ conflict style, and GitHub auth via the **gh CLI credential helper**.
 
 ## Customization
 
-- Pager is `less -FRX`; switch to **delta** for syntax-highlighted diffs once
-  installed — see [Modern CLI](../modern-cli/index.mdx).
+- Pager is **delta** (syntax-highlighted diffs, wired in `[core] pager` +
+  `[interactive] diffFilter` + `[delta]`). In a diff: `n` / `N` jump between
+  hunks; set `[delta] side-by-side = true` for two-column view. See
+  [Modern CLI](../modern-cli/index.mdx).
 - Edit via `chezmoi edit ~/.gitconfig`.
 
 ## Links

@@ -55,6 +55,17 @@ if command -v fzf &>/dev/null; then
         export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
 fi
 
+# direnv — per-directory environments (.envrc auto-loads venvs / project vars).
+if command -v direnv &>/dev/null; then
+    eval "$(direnv hook zsh)"
+fi
+
+# atuin — searchable, synced shell history on Ctrl-R. Init after fzf so atuin
+# owns Ctrl-R; --disable-up-arrow keeps the prefix history-search bound above.
+if command -v atuin &>/dev/null; then
+    eval "$(atuin init zsh --disable-up-arrow)"
+fi
+
 # Inline autosuggestions (fish/Warp-style grey ghost text from history).
 # Accept whole suggestion: → (right arrow) or End. Accept one word: Ctrl-→.
 if [ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
@@ -100,6 +111,8 @@ alias gco='git checkout'
 alias gb='git branch'
 alias gcm='git commit -m'
 alias gst='git stash'
+# wezterm persistent session (unix mux — survives GUI close/crash)
+alias wtp='wezterm connect unix'
 # zellij + maintenance
 alias zj='zellij-pick'            # fzf session picker (attach/new)
 alias dev='zellij --layout dev'   # editor + shells + git workspace

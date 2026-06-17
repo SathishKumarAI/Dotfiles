@@ -10,9 +10,9 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 step() { printf '\n\033[1;35m== %s ==\033[0m\n' "$1"; }
 run() {                       # run <script> [args...] — skip if absent, continue on error
-  local s="$HERE/$1"; shift || true
-  [ -f "$s" ] || { echo "  skip (missing): $1"; return 0; }
-  echo "+ bash $1 $*"
+  local name="$1"; local s="$HERE/$name"; shift || true
+  [ -f "$s" ] || { echo "  skip (missing): $name"; return 0; }
+  echo "+ bash $name $*"
   bash "$s" "$@" || echo "  (step failed — continuing)"
 }
 
@@ -33,8 +33,17 @@ run install-automation-tools.sh
 step "Launcher menu tools (clipboard/emoji/calc)"
 run install-extras.sh
 
+step "Workflow CLI tools (zoxide/fzf/delta/uv/ruff/…)"
+run install-workflow-tools.sh
+
+step "Productivity apps (LibreOffice/ONLYOFFICE/Pomodoro/…)"
+run install-productivity.sh
+
 step "GNOME desktop — theme / fonts / keybindings"
 run gnome-desktop-setup.sh
+
+step "Validate install (health check + log)"
+run validate-install.sh
 
 cat <<'EOF'
 

@@ -8,7 +8,16 @@
 [core]
 	editor = nvim
 	autocrlf = input
-	pager = less -FRX
+	pager = delta
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true       ; n / N to jump between diff hunks
+	line-numbers = true
+	dark = true
+	side-by-side = false  ; set true for two-column diffs
 
 [pull]
 	rebase = true

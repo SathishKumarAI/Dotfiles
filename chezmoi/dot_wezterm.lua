@@ -20,18 +20,198 @@ config.font = wezterm.font_with_fallback({
 })
 config.font_size = 12.5
 config.line_height = 1.15
+-- Ligatures + contextual alternates (JetBrainsMono Nerd Font ships them):
+-- == -> != => become connected glyphs. calt/clig = context-aware shaping.
+config.harfbuzz_features = { "calt=1", "liga=1", "clig=1" }
 
 -- Catppuccin Mocha
 config.color_scheme = "Catppuccin Mocha"
 config.window_background_opacity = 0.92
 config.text_background_opacity = 0.9
 
+-- Subtle vertical Mocha gradient behind the text for depth. Stops stay close
+-- to the base/crust colors so it reads as a gentle shade, not a rainbow. The
+-- window_background_opacity above still applies, so transparency is preserved.
+config.window_background_gradient = {
+  orientation = "Vertical",
+  colors = { "#1e1e2e", "#181825", "#11111b" },
+  interpolation = "Linear",
+  blend = "Rgb",
+}
+
 -- Window
 config.window_padding = { left = 8, right = 8, top = 6, bottom = 6 }
 config.window_decorations = "RESIZE"
 config.window_close_confirmation = "NeverPrompt"
+-- Fallback geometry if the mux can't maximize (e.g. headless / no GUI).
 config.initial_cols = 140
 config.initial_rows = 38
+
+-- Start maximized so the window fills the screen on every launch. Maximize
+-- (not ToggleFullScreen) keeps the tab bar + window controls visible; F11
+-- still toggles true borderless fullscreen on demand.
+wezterm.on("gui-startup", function(cmd)
+  local _, _, window = wezterm.mux.spawn_window(cmd or {})
+  window:gui_window():maximize()
+end)
+
+-- Window management: snap to screen halves, maximize, restore, fullscreen.
+-- WezTerm exposes window geometry via the GUI window API; we compute against the
+-- active screen so left/right halves work on whatever monitor the window is on.
+-- (On Wayland the GNOME compositor may override positioning — if a snap is
+-- ignored, GNOME's own Super+Left / Super+Right tiling still works.)
+local function active_screen()
+  local screens = wezterm.gui.screens()
+  return screens.active or screens.main
+end
+
+-- Snap the window to the left or right half of the active screen.
+local function snap_half(window, side)
+  local s = active_screen()
+  if not s then return end
+  local gw = window:gui_window()
+  local half = math.floor(s.width / 2)
+  gw:set_inner_size(half, s.height)
+  if side == "left" then
+    gw:set_position(s.x, s.y)
+  else
+    gw:set_position(s.x + half, s.y)
+  end
+end
+
+wezterm.on("snap-left", function(window)
+  snap_half(window, "left")
+end)
+wezterm.on("snap-right", function(window)
+  snap_half(window, "right")
+end)
+-- Half-height/centered "restore" size — a comfortable non-maximized window.
+wezterm.on("snap-center", function(window)
+  local s = active_screen()
+  if not s then return end
+  local gw = window:gui_window()
+  local w = math.floor(s.width * 0.6)
+  local h = math.floor(s.height * 0.7)
+  gw:set_inner_size(w, h)
+  gw:set_position(s.x + math.floor((s.width - w) / 2), s.y + math.floor((s.height - h) / 2))
+end)
+wezterm.on("win-maximize", function(window)
+  window:gui_window():maximize()
+end)
+wezterm.on("win-restore", function(window)
+  window:gui_window():restore()
+end)
+
+-- Toggle the tab bar on demand. WezTerm can't reveal it on mouse-hover (no such
+-- API), so this gives keyboard control: hide it for a clean full-screen view,
+-- show it again when you need tabs. (hide_tab_bar_if_only_one_tab already hides
+-- it automatically whenever a single tab is open.)
+wezterm.on("toggle-tab-bar", function(window)
+  local overrides = window:get_config_overrides() or {}
+  if overrides.enable_tab_bar == false then
+    overrides.enable_tab_bar = true
+  else
+    overrides.enable_tab_bar = false
+  end
+  window:set_config_overrides(overrides)
+end)
+
+-- Toggle background transparency: flip between the configured 0.92 and fully
+-- solid (1.0) on the fly — handy when a screenshot/readability needs no bleed.
+wezterm.on("toggle-opacity", function(window)
+  local overrides = window:get_config_overrides() or {}
+  if overrides.window_background_opacity == 1.0 then
+    overrides.window_background_opacity = nil  -- back to config default (0.92)
+  else
+    overrides.window_background_opacity = 1.0
+  end
+  window:set_config_overrides(overrides)
+end)
+
+-- Custom tab titles: index + a Nerd Font icon for the running process + title,
+-- with the active tab accented in Mauve and a [Z] marker when the pane is zoomed.
+local PROC_ICONS = {
+  ["nvim"] = " ",
+  ["vim"] = " ",
+  ["git"] = " ",
+  ["lazygit"] = " ",
+  ["python"] = " ",
+  ["python3"] = " ",
+  ["node"] = " ",
+  ["docker"] = " ",
+  ["ssh"] = " ",
+  ["btop"] = " ",
+  ["htop"] = " ",
+  ["zellij"] = " ",
+  ["zsh"] = " ",
+  ["bash"] = " ",
+}
+
+local function tab_title(tab)
+  local title = tab.tab_title
+  if title and #title > 0 then return title end
+  return tab.active_pane.title
+end
+
+wezterm.on("format-tab-title", function(tab, _tabs, _panes, _cfg, _hover, max_width)
+  local proc = (tab.active_pane.foreground_process_name or ""):gsub(".*/", "")
+  local icon = PROC_ICONS[proc] or " "
+  local zoom = tab.active_pane.is_zoomed and " [Z]" or ""
+  local title = tab_title(tab)
+  -- Leave room for "  N  " + icon + zoom marker.
+  local budget = max_width - 8
+  if #title > budget and budget > 1 then
+    title = title:sub(1, budget - 1) .. "…"
+  end
+  local label = string.format(" %d %s%s%s ", tab.tab_index + 1, icon, title, zoom)
+  if tab.is_active then
+    return {
+      { Background = { Color = "#313244" } },
+      { Foreground = { Color = "#cba6f7" } },
+      { Attribute = { Intensity = "Bold" } },
+      { Text = label },
+    }
+  end
+  return {
+    { Background = { Color = "#181825" } },
+    { Foreground = { Color = "#6c7086" } },
+    { Text = label },
+  }
+end)
+
+-- Status bar: workspace pill on the left; leader + active key-table on the right.
+wezterm.on("update-status", function(window, _pane)
+  -- Left: active workspace name in a Mauve pill.
+  window:set_left_status(wezterm.format({
+    { Background = { Color = "#cba6f7" } },
+    { Foreground = { Color = "#1e1e2e" } },
+    { Attribute = { Intensity = "Bold" } },
+    { Text = "  " .. window:active_workspace() .. " " },
+    { Background = { Color = "#1e1e2e" } },
+    { Foreground = { Color = "#cba6f7" } },
+    { Text = " " },
+  }))
+
+  -- Right: leader indicator + modal key-table name (idle = empty).
+  local cells = {}
+  if window:leader_is_active() then
+    table.insert(cells, { Background = { Color = "#f9e2af" } })
+    table.insert(cells, { Foreground = { Color = "#1e1e2e" } })
+    table.insert(cells, { Attribute = { Intensity = "Bold" } })
+    table.insert(cells, { Text = "  LEADER " })
+    table.insert(cells, { Background = { Color = "#1e1e2e" } })
+  end
+  local kt = window:active_key_table()
+  if kt then
+    table.insert(cells, { Background = { Color = "#fab387" } })
+    table.insert(cells, { Foreground = { Color = "#1e1e2e" } })
+    table.insert(cells, { Attribute = { Intensity = "Bold" } })
+    table.insert(cells, { Text = "  " .. kt:upper() .. " " })
+  end
+  table.insert(cells, { Background = { Color = "#1e1e2e" } })
+  table.insert(cells, { Text = " " })
+  window:set_right_status(wezterm.format(cells))
+end)
 
 -- Tab bar
 config.enable_tab_bar = true
@@ -41,6 +221,15 @@ config.tab_bar_at_bottom = true
 config.tab_max_width = 28
 
 config.colors = {
+  -- Selection, cursor, scrollbar and pane-split lines (Catppuccin Mocha).
+  selection_fg = "#1e1e2e",
+  selection_bg = "#f5e0dc",
+  cursor_bg = "#f5e0dc",
+  cursor_fg = "#1e1e2e",
+  cursor_border = "#f5e0dc",
+  scrollbar_thumb = "#585b70",
+  split = "#585b70",
+  compose_cursor = "#fab387",
   tab_bar = {
     background = "#11111b",
     active_tab = { bg_color = "#313244", fg_color = "#cdd6f4" },
@@ -54,6 +243,23 @@ config.colors = {
 -- Cursor
 config.default_cursor_style = "BlinkingBlock"
 config.cursor_blink_rate = 600
+-- Smooth the blink instead of a hard on/off flash.
+config.cursor_blink_ease_in = "EaseOut"
+config.cursor_blink_ease_out = "EaseIn"
+
+-- Visual depth / clarity
+-- Dim panes that aren't focused so the active one stands out.
+config.inactive_pane_hsb = { saturation = 0.9, brightness = 0.7 }
+-- Show a scrollbar (handy with the 10k-line scrollback).
+config.enable_scroll_bar = true
+-- Non-intrusive flash on the bell (audible bell stays Disabled below).
+config.visual_bell = {
+  fade_in_duration_ms = 75,
+  fade_out_duration_ms = 75,
+  fade_in_function = "EaseIn",
+  fade_out_function = "EaseOut",
+  target = "CursorColor",
+}
 
 -- Scrollback
 config.scrollback_lines = 10000
@@ -61,6 +267,13 @@ config.scrollback_lines = 10000
 -- Shell — zsh so autosuggestions / syntax-highlighting / fzf+fd are active
 -- (configured in ~/.zshrc; bash does not get them).
 config.default_prog = { "/bin/zsh", "--login" }
+
+-- Persistent local sessions. A unix mux domain keeps panes/tabs alive in a
+-- background server, so they survive closing/crashing the GUI. Attach with
+-- `Leader+u` (act.AttachDomain) or from a shell: `wezterm connect unix`.
+-- For always-persistent launches, run `wezterm connect unix` instead of plain
+-- `wezterm` (left opt-in so the normal launch path / maximize stays simple).
+config.unix_domains = { { name = "unix" } }
 
 -- Launch menu: multiple profiles in one click (Zsh first = default)
 config.launch_menu = {
@@ -74,6 +287,10 @@ config.launch_menu = {
   { label = " Node REPL", args = { "node" } },
   { label = " btop", args = { "btop" } },
 }
+
+-- Leader key (tmux-style). Ctrl+a then a second key. Existing Ctrl+Shift binds
+-- are untouched; this just adds a second, modal way to drive panes/workspaces.
+config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 1000 }
 
 -- Keybindings
 config.keys = {
@@ -118,8 +335,11 @@ config.keys = {
   { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
   { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
 
-  -- Font size
-  { key = "+", mods = "CTRL", action = act.IncreaseFontSize },
+  -- Font size. `+` is Shift+`=` on US layouts, so a bare CTRL+`+` never
+  -- matches (the real event is CTRL|SHIFT). Bind the physical `=` for the
+  -- easy press and `+` under CTRL|SHIFT so both key combos work.
+  { key = "=", mods = "CTRL", action = act.IncreaseFontSize },
+  { key = "+", mods = "CTRL|SHIFT", action = act.IncreaseFontSize },
   { key = "-", mods = "CTRL", action = act.DecreaseFontSize },
   { key = "0", mods = "CTRL", action = act.ResetFontSize },
 
@@ -143,12 +363,116 @@ config.keys = {
 
   -- Toggle fullscreen
   { key = "F11", mods = "NONE", action = act.ToggleFullScreen },
+
+  -- Window management (snap halves / maximize / restore / fullscreen).
+  -- Super+Arrows mirror GNOME's tiling muscle memory; leader variants also below.
+  { key = "LeftArrow", mods = "SUPER", action = act.EmitEvent("snap-left") },
+  { key = "RightArrow", mods = "SUPER", action = act.EmitEvent("snap-right") },
+  { key = "UpArrow", mods = "SUPER", action = act.EmitEvent("win-maximize") },
+  { key = "DownArrow", mods = "SUPER", action = act.EmitEvent("win-restore") },
+  { key = "Return", mods = "SUPER", action = act.ToggleFullScreen },
+
+  -- Leader (Ctrl+a) chords — power-user layer, additive to everything above.
+  -- Pass a literal Ctrl+a through to the shell (readline beginning-of-line).
+  { key = "a", mods = "LEADER|CTRL", action = act.SendKey({ key = "a", mods = "CTRL" }) },
+  -- Pane splits (mnemonic | and -) and management.
+  { key = "|", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+  { key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+  { key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
+  { key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = false }) },
+  -- New OS window (Leader+Shift+N; bare Leader+n below makes a new workspace).
+  { key = "N", mods = "LEADER|SHIFT", action = act.SpawnWindow },
+  { key = "p", mods = "LEADER", action = act.PaneSelect({ alphabet = "asdfghjkl" }) },
+  { key = "f", mods = "LEADER", action = act.Search("CurrentSelectionOrEmptyString") },
+  { key = "[", mods = "LEADER", action = act.ActivateCopyMode },
+  { key = " ", mods = "LEADER", action = act.QuickSelect },
+  { key = "e", mods = "LEADER", action = act.CharSelect({ copy_on_select = true }) },
+  -- Window management via leader (Vim hjkl + arrows both work).
+  { key = "LeftArrow", mods = "LEADER", action = act.EmitEvent("snap-left") },
+  { key = "RightArrow", mods = "LEADER", action = act.EmitEvent("snap-right") },
+  { key = "h", mods = "LEADER", action = act.EmitEvent("snap-left") },
+  { key = "l", mods = "LEADER", action = act.EmitEvent("snap-right") },
+  { key = "m", mods = "LEADER", action = act.EmitEvent("win-maximize") },
+  { key = "c", mods = "LEADER", action = act.EmitEvent("snap-center") },
+  { key = "F", mods = "LEADER|SHIFT", action = act.ToggleFullScreen },
+  -- Hide/show the tab bar from the keyboard (no hover-reveal exists in WezTerm).
+  { key = "b", mods = "LEADER", action = act.EmitEvent("toggle-tab-bar") },
+  -- Minimize the window (act.Hide). Super+H also minimizes via GNOME.
+  { key = "h", mods = "SUPER", action = act.Hide },
+  { key = ",", mods = "LEADER", action = act.Hide },
+  -- Persistent sessions: attach the unix mux domain (survives GUI restart).
+  { key = "u", mods = "LEADER", action = act.AttachDomain("unix") },
+  -- Keyboard URL hints: label every link, type to pick, opens in browser.
+  { key = "o", mods = "LEADER", action = act.QuickSelectArgs({
+    label = "open url",
+    patterns = { "https?://\\S+" },
+    action = wezterm.action_callback(function(window, pane)
+      local url = window:get_selection_text_for_pane(pane)
+      if url and url ~= "" then wezterm.open_with(url) end
+    end),
+  }) },
+  -- Toggle background transparency (0.92 <-> solid).
+  { key = "O", mods = "LEADER|SHIFT", action = act.EmitEvent("toggle-opacity") },
+  -- Enter modal resize mode (status bar shows RESIZE); hjkl resize, Esc exits.
+  { key = "r", mods = "LEADER", action = act.ActivateKeyTable({ name = "resize_pane", one_shot = false }) },
+  -- App/command suggestions: one fuzzy switcher over launch-menu apps, open
+  -- tabs, workspaces and the full command list. Type to filter ("app suggestions").
+  { key = "Space", mods = "CTRL|SHIFT", action = act.ShowLauncherArgs({
+    flags = "FUZZY|LAUNCH_MENU_ITEMS|TABS|WORKSPACES|COMMANDS",
+  }) },
+  -- Move between workspaces ("apps") with the keyboard.
+  { key = "Tab", mods = "LEADER", action = act.SwitchWorkspaceRelative(1) },
+  { key = "Tab", mods = "LEADER|SHIFT", action = act.SwitchWorkspaceRelative(-1) },
+  { key = "]", mods = "LEADER", action = act.SwitchWorkspaceRelative(1) },
+
+  -- Workspaces.
+  { key = "w", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
+  { key = "n", mods = "LEADER", action = act.PromptInputLine({
+    description = "New workspace name:",
+    action = wezterm.action_callback(function(window, pane, line)
+      if line and #line > 0 then
+        window:perform_action(act.SwitchToWorkspace({ name = line }), pane)
+      end
+    end),
+  }) },
+}
+
+-- Modal key-tables. Activated by leader chords above; status bar shows the mode.
+config.key_tables = {
+  -- Resize the active pane with hjkl/arrows; Esc or Enter leaves the mode.
+  resize_pane = {
+    { key = "h", action = act.AdjustPaneSize({ "Left", 3 }) },
+    { key = "l", action = act.AdjustPaneSize({ "Right", 3 }) },
+    { key = "k", action = act.AdjustPaneSize({ "Up", 2 }) },
+    { key = "j", action = act.AdjustPaneSize({ "Down", 2 }) },
+    { key = "LeftArrow", action = act.AdjustPaneSize({ "Left", 3 }) },
+    { key = "RightArrow", action = act.AdjustPaneSize({ "Right", 3 }) },
+    { key = "UpArrow", action = act.AdjustPaneSize({ "Up", 2 }) },
+    { key = "DownArrow", action = act.AdjustPaneSize({ "Down", 2 }) },
+    { key = "Escape", action = "PopKeyTable" },
+    { key = "Enter", action = "PopKeyTable" },
+  },
 }
 
 -- Mouse bindings
 config.mouse_bindings = {
   { event = { Up = { streak = 1, button = "Left" } }, mods = "CTRL", action = act.OpenLinkAtMouseCursor },
+  -- Copy-on-select: finishing a left-drag copies to clipboard + primary.
+  { event = { Up = { streak = 1, button = "Left" } }, mods = "NONE",
+    action = act.CompleteSelection("ClipboardAndPrimarySelection") },
+  -- Middle-click pastes the primary selection (X11-style).
+  { event = { Down = { streak = 1, button = "Middle" } }, mods = "NONE",
+    action = act.PasteFrom("PrimarySelection") },
 }
+
+-- Hyperlinks: keep the built-in URL detection, then add a GitHub issue/PR
+-- shorthand (owner/repo#123 → issue link). Kept narrow on purpose so plain
+-- file paths like src/main aren't turned into bogus links.
+config.hyperlink_rules = wezterm.default_hyperlink_rules()
+table.insert(config.hyperlink_rules, {
+  regex = [[\b([\w.-]+)/([\w.-]+)#(\d+)\b]],
+  format = "https://github.com/$1/$2/issues/$3",
+})
 
 -- Misc
 config.warn_about_missing_glyphs = false

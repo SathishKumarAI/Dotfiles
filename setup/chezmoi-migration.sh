@@ -35,6 +35,11 @@ for cmd in chezmoi git; do
     fi
 done
 
+# Repo root = parent of this script's dir. Derived, not hardcoded, so the
+# fallback seeds work no matter where the repo is cloned.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 #==============================================================================
 # Step 1: Initialize chezmoi (if not already done)
 #==============================================================================
@@ -84,7 +89,7 @@ if [ -f "$HOME/.config/starship.toml" ]; then
     log_success "Added: ~/.config/starship.toml"
 else
     # Copy from the old Dotfiles repo if not yet deployed
-    DOTFILES_REPO="$HOME/coding/SathishKumarAI/Dotfiles"
+    DOTFILES_REPO="$REPO_ROOT"
     if [ -f "$DOTFILES_REPO/dotfiles/starship/starship.toml" ]; then
         mkdir -p "$HOME/.config"
         cp "$DOTFILES_REPO/dotfiles/starship/starship.toml" "$HOME/.config/starship.toml"
@@ -98,7 +103,7 @@ if [ -f "$HOME/.config/zellij/config.kdl" ]; then
     chezmoi add "$HOME/.config/zellij/config.kdl"
     log_success "Added: ~/.config/zellij/config.kdl"
 else
-    DOTFILES_REPO="$HOME/coding/SathishKumarAI/Dotfiles"
+    DOTFILES_REPO="$REPO_ROOT"
     if [ -f "$DOTFILES_REPO/dotfiles/Zellij/config.kdl" ]; then
         mkdir -p "$HOME/.config/zellij"
         cp "$DOTFILES_REPO/dotfiles/Zellij/config.kdl" "$HOME/.config/zellij/config.kdl"
@@ -112,11 +117,12 @@ if [ -f "$HOME/.wezterm.lua" ]; then
     chezmoi add "$HOME/.wezterm.lua"
     log_success "Added: ~/.wezterm.lua"
 else
-    DOTFILES_REPO="$HOME/coding/SathishKumarAI/Dotfiles"
-    if [ -f "$DOTFILES_REPO/dotfiles/wizterm/.wezterm.lua" ]; then
-        cp "$DOTFILES_REPO/dotfiles/wizterm/.wezterm.lua" "$HOME/.wezterm.lua"
+    DOTFILES_REPO="$REPO_ROOT"
+    # Seed from the canonical chezmoi-managed config (single source of truth).
+    if [ -f "$DOTFILES_REPO/chezmoi/dot_wezterm.lua" ]; then
+        cp "$DOTFILES_REPO/chezmoi/dot_wezterm.lua" "$HOME/.wezterm.lua"
         chezmoi add "$HOME/.wezterm.lua"
-        log_success "Added: ~/.wezterm.lua (from Dotfiles repo)"
+        log_success "Added: ~/.wezterm.lua (from canonical chezmoi config)"
     fi
 fi
 

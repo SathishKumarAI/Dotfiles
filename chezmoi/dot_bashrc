@@ -32,6 +32,17 @@ if command -v fzf &>/dev/null; then
     eval "$(fzf --bash 2>/dev/null)" || true
 fi
 
+# direnv — per-directory environments (.envrc auto-loads venvs / project vars).
+if command -v direnv &>/dev/null; then
+    eval "$(direnv hook bash)"
+fi
+
+# atuin — searchable, synced shell history on Ctrl-R. Init after fzf so atuin
+# owns Ctrl-R; --disable-up-arrow keeps the normal up-arrow behaviour.
+if command -v atuin &>/dev/null; then
+    eval "$(atuin init bash --disable-up-arrow)"
+fi
+
 # Conda
 if [ -f "$HOME/miniforge3/etc/profile.d/conda.sh" ]; then
     . "$HOME/miniforge3/etc/profile.d/conda.sh"
@@ -52,6 +63,7 @@ alias gl='git log --oneline -20'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias cls='clear'
+alias wtp='wezterm connect unix'   # persistent wezterm mux session
 
 # bashrc.d drop-in
 if [ -d ~/.bashrc.d ]; then

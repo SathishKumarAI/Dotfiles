@@ -1,0 +1,15 @@
+# Editor / app state — machine-local, not config
+.obsidian/
+vault/.obsidian/
+
+# LibreOffice / OpenOffice lock files (e.g. .~lock.FILE.md#)
+.~lock.*#
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Logs / temp
+*.log
+*.swp
+*~
