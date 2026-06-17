@@ -1,0 +1,62 @@
+---
+title: direnv
+description: Per-directory environments — auto-load/unload .envrc (venvs, env vars) on cd.
+status: live
+tags: [shell, environment, direnv, python]
+---
+
+# direnv
+
+**Intro.** Loads an `.envrc` file when you `cd` into a directory and unloads it
+when you leave. Keeps project-specific environment variables, `PATH` additions,
+and virtualenv activation out of your global shell and scoped to the project.
+Hooked in both shells with `eval "$(direnv hook <shell>)"`.
+
+## Why this
+
+For ML/Python work this is the big one: drop a `.envrc` in a repo and the right
+venv + env vars activate automatically on entry, deactivate on exit — no manual
+`source .venv/bin/activate`, no leaking `OPENAI_API_KEY` into every shell. Pairs
+with mise (which direnv can defer to) and with `.env` files.
+
+## Install / enable
+
+```bash
+direnv version           # binary at ~/.local/bin/direnv
+# in a project:
+echo 'layout python python3.12' > .envrc   # or: source .venv/bin/activate
+direnv allow             # REQUIRED once per .envrc (and after each edit)
+```
+
+> Security: direnv never loads an `.envrc` until you `direnv allow` it. After you
+> edit the file it's blocked again until re-allowed. `direnv deny` revokes it.
+
+## Usage
+
+| Command | Does |
+|---------|------|
+| `direnv allow` | Trust + load the current `.envrc` |
+| `direnv deny` | Revoke trust |
+| `direnv reload` | Reload after a change |
+| `direnv status` | Show what's loaded and why |
+| `direnv edit .` | Edit `.envrc` and auto-allow on save |
+
+Common `.envrc` lines:
+
+```bash
+export DATABASE_URL=postgres://localhost/dev
+dotenv                      # load a .env file
+layout python python3.12    # create/activate a venv
+use mise                    # defer runtime versions to mise
+```
+
+## Customization
+
+- Global config: `~/.config/direnv/direnv.toml` (e.g. `whitelist` trusted paths).
+- `direnv` respects mise: `use mise` in `.envrc` keeps one source of truth.
+
+## Links
+
+- Upstream: <https://direnv.net>
+- Config source: `chezmoi/dot_zshrc`, `chezmoi/dot_bashrc` (hook blocks)
+- Related: [mise](../automation/mise.mdx) · [zsh](./zsh.mdx)

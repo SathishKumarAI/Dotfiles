@@ -1,5 +1,80 @@
 # Worklog
 
+## 2026-06-16 20:08 — Wire idle CLI tools (atuin/direnv/delta) + WezTerm new-window bind + docs
+
+**Summary:** Machine efficiency pass. Three installed-but-unwired tools now
+active (atuin history, direnv per-dir env, delta git pager). Added a WezTerm
+leader bind for new windows. Documented atuin/direnv/delta with usage commands.
+All applied via `chezmoi apply --force` and verified.
+
+**Changes:**
+- `chezmoi/dot_zshrc`, `chezmoi/dot_bashrc` — added `direnv hook` and
+  `atuin init --disable-up-arrow` blocks (after fzf; up-arrow history-search kept).
+- `chezmoi/dot_gitconfig` — delta as `core.pager` + `interactive.diffFilter` +
+  `[delta]` (navigate/line-numbers/side-by-side).
+- `chezmoi/dot_wezterm.lua` — `Leader+Shift+N` → `act.SpawnWindow` (new OS window).
+- Docs (mdx, with command tables): new `docs/shell/atuin.mdx`,
+  `docs/shell/direnv.mdx`; linked from `docs/shell/index.mdx`; refreshed
+  `docs/modern-cli/index.mdx` (status missing→live, delta wired) and
+  `docs/git/git-config.mdx` (delta pager notes).
+
+**Decisions:**
+- Edited chezmoi *source* then applied (rc files are chezmoi-managed) — never
+  hand-edited `~/.zshrc` directly.
+- `--disable-up-arrow` on atuin so it only owns Ctrl-R; existing prefix
+  history-search on up-arrow preserved.
+- delta `side-by-side = false` default (toggle per-taste).
+
+**Verified:** delta renders a real diff (exit 0); direnv `version` ok; atuin wired
+(its `stats` errors outside an initialized interactive shell — expected).
+
+**Follow-ups (user, interactive):**
+- [ ] `chsh -s "$(command -v zsh)"` — make zsh the default login shell (bash still default).
+- [ ] `atuin import auto` — pull existing history into atuin.
+- [ ] Optional: `gsettings ... keyboard delay 250 / repeat-interval 20` for snappier key-repeat.
+
+## 2026-06-16 19:50 — WezTerm power-user + visualization upgrade (additive)
+
+**Summary:** Big additive pass on the WezTerm config — visual polish + tmux-style
+power-user layer + window management. Zero original settings/binds removed (0
+deletions in the lua source). Applied via `chezmoi apply --force` and verified
+live by spawning new windows against the running GUI.
+
+**Changes:**
+- `chezmoi/dot_wezterm.lua` (+266) —
+  - Visuals: Catppuccin vertical gradient background; `inactive_pane_hsb` dimming;
+    scrollbar; themed selection/cursor/split colors; visual-bell flash; cursor easing.
+  - `format-tab-title` event: `index <proc-icon> title`, Mauve active tab, `[Z]` zoom marker.
+  - `update-status` event: workspace pill (left) + `LEADER`/key-table badge (right).
+  - Leader key `Ctrl+a` + binds: splits, zoom/close, pane picker, copy/quick-select,
+    emoji, search, workspaces (switch/create/next); `resize_pane` modal key-table.
+  - Window mgmt events: snap left/right half, maximize, restore, center via
+    `gui_window` geometry API; bound to `Super+arrows` and leader.
+  - `Ctrl+Shift+Space` fuzzy switcher (apps/tabs/workspaces/commands).
+  - `Leader+b` toggle-tab-bar event (hover-reveal not supported by WezTerm).
+  - GitHub `owner/repo#123` hyperlink rule.
+- `docs/terminal/wezterm.mdx` (+50) — new Window/Leader keybind tables, Visuals section, Customization notes.
+- `setup/install-wezterm.sh` (+13) — extended printed keybinding reference.
+
+**Decisions:**
+- Additive-only per user constraint: extended existing tables (`config.colors`),
+  appended binds, occupied the unused `Ctrl+a` prefix — no clashes, nothing rebound.
+- Background = subtle gradient (no image files); status bar = leader/mode + workspace
+  only (no clock/host) per user's choices.
+- Dropped an over-broad bare `owner/repo` hyperlink rule — it linkified every file path.
+- Caught + fixed real bug during validation: `act.ShowLauncher` is a value, not
+  callable → switched to `act.ShowLauncherArgs`. Validated with `wezterm ls-fonts`
+  (show-keys ignores `--config-file`, so it's not a usable linter).
+
+**Known limits (told the user):**
+- Tab-bar mouse-hover reveal — no WezTerm API; gave `Leader+b` keyboard toggle.
+- Snap-half may be overridden by GNOME Wayland compositor; `Super+arrows` mirror
+  GNOME's own tiling as fallback.
+
+**Follow-ups:**
+- [ ] Commit the 3 changed files (still unstaged on `feat/productivity-workflow-installers`).
+- [ ] Visually eyeball gradient/status-bar in a real window; tune gradient stops if heavy.
+
 ## 2026-06-16 00:47 — WezTerm fullscreen + keybinding audit + config bug fixes
 
 **Summary:** WezTerm now launches maximized; audited all keybindings and fixed a

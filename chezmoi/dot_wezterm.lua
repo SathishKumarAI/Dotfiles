@@ -358,6 +358,8 @@ config.keys = {
   { key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
   { key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
   { key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = false }) },
+  -- New OS window (Leader+Shift+N; bare Leader+n below makes a new workspace).
+  { key = "N", mods = "LEADER|SHIFT", action = act.SpawnWindow },
   { key = "p", mods = "LEADER", action = act.PaneSelect({ alphabet = "asdfghjkl" }) },
   { key = "f", mods = "LEADER", action = act.Search("CurrentSelectionOrEmptyString") },
   { key = "[", mods = "LEADER", action = act.ActivateCopyMode },
