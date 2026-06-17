@@ -1,5 +1,30 @@
 # Worklog
 
+## 2026-06-16 20:19 — personalize.sh orchestrator + provisioning architecture doc
+
+**Summary:** Added a single re-runnable "make this machine mine" script that
+applies the post-install personalization the installers skip, and an
+architecture doc explaining the whole provisioning model.
+
+**Changes:**
+- `setup/personalize.sh` (new, executable) — idempotent orchestrator:
+  `chezmoi apply` → default-shell→zsh (`chsh`) → `atuin import` → GNOME
+  key-repeat tuning → `validate-install.sh`. Flags: `--dry-run`, `--no-chsh`.
+  Syntax + shellcheck clean.
+- `docs/setup/architecture.mdx` (new) — provisioning model: three layers
+  (packages=`setup/*.sh`, runtimes=mise, configs=chezmoi) + glue
+  (`personalize.sh`), repos involved, mermaid flow, copy-paste fresh-machine
+  run order, file map, idempotency notes.
+- `docs/setup/installation-reference.mdx` — cross-link to the architecture doc.
+
+**Decisions:**
+- Kept personalization separate from `setup.sh` (installers) — different concern,
+  re-run cadence, and failure model. `setup.sh` = packages; `personalize.sh` = config/glue.
+- `chsh` is the only interactive step (needs password); `--no-chsh` to skip.
+
+**Follow-ups:**
+- [ ] User runs `bash setup/personalize.sh` (chsh step needs password in a real TTY).
+
 ## 2026-06-16 20:08 — Wire idle CLI tools (atuin/direnv/delta) + WezTerm new-window bind + docs
 
 **Summary:** Machine efficiency pass. Three installed-but-unwired tools now
