@@ -1,0 +1,32 @@
+# robots.txt — UI-UX-FEATURES.md §12 bot taxonomy.
+# Strategy below = "let AI assistants cite us live, but keep our text out of model
+# TRAINING." Flip per your goals. Blocking Google-Extended has NO Google ranking impact.
+
+# --- search / retrieval agents: ALLOW (so you appear in AI answers + citations) ---
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: Claude-User
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+
+# --- training crawlers: DISALLOW (keep content out of model weights) ---
+# Delete these blocks if you WANT to be in training data.
+User-agent: GPTBot
+Disallow: /
+User-agent: ClaudeBot
+Disallow: /
+User-agent: Google-Extended
+Disallow: /
+User-agent: CCBot
+Disallow: /
+
+# --- everyone else (incl. Googlebot for normal search): ALLOW ---
+User-agent: *
+Allow: /
+
+Sitemap: https://example.com/sitemap.xml

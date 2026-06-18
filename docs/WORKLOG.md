@@ -1,5 +1,183 @@
 # Worklog
 
+## 2026-06-18 13:00 — Moved workspace docs library into Dotfiles repo
+
+**Summary:** Relocated `~/coding/docs/` content into `~/coding/Dotfiles/docs/` so the
+whole docs library is version-controlled with the repo.
+
+**Changes:**
+- Merged into `Dotfiles/docs/`: `guides/`, `features/`, `templates/` (incl. ai-friendly-starter),
+  and `README.md` → `LIBRARY-INDEX.md` (renamed; repo already had `index.mdx`).
+- Older standalone worklog preserved as `Dotfiles/docs/WORKLOG-coding-archive.md` (live `WORKLOG.md` untouched).
+- `~/coding/CLAUDE.md` — template location updated `~/coding/docs/templates/` → `~/coding/Dotfiles/docs/templates/`.
+- `LIBRARY-INDEX.md` — fixed stale "not a git repo" note + self-path.
+
+**Decisions:**
+- Only collision was `WORKLOG.md` → archived, not overwritten (different/older history).
+- Intended `~/coding/docs` → `Dotfiles/docs` symlink for path compatibility, but `rmdir`
+  is blocked by the no-delete deny list; left `~/coding/docs` as an empty dir and pointed
+  CLAUDE.md at the new path instead.
+
+**Follow-ups:**
+- [ ] (manual, needs your OK) recreate the symlink: `rmdir ~/coding/docs && ln -s ~/coding/Dotfiles/docs ~/coding/docs` — restores the old `~/coding/docs/...` paths.
+- [ ] Commit the moved docs to the Dotfiles repo when ready.
+
+## 2026-06-18 12:45 — Built workspace docs library + AI-friendly frontend starter
+
+**Summary:** Created a reusable docs library under `~/coding/docs/` and a copy-me
+frontend starter, all grounded in this machine's real state (HDD, miniforge python,
+chezmoi divergence — verified this session, not guessed).
+
+**Changes:**
+- `~/coding/docs/README.md` (new) — index of the whole library.
+- `~/coding/docs/guides/` (new):
+  - `MACHINE-CHEATSHEET.md` — mise/chezmoi/dnf/flatpak/systemd/GNOME + modern CLI tool map + HDD reality.
+  - `DEV-WORKFLOW.md` — project bootstrap, git/lazygit/gh, WezTerm/zellij/nvim, Python/conda, /document.
+  - `CLAUDE-CODE-GUIDE.md` — skills, marketplaces, hooks, templates, context7 MCP.
+  - `TROUBLESHOOTING.md` — HDD slowness, boot time, chezmoi diverged, mise "missing", WezTerm/Wayland, GNOME relogin.
+- `~/coding/docs/templates/ai-friendly-starter/` (new) — `index.html` (semantic SSR-ready
+  + OG + JSON-LD), `styles/tokens.css` (3-tier tokens + glass + reduced-transparency/
+  motion/contrast fallbacks), `styles/main.css` (warm-editorial anti-slop aesthetic,
+  staggered load, skip link, focus-visible), `llms.txt`, `robots.txt` (per-bot AI policy), `README.md`.
+
+**Decisions:**
+- Docs reflect verified machine facts (e.g. mise python shows "missing" because active
+  python is miniforge) rather than generic advice.
+- Starter aesthetic (Fraunces/Newsreader, rust/sage on warm paper) is a *demonstration*
+  of §11 intentionality — README tells future-me to reskin per project, keep the structure.
+
+**Follow-ups:**
+- [ ] Version `~/coding/docs/` — `git init` or move into Dotfiles (it's untracked).
+- [ ] Optional: preview the starter in a browser; reskin for a real project.
+
+## 2026-06-18 11:55 — General UI/UX feature reference (web-sourced)
+
+**Summary:** Built a general, vendor-neutral frontend UI/UX feature/pattern reference
+(not app-specific) at `~/coding/docs/features/UI-UX-FEATURES.md`. Distinct from
+FEATURES.md (which catalogs the user's own apps).
+
+**Method:** Fanned out 7 web-research agents (WebSearch + WebFetch), one per UI/UX
+domain, each returning a cited markdown section; synthesized into one doc with TOC +
+consolidated sources. Authorities: NN/g, web.dev, MDN, WCAG/W3C ARIA APG, Material
+Design, Apple HIG, Smashing, Laws of UX, USWDS, Refactoring UI.
+
+**Sections:** Layout & Navigation · Forms/Input/Data Entry · Feedback & System State ·
+Visual Design/Theming/Design Systems · Motion & Micro-interactions · Accessibility/
+Responsiveness/Performance UX (incl. WCAG 2.2 + Core Web Vitals) · Common UI Components ·
+Onboarding & Engagement · cross-cutting Laws of UX.
+
+**Changes:**
+- `~/coding/docs/features/UI-UX-FEATURES.md` (new) — ~9-section general reference checklist.
+
+**Follow-ups:**
+- [ ] Reuse as a design/review checklist for frontend repos (bujo, pickleball-shuffle, lona_access_ai, Personal-Portfolio).
+
+**Update (12:30):** Used the `frontend-design` skill + web research to APPEND two more
+sections (no deletions): §11 "Distinctive Design — Avoiding AI Slop" (bold aesthetic
+direction, characterful type, conviction color, grid-breaking layout, high-impact motion,
+atmospheric backgrounds, anti-slop blocklist) and §12 "Building AI-Friendly Sites"
+(llms.txt/llms-full.txt, semantic HTML = agent legibility, JSON-LD/OpenGraph structured
+data with honest caveats, SSR + Markdown variants for LLM extraction, MCP for agent
+actionability, robots.txt AI-bot taxonomy + trade-offs, freshness/GEO, pitfalls). TOC → 12 sections.
+
+**Update (12:10):** Added section 9 "Liquid Glass & Glassmorphism" (web-researched,
+cited) — covers `backdrop-filter` CSS essentials, legibility scrims + WCAG contrast,
+a11y fallbacks (`prefers-reduced-transparency`/`-motion`/`-contrast`, `forced-colors`),
+GPU/INP performance budget (2–3 glass layers max, iOS fixed-position jank), `@supports`
+progressive enhancement, material-level design tokens, and anti-patterns. TOC renumbered to 10 sections.
+
+## 2026-06-18 11:25 — Consolidated FEATURES.md across all ~/coding apps
+
+**Summary:** Read docs across the ~47 repos in `~/coding`, separated user-built apps
+from cloned course/learning material, and produced a single consolidated
+feature + changes reference at `~/coding/docs/features/FEATURES.md`. Covers **18 apps**.
+
+**Method:**
+- Surveyed all md/mdx docs (~1,700 files) + git remotes per dir to triage scope.
+- Fanned out read-only Explore agents (1 per heavy app, grouped for small ones) to
+  read each app's docs and return a structured `What it is / Stack / Features /
+  Key changes` section; synthesized into one doc.
+- Re-examined 6 borderline repos by reading SOURCE (not just docs): promoted
+  Pediatrics, flashcards, loan to full entries; confirmed-skip Project-Med
+  (template generator), Project_Lee (3rd-party HTML mockup), secret_valut (cred store).
+
+**Apps documented (18):** bujo, Pickleball-Vision-LLM, Dotfiles, Job-Automations,
+Nexus-Job-Automations, pickleball-shuffle, Dice_automation, resume-automation, RAG,
+insta_reels_scrap, lona_access_ai, KickStarterFiles, rocky-dev-setup,
+loan-default-prediction, Pediatrics, flashcards, loan.
+
+**Changes:**
+- `~/coding/docs/features/FEATURES.md` (new) — consolidated per-app features + changes.
+- Excluded list documents what was skipped (course clones, forks, notes/empty) + why.
+
+**Decisions:**
+- Scope = user's own apps only (per user choice); excluded forked learning material
+  even though forked under SathishKumarAI (remote alone can't distinguish).
+- Source = docs only for the main pass; source-code read reserved for the 6 borderline repos.
+- Job-Automations vs Nexus kept as separate entries (open question — Nexus may be successor).
+
+**Follow-ups:**
+- [ ] Confirm Job-Automations vs Nexus-Job-Automations: distinct, or merge as successor?
+- [ ] `~/coding/docs/` is not a git repo — decide whether to version it (e.g. move into Dotfiles).
+- [ ] Optional: script/skill to regenerate FEATURES.md as docs evolve.
+
+## 2026-06-18 10:30 — Diagnosed machine slowness: I/O-bound on spinning HDD
+
+**Summary:** Investigation only, no files changed. User asked what to clean to
+make the box faster. Root cause is hardware: `/` and `/home` both live on one
+7200rpm WD10EZEX HDD (`/sys/block/sda/queue/rotational = 1`); 12 cores idle,
+11G RAM free → I/O-bound, not space- or CPU-bound. Disk is 14% full (741G free),
+so cleaning files does almost nothing for speed.
+
+**Findings:**
+- Disk: `rl-home` XFS = 852G, 741G free; `/` (rl-root) only 70G. No user quota on `deva`.
+- `/home/deva` = 95G used. Top dirs: Documents 37G, coding 16G, .var 9.9G,
+  Downloads 7G, .cache 6.5G, .npm 3.0G, Trash 356M.
+- Boot: `graphical.target` @47.7s; userspace total 4m40s (background jobs settling).
+  Slowest units: plymouth-quit-wait 30s (harmless), docker 17s, plocate-updatedb 16s,
+  containerd 13s, unbound-anchor 12s, disk-device detection 11s (mechanical HDD).
+- Two fix-scripts already exist but were **never run** (still untracked):
+  `setup/optimize-responsiveness.sh` (tames tracker3 + disables heavy/tiling extensions,
+  no sudo) and `setup/speedup-boot.sh` (docker→socket-activation, kills plocate timer, sudo).
+
+**Decisions:** Told user plainly that disk cleanup ≠ speed; the only real fix is an
+SSD for `/` + `/home`. Did not run/delete anything (per "ask before delete" rule).
+
+**Follow-ups:**
+- [ ] Run `bash setup/optimize-responsiveness.sh` then log out/in (GNOME lag win).
+- [ ] Run `sudo bash setup/speedup-boot.sh` (~46s off boot, effect next reboot).
+- [ ] Optional space reclaim: `~/.cache` 6.5G, `npm cache clean --force` 3G, Trash 356M.
+- [ ] Hardware: add SSD, move `/` + `/home` onto it — removes the bottleneck entirely.
+
+## 2026-06-16 23:59 — validate-install: 15 "missing" tools were a PATH gap, not absent
+
+**Summary:** `validate-install.sh` reported 15/45 FAIL (eza, delta, atuin, tldr,
+xh, dust, hyperfine, procs, duf, csvlens, navi, watchexec, git-cliff, gh-dash,
+croc). All 15 already on disk — 13 in `~/.cargo/bin`, croc in mise-go bin,
+gh-dash as a gh extension. Root cause: `~/.cargo/bin` never on PATH, so the
+validator (and interactive shells) couldn't see the rust tools. Fixed PATH; now
+45 passed / 0 failed.
+
+**Changes:**
+- `chezmoi/dot_zshrc` + live `~/.zshrc` — added `$HOME/.cargo/bin` to `path` array.
+- `chezmoi/dot_bashrc` + live `~/.bashrc` — guarded append of `~/.cargo/bin` to PATH.
+- Branch scripts re-validated: `bash -n` (6 files) + `wezterm ls-fonts` (lua) +
+  `shellcheck -S warning` (5 scripts) — all clean.
+
+**Decisions:**
+- No reinstalls — tools were present; only PATH was wrong. Avoided redundant
+  cargo/go builds.
+- Edited BOTH repo `chezmoi/dot_*` and live `~/.{bash,zsh}rc`: the live chezmoi
+  source `~/.local/share/chezmoi` is diverged/broken (only holds `dot_config` +
+  `private_dot_config`, `.config: inconsistent state`), so `chezmoi apply` errors
+  and does not manage shell rc. Recorded to memory (chezmoi-source-diverged).
+
+**Follow-ups:**
+- [ ] Repair `~/.local/share/chezmoi` `.config` conflict; re-import shell rc into
+      the real chezmoi source so `chezmoi apply` works again.
+- [ ] After relogin, run `validate-install.sh` to confirm 45/45 in a fresh shell.
+- [ ] `.claude/` + `setup/.claude/` are untracked — decide gitignore vs commit.
+
 ## 2026-06-16 22:52 — Main installer: wire in new GNOME scripts + sudo/user phases
 
 **Summary:** Made the Rocky orchestrator actually install the new tiling + hover

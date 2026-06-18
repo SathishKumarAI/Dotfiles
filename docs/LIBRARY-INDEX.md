@@ -1,0 +1,41 @@
+# Workspace Docs Library — `~/coding/Dotfiles/docs/`
+
+Central, reusable documentation for this machine and all repos. Lives in the Dotfiles
+repo (version-controlled) as of 2026-06-18. Start here.
+
+## Guides (this machine)
+| Doc | What it covers |
+|-----|----------------|
+| [guides/MACHINE-CHEATSHEET.md](guides/MACHINE-CHEATSHEET.md) | Daily commands: mise, chezmoi, dnf/flatpak, systemd, GNOME, modern CLI tools. Hardware reality (HDD). |
+| [guides/DEV-WORKFLOW.md](guides/DEV-WORKFLOW.md) | New-project bootstrap, git/lazygit/gh, WezTerm/zellij, neovim, Python/conda, documenting work. |
+| [guides/CLAUDE-CODE-GUIDE.md](guides/CLAUDE-CODE-GUIDE.md) | Claude Code skills, marketplaces, hooks, templates, MCP (context7) on this machine. |
+| [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md) | Known issues + fixes: HDD slowness, boot time, chezmoi divergence, mise "missing", WezTerm/Wayland, GNOME extensions. |
+
+## Features (catalogs)
+| Doc | What it covers |
+|-----|----------------|
+| [features/FEATURES.md](features/FEATURES.md) | Feature + change catalog of my 18 built apps (bujo, Pickleball-Vision-LLM, Dotfiles, Job/Nexus-Automations, …). |
+| [features/UI-UX-FEATURES.md](features/UI-UX-FEATURES.md) | General frontend UI/UX reference (12 sections): layout, forms, feedback, visual design, motion, a11y/perf, components, onboarding, liquid glass, Laws of UX, distinctive design, AI-friendly sites. |
+
+## Templates (copy into any repo)
+| Path | What it is |
+|------|-----------|
+| [templates/doc-skeleton.md](templates/doc-skeleton.md) | Anthropic-style doc skeleton. |
+| [templates/prompt-skeleton.md](templates/prompt-skeleton.md) | Prompt-engineering skeleton + `prompts/` ready prompts. |
+| [templates/README.md](templates/README.md) | House style for docs + prompts. |
+| [templates/ai-friendly-starter/](templates/ai-friendly-starter/) | Frontend starter baking in UI-UX §11 (distinctive) + §12 (AI-friendly): semantic SSR-ready HTML, design tokens w/ glass + a11y fallbacks, `llms.txt`, `robots.txt`. See its README. |
+
+## Worklog
+- [WORKLOG.md](WORKLOG.md) — dated session log (also mirrored in `Dotfiles/docs/WORKLOG.md`).
+
+## Location & history
+Moved into the **Dotfiles repo** on 2026-06-18 (`~/coding/Dotfiles/docs/`) so it's
+version-controlled with everything else. `~/coding/docs` should be a symlink back here
+for path compatibility — if it's an empty dir instead, recreate the link:
+`rmdir ~/coding/docs && ln -s ~/coding/Dotfiles/docs ~/coding/docs`.
+
+The older standalone worklog from the previous `~/coding/docs/` is preserved as
+`WORKLOG-coding-archive.md`; the live worklog is `WORKLOG.md`.
+
+---
+*Authoritative machine context: `~/coding/CLAUDE.md`. This library expands on it.*
