@@ -13,3 +13,7 @@ Thumbs.db
 *.log
 *.swp
 *~
+
+# Vendored Claude Code skills (regenerable, not repo work)
+.claude/
+setup/.claude/
