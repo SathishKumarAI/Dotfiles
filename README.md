@@ -132,7 +132,8 @@ Dotfiles/
 │
 ├── assets/                             # Images and cheatsheets
 │   ├── glazewm-cheatsheet.png
-│   └── glazewm-sample-config.yaml
+│   ├── glazewm-sample-config.yaml
+│   └── keybindings-cheatsheet.pdf      #   Printable all-apps keybindings map
 │
 ├── tools/                              # Helper scripts
 │   └── fetch_env_refs.py               #   Environment reference fetcher
@@ -330,6 +331,7 @@ Full details: [setup/FULL_TOOLS_INVENTORY.md](setup/FULL_TOOLS_INVENTORY.md)
 | [setup/CLAUDE_TOOLS_GUIDE.md](setup/CLAUDE_TOOLS_GUIDE.md) | Claude Code, SDKs, CLAUDE.md, permissions, memory, token-saving | AI-assisted development |
 | [setup/SCRIPT_EXPLAINED.md](setup/SCRIPT_EXPLAINED.md) | Setup script deep-dive, Rocky 10 compatibility, risk flags | Sysadmins / anyone auditing the scripts |
 | [setup/OPEN_SOURCE_TOOLS.md](setup/OPEN_SOURCE_TOOLS.md) | 30+ alternatives compared: mise, chezmoi, Devbox, Nix, Omakub | Decision-makers choosing tools |
+| [docs/keybindings-cheatsheet.mdx](docs/keybindings-cheatsheet.mdx) | Every app's keyboard map (GNOME, tiling, WezTerm, Zellij, tmux, Neovim, lazygit, shell) + conflict/precedence logic. Printable: [`assets/keybindings-cheatsheet.pdf`](assets/keybindings-cheatsheet.pdf) (rebuild: `bash setup/build-keybindings-pdf.sh`) | Anyone learning the keybindings |
 | [TOOLS_LINKS.md](TOOLS_LINKS.md) | Official URLs for every tool | Quick reference |
 | [ROADMAP.md](ROADMAP.md) | Aggregated future tasks (per-feature + cross-cutting) with subtasks | Planning / picking next work |
 | [wofi/README.md](chezmoi/private_dot_config/wofi/README.md) | Wayland app launcher: install, theme, troubleshoot | Anyone running Wayland |

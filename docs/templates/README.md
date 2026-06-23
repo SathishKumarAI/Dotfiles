@@ -17,6 +17,7 @@ Referenced from `~/coding/CLAUDE.md` so Claude Code picks them up in any repo.
 | [`prompts/plan-feature.md`](prompts/plan-feature.md) | Turn a feature request into a concrete implementation plan |
 | [`prompts/write-docs.md`](prompts/write-docs.md) | Generate clear docs for existing code |
 | [`prompts/commit-and-pr.md`](prompts/commit-and-pr.md) | Clean commit messages + PR description |
+| [`prompts/build-keybindings-cheatsheet.md`](prompts/build-keybindings-cheatsheet.md) | Build an all-apps keyboard cheatsheet from real configs + render PDF |
 
 ## How to use
 
