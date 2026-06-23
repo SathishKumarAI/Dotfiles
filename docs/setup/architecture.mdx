@@ -84,9 +84,12 @@ Dotfiles/
 │  ├─ setup-arch.sh         #   Arch/Manjaro chain
 │  ├─ install-*.sh          #   per-domain installers (cli, automation, workflow…)
 │  ├─ gnome-*.sh            #   desktop: theme, panel, keybindings
+│  ├─ build-keybindings-pdf.sh #  DOC GEN: keybindings cheatsheet MDX -> HTML -> PDF
+│  ├─ md2html.py            #   DOC GEN: Markdown/MDX -> styled HTML (cheatsheet)
 │  ├─ personalize.sh        #   GLUE: chezmoi apply + chsh + atuin + gsettings + validate
 │  └─ validate-install.sh   #   health check (--fix, logging)
-└─ docs/                    # this documentation
+├─ .github/workflows/ci.yml # CI gate: bash -n + shellcheck + wezterm config validate
+└─ docs/                    # this documentation (cheatsheet, guides, templates)
 ```
 
 ## Idempotency & failure model
@@ -97,6 +100,26 @@ Dotfiles/
   overrides local divergence.
 - **mise** is declarative — `mise install` reconciles to the pinned versions.
 - **personalize.sh** guards every step with `command -v` and supports `--dry-run`.
+
+## Verification & CI
+
+Two layers keep the repo honest:
+
+| Layer | When | What it checks |
+|-------|------|----------------|
+| `setup/validate-install.sh` | After provisioning, on the machine | Tools present + on PATH; `--fix` re-runs missing installers |
+| `.github/workflows/ci.yml` | Every push / PR | `bash -n` + `shellcheck -S warning` on all `*.sh`; loads `dot_wezterm.lua` via `wezterm … ls-fonts` to catch config errors and doc/config drift |
+
+There is no unit-test suite — this is a configs + scripts repo, so CI is the
+lint/validation gate. New scripts must pass `bash -n` and should be shellcheck-clean.
+
+## Doc generation
+
+The keybindings cheatsheet is generated, not hand-maintained, to stop doc/config
+drift: `setup/build-keybindings-pdf.sh` runs `docs/keybindings-cheatsheet.mdx`
+through `setup/md2html.py` (Markdown/MDX → styled HTML) and renders
+`assets/keybindings-cheatsheet.pdf`. The reusable prompt that rebuilds the source
+MDX from real configs lives at `docs/templates/prompts/build-keybindings-cheatsheet.md`.
 
 ## Links
 
