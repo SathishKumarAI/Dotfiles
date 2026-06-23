@@ -1,5 +1,41 @@
 # Worklog
 
+## 2026-06-22 22:41 — All-apps keybindings cheatsheet (MDX+PDF), CI gate, prompt template
+
+**Summary:** Shipped a complete per-app keyboard cheatsheet (MDX + printable PDF)
+covering every tool on the machine plus conflict/precedence logic, wired it into
+the README/docs, added a CI lint gate, and authored a reusable prompt template to
+regenerate it. Committed in 3 logical commits; push blocked on gh auth.
+
+**Changes:**
+- `docs/keybindings-cheatsheet.mdx` (new, 33 sections / 161 rows) — GNOME,
+  PaperWM/AATWS/Tiling-Assistant/Dash-to-Panel, WezTerm direct + LEADER layer +
+  launch profiles, Zellij, tmux, Neovim, lazygit, shell (fzf/atuin), Nautilus,
+  plus a Conflict & precedence section (Ctrl+A three-layer chain, Super+arrow
+  claimants, frequency-tier memorize order).
+- `assets/keybindings-cheatsheet.pdf` (new, 421k) — rendered output.
+- `setup/build-keybindings-pdf.sh` + `setup/md2html.py` (new) — MDX→HTML→PDF regen.
+- `README.md` — link cheatsheet MDX + PDF, list PDF in assets tree.
+- `docs/index.mdx`, `docs/keybindings.mdx` — cheatsheet + PDF links.
+- `.github/workflows/ci.yml` (new) — `bash -n` + shellcheck on setup scripts +
+  `wezterm ... ls-fonts` config validation.
+- `docs/templates/prompts/build-keybindings-cheatsheet.md` (new) + templates README
+  index entry — reusable prompt built on `prompt-skeleton.md`.
+- `chezmoi/dot_bashrc`, `chezmoi/dot_zshrc` — add `~/.cargo/bin` to PATH.
+- `setup/install-media-pdf.sh`, `setup/optimize-responsiveness.sh`,
+  `setup/speedup-boot.sh` (new) — media/PDF toolchain + GNOME/boot tuning.
+- `.gitignore` — ignore vendored `.claude/` + `setup/.claude/` skill dirs.
+
+**Decisions:**
+- Vendored Claude skill dirs (2.6M, impeccable + ui-ux-pro-max) → gitignored, not
+  tracked (regenerable). Resolves the open track-vs-ignore follow-up.
+- Stale `dotfiles/wizterm/` already gone — no delete needed.
+- Cheatsheet sourced from real configs (90 wezterm binds in lua), not memory.
+
+**Follow-ups:**
+- [ ] `gh auth login` then push `docs/workspace-docs-library` + open PR (auth blocked the push).
+- [ ] Eyeball the rendered PDF; tune `md2html.py` styling if layout heavy.
+
 ## 2026-06-18 13:00 — Moved workspace docs library into Dotfiles repo
 
 **Summary:** Relocated `~/coding/docs/` content into `~/coding/Dotfiles/docs/` so the
