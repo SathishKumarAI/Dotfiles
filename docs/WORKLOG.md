@@ -1,5 +1,105 @@
 # Worklog
 
+## 2026-06-16 22:52 — Main installer: wire in new GNOME scripts + sudo/user phases
+
+**Summary:** Made the Rocky orchestrator actually install the new tiling + hover
+taskbar, and split it into sudo (system/dnf) and user (no-sudo, ~/.local) phases
+selectable from the command line.
+
+**Changes:**
+- `setup/setup-rocky.sh`: every step now tagged `run sudo …` or `run user …`.
+  Added steps for `install-tiling.sh` (PaperWM+AATWS) and `install-hover-taskbar.sh`
+  (Dash to Panel). New flags: `--user-only` / `--no-sudo` (run only no-sudo steps),
+  `--sudo-only` (only dnf steps), default = all. Moved `install-workflow-tools.sh`
+  to the sudo phase (it shells out to `sudo dnf`).
+- `setup/setup.sh`: forwards `--user-only/--no-sudo/--sudo-only` to the per-OS
+  orchestrator (safe empty-array expansion so no-arg runs don't break); dry-run
+  now prints the phase next to each step.
+- `setup/install-wezterm.sh`: `flatpak --user` (+ `--user` flathub remote) so the
+  WezTerm step is genuinely sudo-free and belongs in the user phase.
+
+**Decisions:** One file, two phases via a flag (not two separate scripts) — keeps
+the step order/source of truth in one place. Verified: dry-run lists phases,
+`--user-only` skips all sudo steps.
+
+**Follow-ups:**
+- [ ] Full run on a fresh box: `bash setup/setup.sh` (or `--user-only` without root).
+
+## 2026-06-16 22:45 — Hover-reveal taskbar (Dash to Panel intellihide)
+
+**Summary:** System-wide auto-hiding taskbar that reveals on mouse hover, for the
+Rocky/GNOME 49 Wayland desktop.
+
+**Changes:**
+- `setup/install-hover-taskbar.sh` (new): installs Dash to Panel from EGO
+  (version-matched, no sudo, idempotent — the existing `gnome-taskbar.sh` is
+  pacman-only and won't run on Rocky) and writes intellihide dconf with
+  `intellihide-use-pressure=false` so the panel reveals on plain hover, not a
+  pressure push. Ran it — installed v73, dconf applied. Activates after logout.
+
+**Decisions:** Dash to Panel (window-button taskbar) over Hide Top Bar — "tab
+hover" implies window buttons, not just the top bar. Noted Hide Top Bar
+(`hidetopbar@mathieu.bidon.ca`) as the top-bar-only alternative in the script.
+
+**Follow-ups:**
+- [ ] Log out / back in to load the taskbar.
+
+## 2026-06-16 22:37 — WezTerm poweruser layer + niri-like tiling (PaperWM) + AATWS
+
+**Summary:** Built out the WezTerm config (cheatsheet, shell integration,
+quick-select), fixed the GNOME titlebar that returned with the Wayland switch,
+and added a niri-style scrollable tiling setup + better app switcher for the
+Rocky/GNOME 49 desktop.
+
+**Changes:**
+- `chezmoi/dot_wezterm.lua`:
+  - `window_decorations` "RESIZE" → "NONE" — kills the GNOME server-side titlebar
+    that Mutter drew once native Wayland was on. (Hover-reveal of the tab bar is
+    impossible in WezTerm — no mouse API — so tab bar stays auto-hide-at-1 + Leader+b.)
+  - `Leader+?` cheatsheet overlay — pages the full keymap in a new tab.
+  - Shell integration: `Leader+Up/Down` jump prompt-to-prompt (ScrollToPrompt),
+    `Leader+y` copies the last command's output via OSC 133 semantic zones.
+  - `quick_select_patterns` — SHAs, IPv4, hex, paths, emails on `Leader+Space`.
+- `chezmoi/dot_zshrc`: self-contained OSC 133 precmd/preexec hook (no system
+  wezterm.sh on this box) so the prompt-jump + copy-last-output binds work.
+- `setup/install-tiling.sh` (new): installs PaperWM (niri-like scrollable tiling)
+  + AATWS (Advanced Alt-Tab) from extensions.gnome.org, version-matched to the
+  running GNOME Shell. Idempotent, no sudo. Ran it — both on disk (PaperWM v148,
+  AATWS v65); activate after logout.
+
+**Decisions:**
+- "niri-like" inside GNOME → PaperWM (scrollable columns), not standalone niri —
+  keeps the GNOME 49 session, extensions, and AATWS. No compositor swap.
+- Discovered the box is **GNOME Shell 49.4** (workspace CLAUDE.md said 47 — stale).
+- EGO-download install (curl + `gnome-extensions install`) since neither ext is
+  in dnf; verified both have GNOME-49 builds before writing the script.
+
+**Follow-ups:**
+- [ ] Log out / back in to activate PaperWM + AATWS.
+- [ ] If PaperWM scrolling fights Tiling Assistant, `gnome-extensions disable tiling-assistant@leleat-on-github`.
+- [ ] Update `~/coding/CLAUDE.md` GNOME version 47 → 49.
+
+## 2026-06-16 22:24 — WezTerm fix: won't launch on Wayland (XOpenDisplay failed)
+
+**Summary:** WezTerm failed to start — session is Wayland but config forced
+`enable_wayland = false`, so it tried X11/XWayland and died with
+`XOpenDisplay failed to open a display`. Flipped to native Wayland; launches clean.
+
+**Changes:**
+- `chezmoi/dot_wezterm.lua` — `config.enable_wayland = false` → `true`; updated
+  the comment to note XWayland is unavailable in this session and document the
+  `os error 71` fallback (front_end → "OpenGL" or upgrade wezterm).
+- `chezmoi apply --force` — synced to `~/.wezterm.lua`.
+
+**Decisions:** Native Wayland over X11 because XWayland is dead here (likely
+Flatpak sandbox — fonts resolved from `/run/host/`), making the old
+`enable_wayland=false` XWayland workaround a non-starter. Kept `front_end="WebGpu"`
+(launched fine in test). Did not upgrade wezterm (`20240203`, old) — no sudo without ask.
+
+**Follow-ups:**
+- [ ] If Mutter explicit-sync crash (`Protocol error os error 71`) returns, switch `front_end` to `"OpenGL"` or upgrade wezterm.
+- [ ] Benign `xkbcommon dead_hamza` Compose-file warnings on startup — system locale data, not config; ignore.
+
 ## 2026-06-16 20:36 — WezTerm: minimize keybind + persistent sessions + URL hints + copy-on-select + ligatures
 
 **Summary:** Additive WezTerm round. Keyboard minimize, a persistent unix mux
