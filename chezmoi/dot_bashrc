@@ -9,6 +9,10 @@ fi
 if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]; then
     PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 fi
+# rustup/cargo binaries (eza, delta, atuin, ripgrep-tools, etc.) live here
+if ! [[ "$PATH" =~ "$HOME/.cargo/bin" ]]; then
+    PATH="$PATH:$HOME/.cargo/bin"
+fi
 export PATH
 
 # mise — language version manager

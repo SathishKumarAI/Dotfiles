@@ -2,7 +2,7 @@
 
 # Path
 typeset -U path
-path=($HOME/.local/bin $HOME/bin $path)
+path=($HOME/.local/bin $HOME/bin $HOME/.cargo/bin $path)
 export PATH
 
 # History
