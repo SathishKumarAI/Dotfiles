@@ -111,7 +111,7 @@ repo's docs (README, FEATURE guides, ADR/DECISIONS, CHANGELOG/WORKLOG, architect
 
 ---
 
-## pickleball-shuffle (Pickleball Card Games)
+## pickleball-shuffle (Paddol)
 **What it is:** Mobile-first, local-first web app combining 1,729 pickleball twist cards with a real-time scorekeeper.
 **Stack:** Next.js 16 · React 19 · TypeScript · Tailwind v4 · Lucide · PWA · Vercel.
 
