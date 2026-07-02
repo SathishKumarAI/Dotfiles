@@ -1,7 +1,7 @@
 ---
 title: wezterm
 description: GPU-accelerated terminal — Catppuccin Mocha, vim-style panes/tabs, profile launch menu.
-status: diverged
+status: live
 tags: [terminal, wezterm]
 ---
 
@@ -13,17 +13,22 @@ Nerd Font, Catppuccin Mocha, 92% background opacity, bottom tab bar, and a
 interactive zsh features are active. Config: `chezmoi/dot_wezterm.lua` →
 `~/.wezterm.lua`.
 
-> Status: **diverged** — reconcile with `chezmoi diff ~/.wezterm.lua`.
+> Status: **live** — `chezmoi/dot_wezterm.lua` matches `~/.wezterm.lua` (reconciled 2026-07-02).
 
 ## Why this
 
 - **GPU (WebGpu) rendering** at up to 120fps — smooth scroll/animation.
 - **Lua config** — full programmability (keys, launch menu, per-host logic)
   versus INI-style configs in alacritty/kitty.
-- **Runs on XWayland deliberately** (`config.enable_wayland = false`): GNOME's
-  explicit-sync path crashes wezterm's native Wayland backend with
-  `wp_linux_drm_syncobj ... os error 71`. XWayland trades native fractional
-  scaling for actually launching.
+- **Native Wayland** (`config.enable_wayland = true`): GNOME's explicit-sync
+  path once crashed the native backend with `wp_linux_drm_syncobj ... os error 71`,
+  but `enable_wayland = false` made wezterm fail to start entirely (XWayland is
+  unavailable in this session — `XOpenDisplay` fails). If the crash returns,
+  upgrade wezterm or switch `front_end` to `"OpenGL"`.
+- **Normal-app window decorations** (`config.window_decorations = "TITLE|RESIZE"`):
+  GNOME draws its server-side titlebar (minimize/maximize/close buttons + drag
+  bar) and resize borders, so wezterm behaves like any Mutter window. `"NONE"`
+  = borderless but no buttons; `"RESIZE"` = borders only, no titlebar.
 
 ## Install / enable
 
@@ -77,6 +82,9 @@ Window management (snap / size). `Super` = the OS meta key:
 | `Leader + h` / `l` | Snap left / right half |
 | `Leader + m` / `c` | Maximize / center |
 
+> Titlebar buttons + edge-resize come from `window_decorations = "TITLE|RESIZE"`
+> (see *Why this*). Also: drag titlebar to move, double-click it to maximize.
+>
 > Snapping uses WezTerm's window-geometry API. On GNOME Wayland the compositor
 > may override it — GNOME's own `Super+Left/Right` tiling always works as a fallback.
 
@@ -148,11 +156,17 @@ All Catppuccin Mocha:
 
 ## Troubleshooting
 
-- Crash on launch under Wayland → confirm `enable_wayland = false`.
+- Crash on launch under Wayland (`os error 71`) → switch `front_end` to `"OpenGL"`
+  or upgrade wezterm. Do **not** set `enable_wayland = false` — XWayland is
+  unavailable here and wezterm won't start.
+- No minimize/resize buttons, can't drag edges → `window_decorations` got set to
+  `"NONE"`; restore `"TITLE|RESIZE"` and open a fresh window (decorations don't
+  hot-reload).
 - Missing glyphs → install JetBrainsMono Nerd Font.
 
 ## Links
 
 - Config: `chezmoi/dot_wezterm.lua` · Install: `setup/install-wezterm.sh`
+- Interactive keymap: [`wezterm-keymap.html`](./wezterm-keymap.html) — type-to-filter cheatsheet
 - Full keys: [`md files/KEYBOARD-SHORTCUTS.md`](../../md%20files/KEYBOARD-SHORTCUTS.md#wezterm--pane-management)
 - Upstream: <https://wezterm.org>

@@ -1,5 +1,161 @@
 # Worklog
 
+## 2026-07-02 15:26 — WezTerm window decorations fix + interactive keymap cheatsheet
+
+**Summary:** WezTerm behaved unlike a normal app (no minimize/maximize/resize —
+title bar was gone). Root-caused to `window_decorations = "NONE"`; restored
+normal Mutter window controls. Built a searchable HTML keymap cheatsheet and
+reconciled the stale wezterm doc with the live config.
+
+**Changes:**
+- `~/.wezterm.lua` + `chezmoi/dot_wezterm.lua` — `window_decorations` `"NONE"` →
+  `"TITLE|RESIZE"`: GNOME server-side titlebar (min/max/close + drag bar) and
+  edge-resize borders return. Synced the repo copy to the live file so version
+  control has the fix (chezmoi's active source doesn't track wezterm.lua).
+- `docs/terminal/wezterm-keymap.html` — new interactive cheatsheet (Catppuccin
+  Mocha, type-to-filter, every binding from the config; Leader/Super color-coded).
+- `docs/terminal/index.mdx` — link the cheatsheet in the terminal page table.
+- `docs/terminal/wezterm.mdx` — reconciled stale facts: native Wayland
+  (`enable_wayland = true`, not XWayland/`false`), documented `window_decorations`,
+  added decoration troubleshooting, linked the keymap. Status `diverged` → `live`.
+
+**Decisions:**
+- `"TITLE|RESIZE"` over `"RESIZE"` — user explicitly wanted minimize + normal
+  buttons, which need the titlebar (`TITLE`), not just resize borders.
+- Kept the cheatsheet as standalone HTML (not mdx) — the value is the live
+  filter; still version-controlled next to the mdx docs.
+- Decorations don't hot-reload — a fresh window is required after the change.
+
+**Follow-ups:**
+- [ ] Consider revisiting the startup `maximize()` hook if a non-maximized
+      default is wanted now that the titlebar restore/drag works.
+
+## 2026-06-30 13:05 — Test panel/dock scripts live; fix bus + install bugs
+
+**Summary:** Actually executed the panel/dock scripts against the live GNOME
+session and fixed three real bugs the dry runs hid. Verified writes land in the
+real dconf database.
+
+**Changes:**
+- `setup/panel-position-top.sh`, `panel-modern-style.sh`, `install-content-dock.sh`
+  — added a session-bus guard: re-export `DBUS_SESSION_BUS_ADDRESS` to
+  `$XDG_RUNTIME_DIR/bus` when the shell inherits a Flatpak/proxy bus that can't
+  reach GNOME's dconf ("Could not connect").
+- `install-content-dock.sh` — replaced `gnome-extensions install` (needs a live
+  Shell D-Bus; silently no-ops in sandboxed/SSH shells) with manual
+  `unzip` + `glib-compile-schemas`. Made hiding D2P's app icons **opt-in**
+  (`HIDE_D2P_TASKBAR=true`) so there's no iconless gap before the dock loads.
+  Enable step now degrades gracefully (prints relogin + enable instructions)
+  instead of risking an enabled-extensions clobber.
+- `docs/desktop/gnome.mdx` — dock section rewritten for the real flow
+  (relogin → enable; opt-in de-dupe).
+
+**Decisions / findings:**
+- This Claude Code shell runs under a Flatpak bus; dconf **writes** still land in
+  the real `~/.config/dconf/user` (confirmed by db mtime + `strings` showing
+  `{"0":"TOP"}`, the element JSON, `#1e1e2e`/`#cba6f7`), but **reads** are
+  unreliable. So scripts are verified by inspecting the db binary, and no
+  read-modify-write of `enabled-extensions` is done from here (clobber risk).
+- Dash-to-Dock v105 supports GNOME 49; installed + schemas compiled on disk.
+- Wayland scans new extensions only at login, so the dock needs one relogin
+  before it can be enabled — can't be enabled pre-relogin without a list merge.
+
+**Follow-ups:**
+- [ ] User: log out/in, enable Dash-to-Dock, confirm the content-sized dock; then
+  `HIDE_D2P_TASKBAR=true bash setup/install-content-dock.sh` to drop the dupe.
+- [ ] Commit the panel/dock scripts + docs once confirmed.
+
+## 2026-06-30 12:45 — Advisory: making the machine more advanced (no code)
+
+**Summary:** Surveyed the host and ranked upgrades for AI/programming + skills
+dev as a daily driver. No files changed — direction captured here.
+
+**Findings:** Intel UHD 630 (no dGPU), 12 cores, **15GB RAM**, likely spinning
+HDD (inferred from the `setup-zram.sh` + `tracker-limit-index.sh` band-aids).
+Runtimes installed (node/go/python via mise). Have `continue` + `llm`; **ollama
+has no models pulled**; no aider/distrobox.
+
+**Decisions / recommendation:**
+- Biggest lever is **hardware**: HDD→NVMe first, then RAM 15→32/64GB. Software
+  stack is already strong.
+- Optional scriptable bundles offered (local-AI: ollama models + aider +
+  continue.dev wiring; distrobox + uv ML template; skill-dev harness; `llm` RAG).
+  User did not pick one — none built.
+
+**Follow-ups:**
+- [ ] If/when user wants it: build the local-AI stack script (pull
+  `qwen2.5-coder:7b` + `nomic-embed-text`, install aider, wire continue.dev).
+
+## 2026-06-30 12:34 — Move Dash-to-Panel taskbar to the top
+
+**Summary:** Added a re-runnable script to move the GNOME taskbar (Dash-to-Panel)
+to the top edge of the screen, with a BOTTOM toggle, and documented it.
+
+**Changes:**
+- `setup/panel-position-top.sh` — new; enables Dash-to-Panel, counts monitors,
+  writes `panel-positions` (index-keyed JSON `{"0":"TOP",...}`) + legacy
+  `panel-position` fallback. `POSITION=BOTTOM` reverses it. No sudo, idempotent.
+- `setup/panel-modern-style.sh` — new; "floating dock" restyle of Dash-to-Panel
+  + blur-my-shell: margins + `global-border-radius` (detached/rounded), centered
+  taskbar, mauve dot indicators, translucent Catppuccin-base bg, panel blur,
+  intellihide auto-hide. Tunable via `SIZE/SIDE_MARGIN/TB_MARGIN/RADIUS/OPACITY/
+  INTELLIHIDE` env vars.
+- `docs/desktop/gnome.mdx` — added both scripts to the setup table, a "Taskbar
+  position" section, and a "Modern floating-dock look" subsection with a tunable
+  table.
+
+**Decisions:**
+- Keyed `panel-positions`/`panel-sizes`/`panel-element-positions` by monitor
+  **index** (not connector name) — matches Dash-to-Panel v73's format and the
+  existing `gnome-taskbar.sh`.
+- Write via **`dconf`, not `gsettings`**: D2P/blur-my-shell ship gschemas inside
+  their extension dirs, so `gsettings` fails with "No such schema". (First run
+  hit exactly this.) Verified every key's schema type so dconf GVariant literals
+  match (`d` opacities, `i` margins, `s` JSON/colour keys, enum for dot/position).
+- Couldn't read live GNOME state from the sandbox shell; scripts self-detect
+  monitors at runtime in the user's session.
+
+**Follow-ups:**
+- [ ] In a live GNOME session, run `panel-position-top.sh` (then optionally
+  `panel-modern-style.sh`) and log out/in to confirm the restyle (Wayland can't
+  hot-reload shell extensions).
+
+## 2026-06-29 17:10 — Agent CLI toolkit + secure Linux STT install, with docs
+
+**Summary:** Installed a stack of agent-orchestration CLIs/skills (kunchenguid +
+vercel-labs) and resolved the macOS-only OpenSuperWhisper request with a secure,
+offline Linux replacement. Documented everything in the workspace docs library.
+
+**Changes:**
+- Installed (deliberately avoiding every `curl|sh` installer): `gnhf` (npm, v0.1.41),
+  `treehouse` (go, v1.8.0), `no-mistakes` (go bin v1.32.2 + bundled skill), `firstmate`
+  (cloned → `~/coding/tools/firstmate`), and the `axi` + `lavish` skills via
+  `npx skills add ... -a claude-code`. `skills` CLI runs on demand via npx.
+- WezTerm/tmux/Neovim/node already present — no reinstall.
+- **OpenSuperWhisper** is macOS-only → installing **Speech Note**
+  (`net.mkiol.SpeechNote`, Flatpak `--user`, ~1.2 GB) as the most-secure offline STT.
+- `docs/ai-coding/agent-cli-toolkit.mdx` (new) — toolkit reference + security posture
+  + how-they-fit diagram; registered in `ai-coding/index.mdx`.
+- `docs/desktop/voice-dictation.mdx` (new) — Speech Note + global-hotkey alternatives
+  (nerd-dictation, whisrs, Vocalinux, whisper.cpp); registered in `desktop/index.mdx`.
+
+**Decisions:**
+- Skipped OpenSuperWhisper (no Linux build); chose Speech Note over global-hotkey
+  dictation tools because Flatpak sandboxing + offline = smallest attack surface
+  (user picked it when asked security-vs-UX).
+- Used `go install`/`npm`/`git clone` instead of vendor `curl|sh` scripts, per
+  `CLAUDE.md` policy. These agent tools run with full permissions — flagged in docs.
+- `agent-cli-toolkit.mdx` placed in `ai-coding/` next to `agent-workflows.mdx` (shared
+  worktree theme); STT in `desktop/`.
+
+**Follow-ups:**
+- [x] Speech Note installed (v4.8.4, 3.9 GB). Next: download a Whisper model in-app
+  (Settings → Languages).
+- [ ] Review installed skills before real use (they run with full agent permissions).
+- [ ] `no-mistakes init` inside any repo where you want the pre-push gate.
+- [ ] Commit the 2 new docs + 2 index edits (currently unstaged on
+  `docs/workspace-docs-library`).
+
 ## 2026-06-22 22:41 — All-apps keybindings cheatsheet (MDX+PDF), CI gate, prompt template
 
 **Summary:** Shipped a complete per-app keyboard cheatsheet (MDX + printable PDF)

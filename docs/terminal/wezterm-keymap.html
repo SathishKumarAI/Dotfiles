@@ -1,0 +1,312 @@
+<title>WezTerm Cheatsheet</title>
+<style>
+  :root {
+    --base: #1e1e2e;
+    --mantle: #181825;
+    --crust: #11111b;
+    --surface: #313244;
+    --overlay: #6c7086;
+    --text: #cdd6f4;
+    --subtext: #a6adc8;
+    --mauve: #cba6f7;
+    --peach: #fab387;
+    --green: #a6e3a1;
+    --blue: #89b4fa;
+    --red: #f38ba8;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(203,166,247,0.08), transparent 60%),
+      linear-gradient(180deg, var(--base), var(--crust));
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ---- Header ---- */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(180deg, rgba(17,17,27,0.96), rgba(17,17,27,0.82));
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--surface);
+  }
+  .head-inner { max-width: 1180px; margin: 0 auto; padding: 22px 24px 18px; }
+
+  .brand { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  h1 {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: clamp(1.4rem, 3.5vw, 2.1rem);
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h1 .accent { color: var(--mauve); }
+  .tagline { color: var(--overlay); font-size: 0.9rem; font-family: var(--mono); }
+
+  .controls { display: flex; gap: 12px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  .search {
+    flex: 1 1 320px;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--crust);
+    border: 1px solid var(--surface);
+    border-radius: 10px;
+    padding: 10px 14px;
+    transition: border-color .15s;
+  }
+  .search:focus-within { border-color: var(--mauve); }
+  .search svg { width: 16px; height: 16px; flex: none; stroke: var(--overlay); }
+  .search input {
+    flex: 1; background: none; border: 0; outline: none;
+    color: var(--text); font-family: var(--mono); font-size: 0.95rem;
+  }
+  .search input::placeholder { color: var(--overlay); }
+  .count { font-family: var(--mono); font-size: 0.8rem; color: var(--overlay); white-space: nowrap; }
+
+  /* ---- Leader explainer ---- */
+  .leader-note {
+    margin: 18px 0 4px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    font-size: 0.92rem; color: var(--subtext);
+  }
+  .leader-note strong { color: var(--text); }
+
+  /* ---- Cards ---- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 18px;
+    margin-top: 26px;
+  }
+  .card {
+    background: linear-gradient(180deg, var(--mantle), rgba(24,24,37,0.6));
+    border: 1px solid var(--surface);
+    border-radius: 14px;
+    padding: 6px 4px 8px;
+    overflow: hidden;
+  }
+  .card h2 {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--mauve);
+    margin: 0;
+    padding: 14px 16px 10px;
+  }
+  .card h2 .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .8; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 16px;
+    border-top: 1px solid rgba(49,50,68,0.5);
+  }
+  .row .desc { font-size: 0.9rem; color: var(--subtext); }
+  .keys { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+  kbd {
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid #45475a;
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    padding: 3px 7px;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  kbd.lead { color: var(--crust); background: var(--peach); border-color: #e8a068; }
+  kbd.super { color: var(--crust); background: var(--blue); border-color: #6f9de8; }
+  .plus { color: var(--overlay); font-family: var(--mono); font-size: 0.7rem; }
+  .or { color: var(--overlay); font-family: var(--mono); font-size: 0.72rem; padding: 0 2px; }
+
+  .card.highlight { border-color: var(--green); }
+  .card.highlight h2 { color: var(--green); }
+
+  .empty {
+    display: none;
+    text-align: center; padding: 60px 20px; color: var(--overlay);
+    font-family: var(--mono);
+  }
+  body.no-results .empty { display: block; }
+  body.no-results .grid { display: none; }
+
+  footer {
+    margin-top: 40px; padding-top: 20px;
+    border-top: 1px solid var(--surface);
+    color: var(--overlay); font-size: 0.82rem; font-family: var(--mono);
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    .row { grid-template-columns: 1fr; gap: 4px; }
+    .keys { justify-content: flex-start; }
+  }
+</style>
+
+<header>
+  <div class="head-inner">
+    <div class="brand">
+      <h1>Wez<span class="accent">Term</span> keymap</h1>
+      <span class="tagline">Catppuccin Mocha · Leader = Ctrl+a</span>
+    </div>
+    <div class="controls">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+        <input id="filter" type="text" placeholder="filter keys or actions…  (e.g. split, minimize, workspace)" autocomplete="off" spellcheck="false">
+      </label>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="leader-note">
+      <span><kbd class="lead">Leader</kbd> = tap <kbd>Ctrl</kbd><span class="plus">+</span><kbd>a</kbd>, then the next key within 1s.</span>
+      <span><kbd class="super">Super</kbd> = the <strong>Windows / ⌘ key</strong>.</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid" id="grid"></div>
+  <div class="empty">no bindings match — try a shorter word</div>
+
+  <footer>Live cheatsheet also inside WezTerm: <kbd class="lead">Leader</kbd><span class="plus">+</span><kbd>?</kbd> · source: ~/.wezterm.lua</footer>
+</div>
+
+<script>
+  // Key notation: "lead"/"super" prefix a chip class; "|" separates keys in a
+  // combo; " / " is an OR-alternative. Source of truth is ~/.wezterm.lua.
+  const GROUPS = [
+    { title: "Window controls", highlight: true, rows: [
+      ["Minimize window", "super:h / lead:,"],
+      ["Maximize", "super:UpArrow / lead:m"],
+      ["Restore (un-maximize)", "super:DownArrow"],
+      ["Snap left half", "super:LeftArrow / lead:h"],
+      ["Snap right half", "super:RightArrow / lead:l"],
+      ["Center / comfy size", "lead:c"],
+      ["Fullscreen toggle", "super:Return / F11 / lead:Shift|F"],
+      ["Toggle tab bar", "lead:b"],
+      ["Toggle transparency", "lead:Shift|O"],
+    ]},
+    { title: "Panes", rows: [
+      ["Split horizontal", "Ctrl|Shift|d / lead:|"],
+      ["Split vertical", "Ctrl|Shift|e / lead:-"],
+      ["Focus pane ← ↓ ↑ →", "Ctrl|Shift|h/j/k/l"],
+      ["Resize pane", "Ctrl|Shift|Alt|H/J/K/L"],
+      ["Resize mode (hjkl, Esc exits)", "lead:r"],
+      ["Zoom pane toggle", "Ctrl|Shift|Enter / lead:z"],
+      ["Pick pane by letter", "lead:p"],
+      ["Close pane", "Ctrl|Shift|x / lead:x"],
+    ]},
+    { title: "Tabs", rows: [
+      ["New tab", "Ctrl|Shift|t"],
+      ["Close tab", "Ctrl|Shift|w / lead:q"],
+      ["Next tab", "Ctrl|Tab"],
+      ["Previous tab", "Ctrl|Shift|Tab"],
+      ["Jump to tab 1–9", "Alt|1 … Alt|9"],
+    ]},
+    { title: "Workspaces (apps)", rows: [
+      ["New named workspace", "lead:n"],
+      ["Workspace switcher (fuzzy)", "lead:w"],
+      ["Next workspace", "lead:Tab / lead:]"],
+      ["Previous workspace", "lead:Shift|Tab"],
+      ["Fuzzy switch-all (apps/tabs/cmds)", "Ctrl|Shift|Space"],
+    ]},
+    { title: "Scrollback & search", rows: [
+      ["Search", "Ctrl|Shift|f / lead:f"],
+      ["Copy mode (vim motions)", "lead:["],
+      ["Jump to previous prompt", "lead:UpArrow"],
+      ["Jump to next prompt", "lead:DownArrow"],
+      ["Copy last command output", "lead:y"],
+      ["Scroll half page ↑ / ↓", "Ctrl|Shift|PageUp / Ctrl|Shift|PageDown"],
+    ]},
+    { title: "Select & copy", rows: [
+      ["Quick-select (URLs/SHAs/IPs/paths)", "lead:Space"],
+      ["Open a URL on screen", "lead:o"],
+      ["Char / emoji picker (copies)", "lead:e"],
+      ["Copy / paste", "Ctrl|Shift|c / Ctrl|Shift|v"],
+      ["Drag = copy · middle-click = paste", "mouse"],
+    ]},
+    { title: "Launch & sessions", rows: [
+      ["Profile launcher", "Ctrl|Shift|p"],
+      ["Zellij in new tab", "Ctrl|Shift|z"],
+      ["Command palette", "Ctrl|Shift|Alt|P"],
+      ["Attach persistent mux session", "lead:u"],
+      ["This cheatsheet (in-terminal)", "lead:?"],
+    ]},
+    { title: "Font size", rows: [
+      ["Bigger", "Ctrl|="],
+      ["Smaller", "Ctrl|-"],
+      ["Reset", "Ctrl|0"],
+    ]},
+  ];
+
+  function chip(token) {
+    // token may be "lead:h", "super:UpArrow", or plain "Ctrl|Shift|d"
+    let cls = "";
+    if (token.startsWith("lead:")) { return '<kbd class="lead">Leader</kbd><span class="plus">+</span>' + keyParts(token.slice(5)); }
+    if (token.startsWith("super:")) { return '<kbd class="super">Super</kbd><span class="plus">+</span>' + keyParts(token.slice(6)); }
+    return keyParts(token);
+  }
+  function keyParts(s) {
+    return s.split("|").map(k => "<kbd>" + k + "</kbd>").join('<span class="plus">+</span>');
+  }
+  function renderKeys(spec) {
+    if (spec === "mouse") return '<kbd>mouse</kbd>';
+    return spec.split(" / ").map(chip).join('<span class="or">or</span>');
+  }
+
+  const grid = document.getElementById("grid");
+  GROUPS.forEach(g => {
+    const card = document.createElement("div");
+    card.className = "card" + (g.highlight ? " highlight" : "");
+    card.innerHTML = '<h2><span class="dot"></span>' + g.title + '</h2>' +
+      g.rows.map(([desc, keys]) =>
+        '<div class="row" data-text="' + (desc + " " + keys).toLowerCase() + '">' +
+          '<span class="desc">' + desc + '</span>' +
+          '<span class="keys">' + renderKeys(keys) + '</span>' +
+        '</div>').join("");
+    grid.appendChild(card);
+  });
+
+  const rows = [...document.querySelectorAll(".row")];
+  const cards = [...document.querySelectorAll(".card")];
+  const filter = document.getElementById("filter");
+  const count = document.getElementById("count");
+  const total = rows.length;
+
+  function apply() {
+    const q = filter.value.trim().toLowerCase();
+    let shown = 0;
+    rows.forEach(r => {
+      const hit = !q || r.dataset.text.includes(q);
+      r.style.display = hit ? "" : "none";
+      if (hit) shown++;
+    });
+    cards.forEach(c => {
+      const any = [...c.querySelectorAll(".row")].some(r => r.style.display !== "none");
+      c.style.display = any ? "" : "none";
+    });
+    document.body.classList.toggle("no-results", shown === 0);
+    count.textContent = q ? shown + " / " + total : total + " bindings";
+  }
+  filter.addEventListener("input", apply);
+  apply();
+</script>

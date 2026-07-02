@@ -43,11 +43,13 @@ config.window_background_gradient = {
 
 -- Window
 config.window_padding = { left = 8, right = 8, top = 6, bottom = 6 }
--- Borderless. Under native Wayland (GNOME/Mutter) "RESIZE" still let Mutter draw
--- a server-side titlebar; "NONE" removes it for a clean edge. Window starts
--- maximized and snaps via keybinds, so the lost resize border isn't missed
--- (GNOME Super+drag still moves/resizes). Revert to "RESIZE" if you want borders.
-config.window_decorations = "NONE"
+-- Normal app window: TITLE gives GNOME's server-side titlebar with
+-- minimize/maximize/close buttons + a draggable bar; RESIZE adds the resize
+-- border so you can drag any edge. This is what makes WezTerm behave like a
+-- regular Mutter window (Super+drag move, double-click titlebar to maximize,
+-- header-bar buttons). Use "NONE" for a borderless clean edge (loses buttons),
+-- or "RESIZE" for borders-only without the titlebar.
+config.window_decorations = "TITLE|RESIZE"
 config.window_close_confirmation = "NeverPrompt"
 -- Fallback geometry if the mux can't maximize (e.g. headless / no GUI).
 config.initial_cols = 140
