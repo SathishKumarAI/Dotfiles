@@ -1,0 +1,234 @@
+# Installed apps — Sat Jul  4 04:44:38 PM CDT 2026
+
+===== RPM packages (count) =====
+1877
+
+===== RPM: user-facing GUI/app packages =====
+amd-ucode-firmware
+brave-browser-nightly
+brave-keyring
+cockpit-podman
+code
+containerd.io
+dmidecode
+docker-buildx-plugin
+docker-ce
+docker-ce-cli
+docker-ce-rootless-extras
+docker-compose-plugin
+firefox
+geocode-glib
+gh
+ghostscript
+ghostscript-tools-fonts
+ghostscript-tools-printing
+git
+git-core
+git-core-doc
+google-chrome-stable
+highway
+iso-codes
+libcap-ng-python3
+libnghttp2
+microcode_ctl
+nodejs
+nodejs-docs
+nodejs-full-i18n
+nodejs-libs
+nodejs-npm
+p11-kit-trust
+perl-Encode
+perl-Encode-Locale
+perl-Git
+perl-Text-Unidecode
+podman
+podman-sequoia
+python3
+python3-argcomplete
+python3-attrs
+python3-audit
+python3-brlapi
+python3-cairo
+python3-cffi
+python3-cfgv
+python3-charset-normalizer
+python3-cryptography
+python3-cups
+python3-dasbus
+python3-dateutil
+python3-dbus
+python3-distlib
+python3-distro
+python3-dnf
+python3-dnf-plugins-core
+python3-filelock
+python3-file-magic
+python3-firewall
+python3-gobject
+python3-gobject-base
+python3-gobject-base-noarch
+python3-hawkey
+python3-identify
+python3-idna
+python3-inotify
+python3-jinja2
+python3-jsonschema
+python3-jsonschema-specifications
+python3-libcomps
+python3-libdnf
+python3-libs
+python3-libselinux
+python3-libsemanage
+python3-libstoragemgmt
+python3-libxml2
+python3-linux-procfs
+python3-louis
+python3-lxml
+python3-mako
+python3-markdown
+python3-markupsafe
+python3-nftables
+python3-nodeenv
+python3-packaging
+python3-pam
+python3-perf
+python3-pexpect
+python3-pip-wheel
+python3-platformdirs
+python3-ply
+python3-policycoreutils
+python3-ptyprocess
+python3-pyatspi
+python3-pycparser
+python3-pyudev
+python3-pyyaml
+python3-referencing
+python3-requests
+python3-resolvelib
+python3-rpds-py
+python3-rpm
+python3-setools
+python3-setuptools
+python3-setuptools-wheel
+python3-six
+python3-speechd
+python3-systemd
+python3-urllib3
+python3-virtualenv
+python3-wheel-wheel
+rustdesk
+rust-toolset-srpm-macros
+source-highlight
+texlive-hobsub
+texlive-unicode-data
+texlive-unicode-math
+texlive-xunicode
+tmux
+vim-common
+vim-data
+vim-enhanced
+vim-filesystem
+vim-minimal
+
+===== Flatpak apps =====
+com.calibre_ebook.calibre	9.10.0
+com.getpostman.Postman	12.17.5
+com.jgraph.drawio.desktop	30.0.4
+com.logseq.Logseq	0.10.15
+com.super_productivity.SuperProductivity	v18.13.1
+com.visualstudio.code	1.127.0
+io.github.xiaoyifang.goldendict_ng	26.6.1
+io.podman_desktop.PodmanDesktop	1.28.2
+md.obsidian.Obsidian	1.12.7
+net.ankiweb.Anki	25.09.05
+net.cozic.joplin_desktop	3.6.14
+net.mkiol.SpeechNote	4.8.4
+org.flameshot.Flameshot	14.0.0
+org.gnome.Solanum	6.0.0
+org.libreoffice.LibreOffice	26.2.4.2
+org.onlyoffice.desktopeditors	9.4.0
+org.wezfurlong.wezterm	20240203-110809-5046fc22
+
+===== Flatpak runtimes =====
+org.freedesktop.Platform	freedesktop-sdk-23.08.34
+org.freedesktop.Platform	freedesktop-sdk-24.08.34
+org.freedesktop.Platform	freedesktop-sdk-25.08.13
+org.freedesktop.Platform.GL.default	25.0.7
+org.freedesktop.Platform.GL.default	25.0.7
+org.freedesktop.Platform.GL.default	26.0.6
+org.freedesktop.Platform.GL.default	26.0.6
+org.freedesktop.Platform.GL.default	26.0.6
+org.freedesktop.Platform.GL.default	26.0.6
+org.freedesktop.Platform.GL.default	26.0.8
+org.freedesktop.Platform.GL.default	26.0.8
+org.freedesktop.Platform.VAAPI.Intel
+org.freedesktop.Platform.VAAPI.Intel
+org.freedesktop.Platform.VAAPI.Intel
+org.freedesktop.Platform.VAAPI.Intel
+org.freedesktop.Platform.codecs-extra
+org.freedesktop.Platform.openh264	2.5.1
+org.freedesktop.Platform.openh264	2.5.1
+org.freedesktop.Sdk	freedesktop-sdk-25.08.13
+org.gnome.Platform
+org.kde.KStyle.Adwaita
+org.kde.Platform
+org.kde.Platform
+org.kde.PlatformTheme.QGnomePlatform
+org.kde.WaylandDecoration.QAdwaitaDecorations
+
+===== /opt installs =====
+brave.com
+containerd
+google
+
+===== mise runtimes =====
+go      1.26.3            ~/.config/mise/config.toml  latest
+node    24.16.0           ~/.config/mise/config.toml  lts
+python  3.12.13           ~/.config/mise/config.toml  3.12
+rust    1.95.0 (symlink)
+
+===== Snap =====
+no snap
+
+===== pipx / user bins =====
+no pipx
+agent-worktree
+caddy
+chezmoi
+claude
+ctop
+direnv
+dive
+dotenv
+duckdb
+entr
+fastapi
+httpx
+k9s
+kubectl
+lazydocker
+lazygit
+LICENSE.txt
+llm
+mise
+mlr
+mongosh
+ngrok
+nvim
+ouch
+rofi-calc-menu
+rofi-clip
+rofi-emoji
+rofi-power
+rofi-ssh
+ruff
+starship
+terraform
+update-all
+uv
+uvicorn
+uvx
+vd
+vd2to3.vdx
+visidata
+watchfiles
