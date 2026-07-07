@@ -1,5 +1,89 @@
 # Worklog
 
+## 2026-07-07 18:10 — WezTerm session persistence + Neovim plugins + shortcut deck
+
+**Summary:** Finished the in-flight WezTerm resurrect work (recover closed
+windows), rebuilt the frame, fixed a broken cheatsheet, audited/validated every
+dotfile on the machine, stood up a full Neovim plugin layer, and shipped a
+filterable HTML keyboard-shortcut deck.
+
+**Changes:**
+- `chezmoi/dot_wezterm.lua` — resurrect autosave-on-close (`window-focus-changed`),
+  periodic save 15→5 min, `resurrect.error` logger; titlebar → `INTEGRATED_BUTTONS`
+  + fancy tab bar at top + themed `window_frame`; cheatsheet writes to `$HOME`
+  (Flatpak sandbox `/tmp` was invisible to host `less`); added SESSION keys to
+  the in-terminal cheatsheet. Validated + copied live to `~/.wezterm.lua`.
+- `chezmoi/private_dot_config/nvim/` — Lazy bootstrap + modular layout
+  (`vim_config.lua`, `keys.lua`, `plugins/{navigation,git,ui}.lua`): Snacks
+  (picker/notifier/lazygit), Oil, Neogit, gitsigns, which-key, Catppuccin Mocha.
+  Installed live (9 plugins, error-free) via headless `Lazy sync`.
+- `chezmoi/dot_bashrc` — backported the machine's `conda initialize` block
+  live→source (repo was behind reality).
+- `docs/terminal/shortcuts.html` — new interactive, filterable, categorized
+  shortcut + CLI reference (Catppuccin light/dark). Published as an Artifact.
+- `docs/terminal/KEYBOARD-SHORTCUTS.md` — added Neovim section + link to the deck.
+
+**Decisions:**
+- Rejected a pasted Nix/home-manager/Herd setup — it would have stood up a
+  competing stack beside the working chezmoi/mise/zellij. Kept existing, added
+  only the real gap (nvim plugins). Snacks over Telescope; Catppuccin over
+  rose-pine (house rule).
+- Found chezmoi fully broken: empty stray `~/.local/share/chezmoi/dot_config`
+  collides with `private_dot_config`. `rmdir` is deny-listed, so left for the
+  user to run. Until then, live configs updated by direct copy, not `chezmoi apply`.
+
+**Follow-ups:**
+- [ ] User: `rmdir ~/.local/share/chezmoi/dot_config && chezmoi apply` to restore chezmoi.
+- [ ] Track `~/.wezterm.lua` in chezmoi (currently not managed — no source file).
+- [ ] Commit this session's work (branch `docs/workspace-docs-library`).
+
+## 2026-07-07 00:52 — Disk relocation audit + voice dictation setup
+
+**Summary:** Audited disk pressure on the 70G root, verified/completed the
+root→home relocation of container + flatpak stores, and stood up offline
+type-at-cursor voice dictation (nerd-dictation + VOSK + ydotool). Root went
+67% → 35% (46G free); ~13G more reclaimable.
+
+**Changes:**
+- `docs/desktop/disk-usage-and-relocation.md` (new) — disk audit, relocation
+  status, docker audit (build-cache junk vs active dev images), reclaim steps.
+  Committed `7e5fc40`.
+- `docs/desktop/voice-dictation.mdx` — rewritten to match the real
+  nerd-dictation/VOSK/ydotool setup (was falsely marked Speech Note "installed").
+  Committed `7e5fc40`.
+- `docs/LIBRARY-INDEX.md` — added a Desktop section for the two docs (uncommitted;
+  file had pre-existing edits from earlier work).
+- `~/coding/scripts/disk-cleanup-and-relocate.sh` (new) — staged, safe: prune
+  docker build-cache/dangling, relocate docker+containerd to home with a
+  **sudo keep-alive** (the fix for the original run's mid-rsync sudo timeout),
+  reclaim .old backups. Not in a git repo.
+- `~/coding/scripts/setup-voice.sh` (new) — installs parec, builds ydotool
+  (not packaged for Rocky 10), uinput udev rule, ydotoold user service, GNOME
+  hotkey `Super+\`. Run as user, not sudo.
+- `~/.local/share/nerd-dictation/` — vosk venv + nerd-dictation clone; VOSK
+  small model at `~/.config/nerd-dictation/model` (68M).
+- `~/.local/bin/voice-toggle` (new) — start/stop dictation launcher.
+- Fixed +x on 3 dotfiles scripts (install-wezterm, setup-rofi-*).
+- `pip cache purge` → freed ~5.3G in `~/.cache/pip`.
+
+**Decisions:**
+- Relocation via **bind mounts** (paths unchanged, fstab-persisted, reboot-safe)
+  vs moving + reconfiguring each app. All 3 stores confirmed writing to
+  `/home/.system` by default.
+- Docker images are **live dev stacks** (Supabase, Firefly, loan/job/program
+  managers) — keep; only prune build-cache + dangling, never `prune -a` or
+  volumes. containerd is docker's snapshotter store, not separate junk.
+- Voice: **nerd-dictation + ydotool** for type-anywhere (Claude Code has no voice
+  mode). ydotool over wtype because GNOME/Mutter lacks the virtual-keyboard
+  protocol; ydotool injects via `/dev/uinput` instead.
+
+**Follow-ups:**
+- [ ] Run `~/coding/scripts/setup-voice.sh` (sudo build), then log out/in once for
+  the `input` group, then test `Super+\`.
+- [ ] `sudo rm -rf /var/lib/flatpak.old` → reclaim ~13G on root (drops to ~17%).
+- [ ] Optionally relocate `/opt` browsers (839M) — low priority.
+- [ ] Commit the pre-existing untracked docs library work (not done this session).
+
 ## 2026-07-02 15:26 — WezTerm window decorations fix + interactive keymap cheatsheet
 
 **Summary:** WezTerm behaved unlike a normal app (no minimize/maximize/resize —

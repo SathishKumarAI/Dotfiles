@@ -1,6 +1,43 @@
 local wezterm = require("wezterm")
 local act = wezterm.action
 
+-- Session persistence across restarts/reboots. resurrect.wezterm saves the
+-- workspace/window/tab/PANE layout + each pane's cwd to disk, so a full layout
+-- can be brought back after quitting WezTerm or rebooting. (The unix mux domain
+-- further down already keeps panes alive across a GUI close/crash; resurrect
+-- adds on-disk state that ALSO survives a reboot.) The plugin is archived but
+-- working; the first load fetches it from GitHub, then it's cached locally.
+-- pcall so a failed fetch/plugin never stops WezTerm from starting.
+local ok_resurrect, resurrect = pcall(function()
+  return wezterm.plugin.require("https://github.com/MLFlexer/resurrect.wezterm")
+end)
+if ok_resurrect then
+  -- Autosave every 5 min: on-disk state stays fresh with no keypress, so a
+  -- crash/reboot loses at most ~5 min of layout changes.
+  resurrect.state_manager.periodic_save({
+    interval_seconds = 5 * 60,
+    save_workspaces = true,
+    save_windows = true,
+    save_tabs = true,
+  })
+
+  -- Autosave on window close. WezTerm fires no dedicated "window-closed" GUI
+  -- event, but a window always loses focus as it closes, so saving whenever a
+  -- window goes unfocused captures the layout right before it disappears (and
+  -- also every time you switch away). Cheap: writes the current workspace state.
+  wezterm.on("window-focus-changed", function(window)
+    if window and not window:is_focused() and ok_resurrect then
+      resurrect.state_manager.save_state(resurrect.workspace_state.get_workspace_state())
+    end
+  end)
+
+  -- Production hardening: surface plugin failures to the WezTerm log instead of
+  -- failing silently. Without this, a bad save/load path is invisible.
+  wezterm.on("resurrect.error", function(err)
+    wezterm.log_error("resurrect error: " .. tostring(err))
+  end)
+end
+
 local config = wezterm.config_builder()
 
 -- Performance
@@ -49,7 +86,13 @@ config.window_padding = { left = 8, right = 8, top = 6, bottom = 6 }
 -- regular Mutter window (Super+drag move, double-click titlebar to maximize,
 -- header-bar buttons). Use "NONE" for a borderless clean edge (loses buttons),
 -- or "RESIZE" for borders-only without the titlebar.
-config.window_decorations = "TITLE|RESIZE"
+--
+-- INTEGRATED_BUTTONS|RESIZE drops the separate GNOME titlebar and instead draws
+-- the minimize/maximize/close buttons INSIDE the tab bar — a smaller, cleaner
+-- frame with no wasted titlebar row. Requires the fancy tab bar at the top (see
+-- Tab bar section). Move the window with the mouse by dragging an empty part of
+-- the tab bar, or Super+left-drag anywhere.
+config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
 config.window_close_confirmation = "NeverPrompt"
 -- Fallback geometry if the mux can't maximize (e.g. headless / no GUI).
 config.initial_cols = 140
@@ -222,10 +265,15 @@ wezterm.on("update-status", function(window, _pane)
 end)
 
 -- Tab bar
+-- Fancy tab bar is required for INTEGRATED_BUTTONS (window controls live here
+-- instead of a titlebar). Fancy tab bar only renders at the TOP, so the bottom
+-- placement is off. Tab bar stays visible even with one tab — otherwise the
+-- min/max/close buttons would vanish and you'd have no mouse way to move/close
+-- the window.
 config.enable_tab_bar = true
-config.use_fancy_tab_bar = false
-config.hide_tab_bar_if_only_one_tab = true
-config.tab_bar_at_bottom = true
+config.use_fancy_tab_bar = true
+config.hide_tab_bar_if_only_one_tab = false
+config.tab_bar_at_bottom = false
 config.tab_max_width = 28
 
 config.colors = {
@@ -246,6 +294,16 @@ config.colors = {
     new_tab = { bg_color = "#181825", fg_color = "#6c7086" },
     new_tab_hover = { bg_color = "#313244", fg_color = "#cdd6f4" },
   },
+}
+
+-- Fancy tab bar frame (holds the integrated window buttons). Catppuccin Mocha
+-- crust/base so the frame reads as one piece with the tab bar colors above; a
+-- slightly smaller font keeps the bar compact so it doesn't cost much height.
+config.window_frame = {
+  active_titlebar_bg = "#11111b",
+  inactive_titlebar_bg = "#11111b",
+  font = wezterm.font({ family = "JetBrainsMono Nerd Font", weight = "Bold" }),
+  font_size = 11.0,
 }
 
 -- Cursor
@@ -365,13 +423,25 @@ local CHEATSHEET = [[
     Leader+u                attach persistent mux session  (shell: wtp)
     Leader+?                this cheatsheet
 
+  SESSION (resurrect — survives close/reboot)
+    Leader+Shift+S          save current layout to disk
+    Leader+Shift+R          restore a saved layout (fuzzy picker)
+    (autosaves every 5 min + whenever a window loses focus/closes)
+
   Font: Ctrl+= / Ctrl+- / Ctrl+0   bigger / smaller / reset
 ]]
 
 local function show_cheatsheet(window, pane)
-  local path = os.tmpname()
+  -- Write to $HOME (shared between the Flatpak sandbox and the host), NOT
+  -- os.tmpname(). The GUI runs in the WezTerm Flatpak whose /tmp is private,
+  -- but spawned panes run on the HOST via flatpak-spawn --host — so a sandbox
+  -- /tmp path is invisible to the host `less` and the tab dies instantly.
+  local path = (os.getenv("HOME") or "/tmp") .. "/.wezterm-cheatsheet.txt"
   local f = io.open(path, "w")
-  if not f then return end
+  if not f then
+    window:toast_notification("WezTerm", "Cheatsheet: cannot write " .. path, nil, 3000)
+    return
+  end
   f:write(CHEATSHEET)
   f:close()
   window:perform_action(act.SpawnCommandInNewTab({
@@ -542,6 +612,34 @@ config.keys = {
     window:toast_notification("WezTerm", "Copied last command output", nil, 1500)
   end) },
 }
+
+-- Session persistence keybinds (resurrect.wezterm) — only wired if the plugin
+-- loaded. Leader+Shift+S saves the current workspace layout (panes + cwds) to
+-- disk; Leader+Shift+R opens a fuzzy picker of saved sessions to restore.
+if ok_resurrect then
+  table.insert(config.keys, {
+    key = "S", mods = "LEADER|SHIFT",
+    action = wezterm.action_callback(function(win, _pane)
+      resurrect.state_manager.save_state(resurrect.workspace_state.get_workspace_state())
+      win:toast_notification("WezTerm", "Session saved", nil, 1500)
+    end),
+  })
+  table.insert(config.keys, {
+    key = "R", mods = "LEADER|SHIFT",
+    action = wezterm.action_callback(function(win, pane)
+      resurrect.fuzzy_loader.fuzzy_load(win, pane, function(id, _label)
+        local kind = string.match(id, "^([^/]+)")
+        id = string.match(id, "([^/]+)$")
+        id = string.match(id, "(.+)%..+$")
+        local opts = { relative = true, restore_text = true }
+        if kind == "workspace" then
+          resurrect.workspace_state.restore_workspace(
+            resurrect.state_manager.load_state(id, "workspace"), opts)
+        end
+      end)
+    end),
+  })
+end
 
 -- Modal key-tables. Activated by leader chords above; status bar shows the mode.
 config.key_tables = {
