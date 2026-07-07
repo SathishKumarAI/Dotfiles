@@ -10,6 +10,7 @@ repo (version-controlled) as of 2026-06-18. Start here.
 | [guides/DEV-WORKFLOW.md](guides/DEV-WORKFLOW.md) | New-project bootstrap, git/lazygit/gh, WezTerm/zellij, neovim, Python/conda, documenting work. |
 | [guides/CLAUDE-CODE-GUIDE.md](guides/CLAUDE-CODE-GUIDE.md) | Claude Code skills, marketplaces, hooks, templates, MCP (context7) on this machine. |
 | [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md) | Known issues + fixes: HDD slowness, boot time, chezmoi divergence, mise "missing", WezTerm/Wayland, GNOME extensions. |
+| [guides/AGENT-TOOLS-USAGE.md](guides/AGENT-TOOLS-USAGE.md) | How to drive the installed agent tools: skills CLI, AXI, lavish, treehouse, gnhf, no-mistakes, firstmate, Speech Note. |
 
 ## Features (catalogs)
 | Doc | What it covers |
@@ -17,12 +18,19 @@ repo (version-controlled) as of 2026-06-18. Start here.
 | [features/FEATURES.md](features/FEATURES.md) | Feature + change catalog of my 18 built apps (bujo, Pickleball-Vision-LLM, Dotfiles, Job/Nexus-Automations, …). |
 | [features/UI-UX-FEATURES.md](features/UI-UX-FEATURES.md) | General frontend UI/UX reference (12 sections): layout, forms, feedback, visual design, motion, a11y/perf, components, onboarding, liquid glass, Laws of UX, distinctive design, AI-friendly sites. |
 
+## Desktop (system)
+| Doc | What it covers |
+|-----|----------------|
+| [desktop/voice-dictation.mdx](desktop/voice-dictation.mdx) | Offline type-at-cursor voice: nerd-dictation + VOSK + ydotool on GNOME Wayland; Speech Note GUI fallback. Hotkey `Super+\`. |
+| [desktop/disk-usage-and-relocation.md](desktop/disk-usage-and-relocation.md) | Disk audit + root→home relocation (docker/containerd/flatpak bind mounts), docker prune vs keep-active, reclaim steps. |
+
 ## Templates (copy into any repo)
 | Path | What it is |
 |------|-----------|
 | [templates/doc-skeleton.md](templates/doc-skeleton.md) | Anthropic-style doc skeleton. |
 | [templates/prompt-skeleton.md](templates/prompt-skeleton.md) | Prompt-engineering skeleton + `prompts/` ready prompts. |
 | [templates/README.md](templates/README.md) | House style for docs + prompts. |
+| [templates/themes.md](templates/themes.md) | Reusable theme system: light (Square-style) + dark (Catppuccin) on CSS vars, `data-theme` toggle, pill buttons + serif headings. Drop into any project. |
 | [templates/ai-friendly-starter/](templates/ai-friendly-starter/) | Frontend starter baking in UI-UX §11 (distinctive) + §12 (AI-friendly): semantic SSR-ready HTML, design tokens w/ glass + a11y fallbacks, `llms.txt`, `robots.txt`. See its README. |
 
 ## Worklog

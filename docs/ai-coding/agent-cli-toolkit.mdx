@@ -1,0 +1,185 @@
+---
+title: Agent CLI Toolkit
+description: kunchenguid agent-orchestration stack (gnhf, treehouse, no-mistakes, firstmate, lavish, AXI) + the skills CLI — what each does, how it was installed, and the security posture.
+status: live
+tags: [ai, agents, cli, orchestration, worktree, skills, security]
+---
+
+# Agent CLI Toolkit
+
+A set of **agent-facing CLIs and skills** installed on this machine (2026-06-29) for
+running, isolating, and gating autonomous coding agents. Most are from
+[`kunchenguid`](https://github.com/kunchenguid) and pair naturally with the
+git-worktree workflow in [agent-workflows](./agent-workflows.mdx).
+
+> **Security first.** These are **third-party, unvetted** tools that run agents
+> **with full permissions** — they execute shell, push to git, and loop
+> autonomously. The skills installer itself prints *"Review skills before use; they
+> run with full agent permissions."* Installs here deliberately **avoided every
+> `curl | sh` one-liner** (per [`CLAUDE.md`](../../../CLAUDE.md) policy) in favour of
+> `go install`, `npm`, and plain `git clone`. Read a tool's source before pointing
+> it at a real repo, and prefer running them inside a worktree / disposable branch.
+
+## What's installed
+
+| Tool | Role | Installed via | Lands at |
+|------|------|---------------|----------|
+| [skills CLI](#skills-cli) | Install/search/manage agent skills | `npx skills` (no install) | run on demand |
+| [AXI](#axi) | Design standard + skill for agent-ergonomic CLIs | `npx skills add` | `~/.claude/skills/axi` |
+| [lavish](#lavish) | Edit/annotate agent HTML artifacts | `npx skills add` | `~/.claude/skills/lavish` |
+| [gnhf](#gnhf) | Overnight autonomous orchestrator (ralph-style) | `npm i -g gnhf` | mise node bin |
+| [treehouse](#treehouse) | Reusable worktree **pool** manager | `go install` | `$(go env GOBIN)` |
+| [no-mistakes](#no-mistakes) | Pre-push AI validation gate (proxy) | `go install` | `$(go env GOBIN)` |
+| [firstmate](#firstmate) | tmux fleet orchestrator ("first mate" + crew) | `git clone` | `~/coding/tools/firstmate` |
+
+Verify they resolve:
+
+```sh
+gnhf --version          # 0.1.41
+treehouse --version     # v1.8.0
+no-mistakes --version   # v1.32.2
+npx skills ls -g        # lists installed skills (axi, lavish, no-mistakes)
+```
+
+---
+
+## skills CLI
+
+`npx skills` — the CLI for the open agent-skills ecosystem
+([vercel-labs/skills](https://github.com/vercel-labs/skills)). Installs, searches,
+updates, and removes skills across 70+ agents. **Node-based, no permanent install**
+(runs through `npx`).
+
+```sh
+npx skills add <owner>/<repo>   # add a skill package
+npx skills find <query>         # search
+npx skills ls -g                # list global skills
+npx skills remove <skill> -g    # remove
+```
+
+**Non-interactive install flags** (what was used here): `-g` (global / user-level),
+`-a claude-code` (target agent — note the id is `claude-code`, **not** `claude`),
+`-s <skill>` (pick one skill), `-y` (skip prompts).
+
+## AXI
+
+**Agent eXperience Interface** — 10 design principles for building CLIs that agents
+drive cheaply (token-efficient output, combined operations, next-step hints). A
+"third way" between raw CLI and MCP. Installed as a skill:
+
+```sh
+npx skills add kunchenguid/axi -g -a claude-code -y
+```
+
+Ready-made AXI tools run straight from npx — no install:
+
+```sh
+npx -y gh-axi               # GitHub ops, agent-ergonomic
+npx -y chrome-devtools-axi  # browser automation
+```
+
+## lavish
+
+An **editor for agent-generated HTML artifacts** — opens them in a local browser so
+you can annotate elements and send feedback back to the agent. **Local-only, no
+cloud.** Useful for plans, diagrams, design explorations, diffs.
+
+```sh
+npx skills add kunchenguid/lavish-axi -g -a claude-code -s lavish -y
+```
+
+The companion `lavish` skill also auto-suggests turning rich responses (tables,
+reports, diffs) into reviewable HTML.
+
+## gnhf
+
+*"Good Night, Have Fun"* — a **ralph / autoresearch-style orchestrator** that keeps
+agents running while you sleep. Each iteration makes **one small, committed,
+documented** change toward an objective; failed iterations roll back, progress
+persists in `notes.md`, and concurrent agents get isolated worktrees.
+
+```sh
+npm install -g gnhf
+```
+
+Supports Claude Code, Codex, Copilot CLI, Pi, Rovo Dev, OpenCode. **Point it at a
+worktree/branch, not `main`** — it commits on its own.
+
+## treehouse
+
+*"Manage worktrees without managing worktrees."* Keeps a **pool** of reusable,
+isolated worktrees with deps + build cache preserved, so each agent gets a clean
+environment instantly. Lease tracking + process scanning prevent two agents
+grabbing the same tree.
+
+```sh
+go install github.com/kunchenguid/treehouse@latest
+```
+
+Complements [agent-workflows](./agent-workflows.mdx): that doc is the *why* of
+worktree isolation; treehouse is the *pool manager* that automates it.
+
+## no-mistakes
+
+A **pre-push validation gate**. Push to `no-mistakes` instead of `origin` and it
+spins up a **disposable worktree**, runs an AI pipeline (review → tests → lint →
+docs), applies safe fixes, escalates judgment calls, and only forwards the branch +
+opens a PR once every check passes. Your working tree stays untouched.
+
+```sh
+go install github.com/kunchenguid/no-mistakes/cmd/no-mistakes@latest
+no-mistakes doctor   # verify git + an agent binary are present
+no-mistakes init     # run inside a repo to configure the push target
+```
+
+> Also installed as a **skill** (`~/.claude/skills/no-mistakes`, bundled with the
+> AXI repo) — invokable as `/no-mistakes` to gate/ship changes from inside Claude.
+
+## firstmate
+
+A **tmux fleet orchestrator**: you talk to one "first mate" agent that dispatches and
+supervises a crew of autonomous agents, each in its own tmux window + git worktree.
+Crew tasks are *ship* (deliver a PR) or *scout* (investigate/report). An event-driven
+watcher supervises with minimal token use. Shell-only, MIT.
+
+```sh
+# already cloned to ~/coding/tools/firstmate
+cd ~/coding/tools/firstmate && claude   # AGENTS.md takes over; run inside tmux
+```
+
+Needs: a verified agent harness, `gh`-authenticated git, and **tmux** (all present
+on this machine). Best launched **inside a tmux session** so crew windows are visible.
+
+---
+
+## How they fit together
+
+```
+firstmate / gnhf   →  orchestrate many agents (overnight or supervised)
+        │
+   treehouse        →  hands each agent an isolated worktree from the pool
+        │
+   agent works, produces artifacts
+        │
+   lavish           →  review/annotate HTML output
+        │
+   no-mistakes      →  gate the change (review/test/lint/docs) before it ships
+        │
+   AXI              →  the standard any custom agent-CLI in this stack follows
+```
+
+## Not installed
+
+- **OpenSuperWhisper** — macOS-only voice transcription; no Linux build. See
+  [desktop/voice-dictation](../desktop/voice-dictation.mdx) for the secure Linux
+  replacement (Speech Note) and alternatives.
+
+## Sources
+
+- [vercel-labs/skills](https://github.com/vercel-labs/skills) ·
+  [AXI](https://axi.md/) ·
+  [gnhf](https://github.com/kunchenguid/gnhf) ·
+  [treehouse](https://github.com/kunchenguid/treehouse) ·
+  [no-mistakes](https://github.com/kunchenguid/no-mistakes) ·
+  [firstmate](https://github.com/kunchenguid/firstmate) ·
+  [lavish](https://github.com/kunchenguid/lavish)
