@@ -1,0 +1,82 @@
+---
+title: Voice Dictation (Speech-to-Text)
+description: Offline type-at-cursor voice dictation on Rocky/GNOME Wayland via nerd-dictation + VOSK + ydotool. Speech Note is the GUI alternative.
+status: live
+tags: [desktop, stt, whisper, vosk, voice, privacy, security]
+---
+
+# Voice Dictation (Speech-to-Text)
+
+**Goal:** press a hotkey, speak, text appears at the cursor in **any** app — terminal,
+editor, the Claude Code prompt. Claude Code itself has **no voice mode** (text only), so
+dictation is an external tool feeding keystrokes.
+
+**OpenSuperWhisper is macOS-only** — can't run on Linux. This box uses **nerd-dictation**
+for the type-anywhere flow, with **Speech Note** as a GUI fallback.
+
+> **100% offline.** VOSK runs on-device, no cloud, no account. The trade-off vs a
+> Flatpak-sandboxed GUI: nerd-dictation needs virtual-input access (ydotool → `/dev/uinput`),
+> a larger attack surface than a confined app. Accepted here for the type-at-cursor UX.
+
+## Installed setup (nerd-dictation)
+
+| Piece | Location | Role |
+|-------|----------|------|
+| VOSK venv | `~/.local/share/nerd-dictation/venv` | isolated Python + `vosk` |
+| VOSK model (small en) | `~/.config/nerd-dictation/model` | 68M, fast on HDD |
+| nerd-dictation | `~/.local/share/nerd-dictation/src` | the dictation engine |
+| `voice-toggle` | `~/.local/bin/voice-toggle` | start/stop toggle |
+| ydotool + ydotoold | `/usr/local/bin` + user service | types at cursor on Wayland |
+| GNOME hotkey | `Super + \` | runs `voice-toggle` |
+
+**Setup script:** `~/coding/scripts/setup-voice.sh` installs the OS pieces (parec recorder,
+builds ydotool — not packaged for Rocky 10, uinput udev rule, ydotoold user service) and
+binds the hotkey. Run **as your user, not sudo** (it elevates internally; gsettings must run
+as you). After first run, **log out/in once** so the new `input` group applies to ydotoold.
+
+```sh
+bash ~/coding/scripts/setup-voice.sh   # NOT sudo
+```
+
+### Use it
+
+- **Hotkey:** `Super + \` → speak → `Super + \` again to stop. Text types at the cursor.
+- **Manual:** `~/.local/bin/voice-toggle` (run twice: start, then stop).
+
+### Why ydotool (not wtype)
+
+GNOME/Mutter doesn't implement the `virtual-keyboard` Wayland protocol `wtype` needs, so
+`wtype` fails on this box. `ydotool` injects via the kernel `/dev/uinput` device instead —
+compositor-independent, works on GNOME Wayland. Needs the daemon (`ydotoold`) + uinput
+permission, both set by the setup script.
+
+## GUI alternative: Speech Note
+
+[`net.mkiol.SpeechNote`](https://flathub.org/apps/net.mkiol.SpeechNote) — offline
+Whisper/VOSK STT + TTS, **Flatpak-sandboxed** (most secure option). A GUI transcriber, not
+type-anywhere. **Not currently installed.** Install if you want the sandboxed GUI:
+
+```sh
+flatpak install -y --user flathub net.mkiol.SpeechNote   # lands on /home (flatpak relocated)
+```
+
+## Hardware note
+
+Mic = **Logitech C270 webcam** (default PipeWire source). Mono, low quality — fine for
+dictation, not ideal accuracy. A dedicated USB mic would improve recognition.
+
+## Other engines (reference)
+
+| Tool | Engine | Sandbox | Notes |
+|------|--------|---------|-------|
+| **nerd-dictation** *(installed)* | VOSK | ❌ | type-at-cursor; the setup here |
+| Speech Note | Whisper/VOSK | ✅ Flatpak | GUI; most secure; not type-anywhere |
+| [whisrs](https://github.com/y0sif/whisrs) | Whisper | ❌ | Rust, Wayland-native, less audited |
+| [whisper.cpp](https://github.com/ggerganov/whisper.cpp) | Whisper C++ | ❌ | engine only; DIY + hotkey |
+
+## Sources
+
+- [nerd-dictation](https://github.com/ideasman42/nerd-dictation) ·
+  [VOSK models](https://alphacephei.com/vosk/models) ·
+  [ydotool](https://github.com/ReimuNotMoe/ydotool) ·
+  [Speech Note (Flathub)](https://flathub.org/apps/net.mkiol.SpeechNote)
