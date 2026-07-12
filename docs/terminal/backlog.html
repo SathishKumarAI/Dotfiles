@@ -1,0 +1,303 @@
+<title>Dotfiles Backlog — Terminal Environment</title>
+<style>
+  :root {
+    --base:#eff1f5; --mantle:#e6e9ef; --crust:#dce0e8;
+    --surface0:#ccd0da; --surface1:#bcc0cc; --surface2:#acb0be;
+    --text:#4c4f69; --subtext:#6c6f85; --overlay:#8c8fa1;
+    --mauve:#8839ef; --green:#40a02b; --peach:#fe640b;
+    --blue:#1e66f5; --teal:#179299; --yellow:#df8e1d; --red:#d20f39; --pink:#ea76cb;
+    --shadow:rgba(76,79,105,.10); --kbd-shadow:rgba(76,79,105,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --base:#1e1e2e; --mantle:#181825; --crust:#11111b;
+      --surface0:#313244; --surface1:#45475a; --surface2:#585b70;
+      --text:#cdd6f4; --subtext:#a6adc8; --overlay:#7f849c;
+      --mauve:#cba6f7; --green:#a6e3a1; --peach:#fab387;
+      --blue:#89b4fa; --teal:#94e2d5; --yellow:#f9e2af; --red:#f38ba8; --pink:#f5c2e7;
+      --shadow:rgba(0,0,0,.28); --kbd-shadow:rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="light"] {
+    --base:#eff1f5; --mantle:#e6e9ef; --crust:#dce0e8;
+    --surface0:#ccd0da; --surface1:#bcc0cc; --surface2:#acb0be;
+    --text:#4c4f69; --subtext:#6c6f85; --overlay:#8c8fa1;
+    --mauve:#8839ef; --green:#40a02b; --peach:#fe640b;
+    --blue:#1e66f5; --teal:#179299; --yellow:#df8e1d; --red:#d20f39; --pink:#ea76cb;
+    --shadow:rgba(76,79,105,.10); --kbd-shadow:rgba(76,79,105,.18);
+  }
+  :root[data-theme="dark"] {
+    --base:#1e1e2e; --mantle:#181825; --crust:#11111b;
+    --surface0:#313244; --surface1:#45475a; --surface2:#585b70;
+    --text:#cdd6f4; --subtext:#a6adc8; --overlay:#7f849c;
+    --mauve:#cba6f7; --green:#a6e3a1; --peach:#fab387;
+    --blue:#89b4fa; --teal:#94e2d5; --yellow:#f9e2af; --red:#f38ba8; --pink:#f5c2e7;
+    --shadow:rgba(0,0,0,.28); --kbd-shadow:rgba(0,0,0,.45);
+  }
+
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--base); color:var(--text);
+    font-family:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
+    font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1280px; margin:0 auto; padding:0 1.1rem 4rem; }
+
+  header.top { position:sticky; top:0; z-index:20;
+    background:color-mix(in srgb,var(--mantle) 92%, transparent);
+    backdrop-filter:blur(10px); border-bottom:1px solid var(--surface0); }
+  .top-inner { max-width:1280px; margin:0 auto; padding:1rem 1.1rem .9rem; }
+  .brandline { display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap; }
+  .prompt { color:var(--green); font-weight:700; }
+  h1 { margin:0; font-size:1.45rem; letter-spacing:-.01em; font-weight:700; text-wrap:balance; }
+  .sub { color:var(--subtext); font-size:.82rem; margin:.2rem 0 0; }
+
+  /* progress meter */
+  .meter { display:flex; align-items:center; gap:.7rem; margin-top:.85rem; flex-wrap:wrap; }
+  .bar { flex:1 1 240px; height:9px; border-radius:99px; background:var(--surface0); overflow:hidden; min-width:180px; }
+  .bar > i { display:block; height:100%; width:var(--pct,40%);
+    background:linear-gradient(90deg,var(--green),var(--teal)); border-radius:99px; }
+  .meter .stat { font-size:.78rem; color:var(--subtext); }
+  .meter .stat b { color:var(--text); font-variant-numeric:tabular-nums; }
+  button.theme { flex:none; background:var(--base); color:var(--subtext);
+    border:1px solid var(--surface1); border-radius:9px; padding:.42rem .6rem;
+    font:inherit; cursor:pointer; display:flex; gap:.4rem; align-items:center; }
+  button.theme:hover { border-color:var(--mauve); color:var(--text); }
+  button.theme:focus-visible { outline:2px solid var(--mauve); outline-offset:2px; }
+
+  /* legend */
+  .legend { display:flex; gap:.9rem; margin-top:.75rem; flex-wrap:wrap; font-size:.72rem; color:var(--overlay); }
+  .legend span { display:inline-flex; align-items:center; gap:.3rem; }
+  .pri { width:.55rem; height:.55rem; border-radius:2px; display:inline-block; }
+  .pri.p1 { background:var(--red); } .pri.p2 { background:var(--peach); } .pri.p3 { background:var(--blue); }
+
+  /* board */
+  .board { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:1.5rem; align-items:start; }
+  @media (max-width:900px){ .board { grid-template-columns:1fr; } }
+  .col { background:var(--mantle); border:1px solid var(--surface0); border-radius:13px; padding:.55rem; }
+  .col-h { display:flex; align-items:center; gap:.5rem; padding:.5rem .6rem .6rem; }
+  .col-h .icon { width:1.6rem; height:1.6rem; border-radius:7px; display:grid; place-items:center;
+    background:color-mix(in srgb,var(--acc) 16%,transparent); color:var(--acc); font-size:.9rem; flex:none; }
+  .col-h h2 { margin:0; font-size:.92rem; letter-spacing:.02em; }
+  .col-h .count { margin-left:auto; font-size:.72rem; color:var(--overlay);
+    background:var(--base); border:1px solid var(--surface0); border-radius:99px; padding:.1rem .5rem;
+    font-variant-numeric:tabular-nums; }
+  .col.shipped { --acc:var(--green); } .col.next { --acc:var(--peach); } .col.backlog { --acc:var(--blue); }
+
+  .cards { display:flex; flex-direction:column; gap:.55rem; }
+  .card { background:var(--base); border:1px solid var(--surface0); border-left:3px solid var(--acc);
+    border-radius:9px; padding:.6rem .7rem; box-shadow:0 1px 1px var(--shadow); }
+  .card.done { opacity:.92; }
+  .card.done .title { text-decoration:none; }
+  .card .title { font-size:.86rem; font-weight:600; color:var(--text); display:flex; gap:.4rem; align-items:baseline; }
+  .card .title .check { color:var(--green); flex:none; }
+  .card .body { color:var(--subtext); font-size:.78rem; margin-top:.25rem;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  .card .meta { display:flex; gap:.35rem; margin-top:.5rem; flex-wrap:wrap; align-items:center; }
+  .chip { font-size:.66rem; letter-spacing:.02em; padding:.12rem .42rem; border-radius:99px;
+    border:1px solid var(--surface1); color:var(--subtext); background:var(--mantle); white-space:nowrap; }
+  .chip.tool { color:var(--tc); border-color:color-mix(in srgb,var(--tc) 45%,var(--surface1)); }
+  .chip.eff { color:var(--overlay); }
+  .chip.pri1 { color:var(--red); border-color:color-mix(in srgb,var(--red) 45%,var(--surface1)); }
+  .chip.pri2 { color:var(--peach); border-color:color-mix(in srgb,var(--peach) 45%,var(--surface1)); }
+  .chip.pri3 { color:var(--blue); border-color:color-mix(in srgb,var(--blue) 45%,var(--surface1)); }
+
+  .col-foot { font-size:.72rem; color:var(--overlay); padding:.5rem .6rem 0; }
+  .col-foot code { color:var(--subtext); background:var(--base); padding:.05em .35em; border-radius:5px; }
+
+  footer { margin-top:2.5rem; padding-top:1.1rem; border-top:1px solid var(--surface0); color:var(--overlay); font-size:.76rem; }
+  footer a { color:var(--blue); }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brandline">
+      <span class="prompt">❯</span>
+      <h1>Dotfiles Backlog — Terminal Environment</h1>
+    </div>
+    <p class="sub">Roadmap for the WezTerm · Neovim · Zellij · chezmoi stack on Rocky Linux. Status of what shipped, what's queued, and what's parked.</p>
+    <div class="meter">
+      <span class="stat"><b id="doneN">0</b>/<b id="totN">0</b> done</span>
+      <div class="bar"><i id="fill"></i></div>
+      <span class="stat" id="pctLbl">0%</span>
+      <button class="theme" id="themeBtn" type="button" aria-label="Toggle theme"><span id="themeIcon">◐</span><span id="themeLbl">Theme</span></button>
+    </div>
+    <div class="legend">
+      <span><i class="pri p1"></i> P1 — do next</span>
+      <span><i class="pri p2"></i> P2 — soon</span>
+      <span><i class="pri p3"></i> P3 — nice to have</span>
+      <span>· effort: S / M / L</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="board">
+
+    <!-- ============ SHIPPED ============ -->
+    <section class="col shipped">
+      <div class="col-h"><span class="icon">✓</span><h2>Shipped</h2><span class="count" id="c-shipped">0</span></div>
+      <div class="cards">
+
+        <div class="card done">
+          <div class="title"><span class="check">✓</span> Recover-closed-windows (resurrect)</div>
+          <div class="body">Autosave-on-close via <code>window-focus-changed</code>, 5-min periodic save, error logger. Layouts survive close + reboot.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--mauve)">WezTerm</span><span class="chip eff">M</span></div>
+        </div>
+
+        <div class="card done">
+          <div class="title"><span class="check">✓</span> Titlebar → integrated buttons</div>
+          <div class="body">Dropped GNOME titlebar; min/max/close now in the fancy tab bar. Themed <code>window_frame</code>, smaller frame.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--mauve)">WezTerm</span><span class="chip eff">S</span></div>
+        </div>
+
+        <div class="card done">
+          <div class="title"><span class="check">✓</span> Fix Leader+? cheatsheet</div>
+          <div class="body">Wrote to Flatpak-private <code>/tmp</code> the host <code>less</code> couldn't read. Now writes to <code>$HOME</code>.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--mauve)">WezTerm</span><span class="chip eff">S</span></div>
+        </div>
+
+        <div class="card done">
+          <div class="title"><span class="check">✓</span> Neovim plugin layer</div>
+          <div class="body">Lazy + Snacks (picker/notifier/lazygit), Oil, Neogit, gitsigns, which-key, Catppuccin Mocha. 9 plugins, modular config.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--green)">Neovim</span><span class="chip eff">M</span></div>
+        </div>
+
+        <div class="card done">
+          <div class="title"><span class="check">✓</span> Full dotfiles audit</div>
+          <div class="body">72 shell scripts + configs syntax-validated; tmux/git/starship/zellij/mise functionally checked. All green.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--teal)">Repo</span><span class="chip eff">M</span></div>
+        </div>
+
+        <div class="card done">
+          <div class="title"><span class="check">✓</span> Interactive shortcut deck</div>
+          <div class="body">Filterable, categorized <code>shortcuts.html</code> — 6 groups, Catppuccin light/dark. Plus Neovim section in the markdown ref.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--yellow)">Docs</span><span class="chip eff">M</span></div>
+        </div>
+
+        <div class="card done">
+          <div class="title"><span class="check">✓</span> Backport conda block</div>
+          <div class="body">Machine's <code>conda initialize</code> was missing from tracked <code>dot_bashrc</code>. Synced live → source.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--blue)">Shell</span><span class="chip eff">S</span></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ NEXT UP ============ -->
+    <section class="col next">
+      <div class="col-h"><span class="icon">▸</span><h2>Next up</h2><span class="count" id="c-next">0</span></div>
+      <div class="cards">
+
+        <div class="card">
+          <div class="title">Restore chezmoi apply</div>
+          <div class="body">Empty stray <code>~/.local/share/chezmoi/dot_config</code> collides with <code>private_dot_config</code>. <code>rmdir</code> + <code>chezmoi apply</code>. (deny-listed — user runs it)</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--teal)">chezmoi</span><span class="chip pri1">P1</span><span class="chip eff">S</span></div>
+        </div>
+
+        <div class="card">
+          <div class="title">Track ~/.wezterm.lua in chezmoi</div>
+          <div class="body">Currently unmanaged — no source file, updated by manual copy. Add it so it deploys reproducibly like the other 10 dotfiles.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--mauve)">WezTerm</span><span class="chip pri1">P1</span><span class="chip eff">S</span></div>
+        </div>
+
+        <div class="card">
+          <div class="title">End-to-end test resurrect restore</div>
+          <div class="body">Save a layout, close all windows, relaunch, <code>Leader+Shift+R</code> — confirm panes + cwds come back. Only ever tested the save path.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--mauve)">WezTerm</span><span class="chip pri2">P2</span><span class="chip eff">S</span></div>
+        </div>
+
+        <div class="card">
+          <div class="title">Prevent accidental window close</div>
+          <div class="body">Flip <code>window_close_confirmation</code> to prompt on multi-pane windows — the whole reason this session started.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--mauve)">WezTerm</span><span class="chip pri2">P2</span><span class="chip eff">S</span></div>
+        </div>
+
+        <div class="card">
+          <div class="title">Auto-gen cheatsheet from config</div>
+          <div class="body">Generate the in-terminal cheatsheet + <code>shortcuts.html</code> from <code>wezterm show-keys</code> so docs never drift from binds.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--yellow)">Docs</span><span class="chip pri2">P2</span><span class="chip eff">M</span></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ BACKLOG ============ -->
+    <section class="col backlog">
+      <div class="col-h"><span class="icon">◇</span><h2>Backlog</h2><span class="count" id="c-backlog">0</span></div>
+      <div class="cards">
+
+        <div class="card">
+          <div class="title">Neovim LSP + completion</div>
+          <div class="body">Mason + lspconfig + blink.cmp (or nvim-cmp). Deliberately excluded from v1 — the editor is currently plugin-light.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--green)">Neovim</span><span class="chip pri2">P2</span><span class="chip eff">L</span></div>
+        </div>
+
+        <div class="card">
+          <div class="title">Treesitter syntax</div>
+          <div class="body">nvim-treesitter for real syntax highlighting + text objects. Pairs with the LSP work.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--green)">Neovim</span><span class="chip pri3">P3</span><span class="chip eff">M</span></div>
+        </div>
+
+        <div class="card">
+          <div class="title">Auto-format on save</div>
+          <div class="body">conform.nvim — black/ruff/prettier/stylua per filetype. Fits the ML/TS/Dart workflow.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--green)">Neovim</span><span class="chip pri3">P3</span><span class="chip eff">M</span></div>
+        </div>
+
+        <div class="card">
+          <div class="title">CI gate on the repo</div>
+          <div class="body"><code>shellcheck</code> + <code>bash -n</code> + <code>wezterm show-keys</code> on PRs, so a broken config never lands. (Old worklog item.)</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--teal)">Repo</span><span class="chip pri3">P3</span><span class="chip eff">M</span></div>
+        </div>
+
+        <div class="card">
+          <div class="title">Expand Zellij layouts</div>
+          <div class="body">More named layouts beyond <code>dev</code> — e.g. a per-project ML layout (notebook + logs + shell + git).</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--peach)">Zellij</span><span class="chip pri3">P3</span><span class="chip eff">S</span></div>
+        </div>
+
+        <div class="card">
+          <div class="title">Theme lazygit + delta</div>
+          <div class="body">Push Catppuccin Mocha into lazygit config + delta so the whole git surface matches.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--pink)">Theme</span><span class="chip pri3">P3</span><span class="chip eff">S</span></div>
+        </div>
+
+        <div class="card">
+          <div class="title">Single-source shortcut pipeline</div>
+          <div class="body">One YAML/Lua source → generates the in-terminal cheatsheet, markdown, and HTML deck. Kills three-way drift for good.</div>
+          <div class="meta"><span class="chip tool" style="--tc:var(--yellow)">Docs</span><span class="chip pri3">P3</span><span class="chip eff">L</span></div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <p>Project: <b>Terminal Environment</b> · <code>~/coding/dotfiles</code>. Companion to the <a href="./shortcuts.html">shortcut deck</a>. Priorities: P1 do-next · P2 soon · P3 parked. Effort: S &lt;1h · M a few h · L a day+. Catppuccin, light/dark.</p>
+  </footer>
+</main>
+
+<script>
+  const root = document.documentElement, tIcon=document.getElementById('themeIcon'), tLbl=document.getElementById('themeLbl');
+  function sysDark(){ return window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function curDark(){ const t=root.getAttribute('data-theme'); return t? t==='dark' : sysDark(); }
+  function paintBtn(){ const d=curDark(); tIcon.textContent=d?'☾':'☀'; tLbl.textContent=d?'Dark':'Light'; }
+  document.getElementById('themeBtn').addEventListener('click',()=>{ root.setAttribute('data-theme', curDark()?'light':'dark'); paintBtn(); });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintBtn);
+  paintBtn();
+
+  // counts + progress
+  function count(sel){ return document.querySelectorAll(sel).length; }
+  const shipped=count('.col.shipped .card'), next=count('.col.next .card'), backlog=count('.col.backlog .card');
+  const total=shipped+next+backlog;
+  document.getElementById('c-shipped').textContent=shipped;
+  document.getElementById('c-next').textContent=next;
+  document.getElementById('c-backlog').textContent=backlog;
+  document.getElementById('doneN').textContent=shipped;
+  document.getElementById('totN').textContent=total;
+  const pct=Math.round(shipped/total*100);
+  document.getElementById('fill').style.width=pct+'%';
+  document.getElementById('pctLbl').textContent=pct+'%';
+</script>
