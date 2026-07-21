@@ -20,19 +20,25 @@ for the type-anywhere flow, with **Speech Note** as a GUI fallback.
 
 ## Installed setup (nerd-dictation)
 
+> **State as of 2026-07-14:** the audio half is installed and working (venv, model,
+> nerd-dictation, `voice-toggle` on `pw-cat`). The **ydotool half is not on the machine** —
+> no binary, no daemon, no udev rule, and `$USER` is not in `input`. Until
+> `setup-voice.sh` is run and you re-login, dictation hears you but types nothing.
+
 | Piece | Location | Role |
 |-------|----------|------|
 | VOSK venv | `~/.local/share/nerd-dictation/venv` | isolated Python + `vosk` |
 | VOSK model (small en) | `~/.config/nerd-dictation/model` | 68M, fast on HDD |
 | nerd-dictation | `~/.local/share/nerd-dictation/src` | the dictation engine |
 | `voice-toggle` | `~/.local/bin/voice-toggle` | start/stop toggle |
+| Recorder | `pw-cat` (`--input=PW-CAT`) | captures mic audio — **not** `parec`, see below |
 | ydotool + ydotoold | `/usr/local/bin` + user service | types at cursor on Wayland |
 | GNOME hotkey | `Super + \` | runs `voice-toggle` |
 
-**Setup script:** `~/coding/scripts/setup-voice.sh` installs the OS pieces (parec recorder,
-builds ydotool — not packaged for Rocky 10, uinput udev rule, ydotoold user service) and
-binds the hotkey. Run **as your user, not sudo** (it elevates internally; gsettings must run
-as you). After first run, **log out/in once** so the new `input` group applies to ydotoold.
+**Setup script:** `~/coding/scripts/setup-voice.sh` installs the OS pieces (builds ydotool —
+not packaged for Rocky 10, uinput udev rule, `input` group, ydotoold user service) and binds
+the hotkey. Run **as your user, not sudo** (it elevates internally; gsettings must run as
+you). After first run, **log out/in once** so the new `input` group applies to ydotoold.
 
 ```sh
 bash ~/coding/scripts/setup-voice.sh   # NOT sudo
@@ -49,6 +55,78 @@ GNOME/Mutter doesn't implement the `virtual-keyboard` Wayland protocol `wtype` n
 `wtype` fails on this box. `ydotool` injects via the kernel `/dev/uinput` device instead —
 compositor-independent, works on GNOME Wayland. Needs the daemon (`ydotoold`) + uinput
 permission, both set by the setup script.
+
+## Troubleshooting: "the microphone doesn't work"
+
+Dictation has **two** halves that fail independently — audio in, keystrokes out. A dead mic
+and a dead typing backend look identical from the user's seat (press the hotkey, nothing
+appears). Diagnose them separately.
+
+### 1. Recorder: use `pw-cat`, never `parec` *(fixed 2026-07-14)*
+
+nerd-dictation defaults to `--input=PAREC`, which shells out to `parec`. That binary ships in
+**`pulseaudio-utils`, which is not installed on this box** (this is a PipeWire system — only
+`pw-cat` / `pw-record` / `wpctl` exist; even `pactl` is absent). The failure is silent unless
+you read the traceback:
+
+```
+FileNotFoundError: [Errno 2] No such file or directory: 'parec'
+```
+
+`voice-toggle` therefore passes **`--input=PW-CAT`**, the PipeWire-native recorder. Don't
+"fix" this by installing `pulseaudio-utils` — `pw-cat` is already there and adds no deps.
+
+Verify the mic is actually being captured while dictation runs:
+
+```sh
+wpctl status | grep -A3 Streams:
+#   70. input_MONO  < C270 HD WEBCAM:capture_MONO  [active]   <- good
+```
+
+Test the mic independently of dictation (records 3s, then check the file is not silence):
+
+```sh
+pw-record --target $(wpctl status | awk '/Sources:/{f=1} f&&/\*/{print $2; exit}' | tr -d '.') /tmp/mictest.wav
+```
+
+### 2. Typing backend: ydotoold must be running
+
+If audio is captured but no text appears, ydotool can't reach its daemon:
+
+```
+Could not connect: No such file or directory
+```
+
+Check all four — the socket, the daemon, the group, and the device:
+
+```sh
+systemctl --user status ydotoold
+ls -l /run/user/$(id -u)/.ydotool_socket
+id -nG | grep input                 # must list `input`
+ls -l /dev/uinput                   # must be group `input`, mode 0660 — root-only means the udev rule is missing
+```
+
+Missing any of them → re-run `bash ~/coding/scripts/setup-voice.sh`, then **log out and back
+in** (the `input` group only takes effect in a new session).
+
+### 3. Built-in analog audio is OFF (separate, pre-existing)
+
+The internal Realtek ALC3246 card is disabled — WirePlumber marks **every** analog/HDMI
+profile `available: no` (ALSA jack detection sees nothing plugged into the jacks), so it
+selects profile `off`. Consequences: no built-in mic, no built-in speakers, and the only sink
+is `Dummy Output`.
+
+```sh
+wpctl status                        # Sinks: only "Dummy Output"; Sources: only the webcam
+pw-dump | grep -A2 EnumProfile      # every PCH profile: available= no
+```
+
+This does **not** affect dictation — the C270 webcam mic is the dictation source and works.
+To force the internal card on anyway (e.g. after plugging a jack in):
+
+```sh
+wpctl set-profile <card-id> 1       # 1 = output:analog-stereo+input:analog-stereo
+```
 
 ## GUI alternative: Speech Note
 

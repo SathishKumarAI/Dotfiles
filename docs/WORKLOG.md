@@ -1,5 +1,58 @@
 # Worklog
 
+## 2026-07-14 13:30 — Voice dictation: mic capture fixed (parec → pw-cat), ydotool half found missing
+
+**Summary:** Ran down "the microphone doesn't work". Mic hardware was fine — the
+C270 webcam captures cleanly (test recording: RMS 534, peak 8925). Dictation was
+broken in two independent places: the recorder binary didn't exist, and the
+type-at-cursor backend was never installed on this machine at all.
+
+**Root causes:**
+1. **Recorder.** nerd-dictation defaults to `--input=PAREC`, which shells out to
+   `parec` — that ships in `pulseaudio-utils`, which is *not installed* (this is a
+   pure PipeWire box; even `pactl` is absent). `Super+\` died instantly with
+   `FileNotFoundError: [Errno 2] No such file or directory: 'parec'`.
+2. **Typing backend.** ydotool is not on the machine: no `ydotool`/`ydotoold`
+   binary, no user service, no uinput udev rule, `/dev/uinput` root-only, `$USER`
+   not in `input`. `~/coding/scripts/setup-voice.sh` — which the docs claim
+   installs all of this — did not exist on disk either. So dictation would *hear*
+   speech and type nothing, which is indistinguishable from a dead mic.
+
+**Changes:**
+- `~/.local/bin/voice-toggle` — pass `--input=PW-CAT` (not in a repo; chezmoi does
+  not track it). Verified end-to-end: `wpctl status` shows
+  `input_MONO < C270 HD WEBCAM:capture_MONO [active]` while dictation runs.
+- `scripts/setup-voice.sh` — recreated (was missing). Builds ydotool from source
+  (not packaged for Rocky 10), installs the uinput udev rule, adds `$USER` to
+  `input`, installs the ydotoold user service, rebinds `Super+\`. **Not yet run.**
+- `docs/desktop/voice-dictation.mdx` — added a troubleshooting section (recorder
+  vs typing backend vs built-in card, with diagnostic commands); corrected the
+  setup table, which wrongly claimed parec was the recorder and ydotool installed.
+
+**Decisions:**
+- Fixed the recorder with `--input=PW-CAT` rather than `dnf install
+  pulseaudio-utils`. `pw-cat` is already present, native to PipeWire, and adds no
+  packages — installing the Pulse compat shims just to get `parec` is backwards on
+  a PipeWire-only system.
+- Did not run `setup-voice.sh` — it installs packages and changes group
+  membership, so it's the user's call (workspace rule: sudo work goes in a `.sh`,
+  never pasted inline).
+
+**Also found (separate, pre-existing):** built-in Realtek ALC3246 card is switched
+**off** — WirePlumber marks every analog/HDMI profile `available: no` (ALSA jack
+detection sees nothing plugged in), so it picks profile `off`. Hence no internal
+mic, no internal speakers, and `Dummy Output` as the only sink. Does not affect
+dictation (webcam mic is the source). Force on with `wpctl set-profile <id> 1`.
+
+**Follow-ups:**
+- [ ] Run `bash ~/coding/scripts/setup-voice.sh`, then log out/in (the `input`
+      group only applies to a new session), then verify `systemctl --user status
+      ydotoold` is active and `Super+\` types at the cursor.
+- [ ] Decide whether to restore built-in analog audio (speakers/internal mic) or
+      leave the card off and stay on the webcam mic.
+- [ ] Consider tracking `~/.local/bin/voice-toggle` in chezmoi — the parec fix
+      currently lives only on this machine and would be lost on a rebuild.
+
 ## 2026-07-07 18:10 — WezTerm session persistence + Neovim plugins + shortcut deck
 
 **Summary:** Finished the in-flight WezTerm resurrect work (recover closed

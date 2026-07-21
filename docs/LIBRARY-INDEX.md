@@ -10,6 +10,7 @@ repo (version-controlled) as of 2026-06-18. Start here.
 | [guides/DEV-WORKFLOW.md](guides/DEV-WORKFLOW.md) | New-project bootstrap, git/lazygit/gh, WezTerm/zellij, neovim, Python/conda, documenting work. |
 | [guides/CLAUDE-CODE-GUIDE.md](guides/CLAUDE-CODE-GUIDE.md) | Claude Code skills, marketplaces, hooks, templates, MCP (context7) on this machine. |
 | [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md) | Known issues + fixes: HDD slowness, boot time, chezmoi divergence, mise "missing", WezTerm/Wayland, GNOME extensions. |
+| [guides/RAM-AND-PERFORMANCE.md](guides/RAM-AND-PERFORMANCE.md) | Stop RAM thrash: triage (RAM vs CPU vs I/O), `ram-monster.py` kill-UI, zram + systemd-oomd + earlyoom prevention stack, idle-stack cleanup, monitor tools (btop/glances/lazydocker). |
 | [guides/AGENT-TOOLS-USAGE.md](guides/AGENT-TOOLS-USAGE.md) | How to drive the installed agent tools: skills CLI, AXI, lavish, treehouse, gnhf, no-mistakes, firstmate, Speech Note. |
 
 ## Features (catalogs)
@@ -23,6 +24,11 @@ repo (version-controlled) as of 2026-06-18. Start here.
 |-----|----------------|
 | [desktop/voice-dictation.mdx](desktop/voice-dictation.mdx) | Offline type-at-cursor voice: nerd-dictation + VOSK + ydotool on GNOME Wayland; Speech Note GUI fallback. Hotkey `Super+\`. |
 | [desktop/disk-usage-and-relocation.md](desktop/disk-usage-and-relocation.md) | Disk audit + root→home relocation (docker/containerd/flatpak bind mounts), docker prune vs keep-active, reclaim steps. |
+
+## Fixes (diagnosed issues + resolutions)
+| Doc | What it covers |
+|-----|----------------|
+| [fixes/wezterm-flatpak-env-leak.md](fixes/wezterm-flatpak-env-leak.md) | WezTerm Flatpak leaks `XDG_*`/`DBUS_*`/`ALSA_CONFIG_*` into host shells — silently breaks gsettings, chezmoi, notify-send, and mic capture (Claude Code `/voice`). zshrc un-leak guard. |
 
 ## Templates (copy into any repo)
 | Path | What it is |

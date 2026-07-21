@@ -76,7 +76,7 @@ fi
 
 # Conda
 if [ -f "$HOME/miniforge3/etc/profile.d/conda.sh" ]; then
-    . "$HOME/miniforge3/etc/profile.d/conda.sh"
+# . "$HOME/miniforge3/etc/profile.d/conda.sh"  # commented out by conda initialize
 fi
 
 # Aliases
@@ -120,20 +120,63 @@ alias up='update-all'             # pacman+AUR+mise+chezmoi+flatpak
 # mkdir + cd in one
 mkcd() { mkdir -p "$1" && cd "$1"; }
 
-# WezTerm shell integration (OSC 133 semantic prompts). Marks where each prompt
-# and command output begin/end so WezTerm can jump prompt-to-prompt (Leader+Up/
-# Down) and copy the last command's output (Leader+y). Self-contained — this box
-# has no system wezterm.sh. No-op outside WezTerm.
+# Un-leak the Flatpak environment. WezTerm is a Flatpak but spawns its shell on
+# the HOST (no /.flatpak-info here), yet the sandbox's XDG_* and DBUS vars are
+# still inherited. Left alone, every XDG-respecting tool in this terminal reads
+# and writes ~/.var/app/org.wezfurlong.wezterm/* instead of the real dirs:
+# chezmoi loses its source dir, gsettings/dconf read a phantom user db, and
+# notify-send/gsettings writes fail against a bus socket that only exists inside
+# the sandbox. Restore the host defaults.
+if [[ -n "$FLATPAK_ID" && ! -f /.flatpak-info ]]; then
+    export XDG_CONFIG_HOME="$HOME/.config"
+    export XDG_DATA_HOME="$HOME/.local/share"
+    export XDG_CACHE_HOME="$HOME/.cache"
+    export XDG_STATE_HOME="$HOME/.local/state"
+    export XDG_CONFIG_DIRS="/etc/xdg"
+    export XDG_DATA_DIRS="/usr/local/share:/usr/share:/var/lib/flatpak/exports/share:$XDG_DATA_HOME/flatpak/exports/share"
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/bus"
+    # ALSA_CONFIG_PATH points at /usr/share/alsa/alsa-flatpak.conf, which exists
+    # ONLY inside the sandbox. On the host ALSA then loads no config at all, so
+    # the "default" PCM never resolves and every capture dies with
+    # "Unknown PCM default". That breaks arecord — which is what Claude Code's
+    # /voice mode shells out to. Unset both so ALSA reads the host config and
+    # picks up /etc/alsa/conf.d/50-pipewire.conf.
+    unset ALSA_CONFIG_PATH ALSA_CONFIG_DIR
+    unset FLATPAK_ID FLATPAK_SANDBOX_DIR
+fi
+
+# WezTerm shell integration. OSC 133 = semantic prompts (jump prompt-to-prompt
+# Leader+Up/Down, copy last output Leader+y). OSC 7 = report the current dir so
+# new tabs / panes / splits open in the SAME directory ("remember last path") and
+# resurrect saves the real cwd. Self-contained — this box has no system
+# wezterm.sh. No-op outside WezTerm.
 if [[ "$TERM_PROGRAM" == "WezTerm" || -n "$WEZTERM_PANE" ]]; then
+    # OSC 7: emit file://host/cwd, percent-encoding anything outside a safe set
+    # (spaces, unicode) so paths with odd chars still resolve.
+    __wt_osc7() {
+        local LC_ALL=C i ch
+        printf '\033]7;file://%s' "${HOST}"
+        for (( i = 1; i <= ${#PWD}; ++i )); do
+            ch="${PWD[i]}"
+            if [[ "$ch" == [/._~A-Za-z0-9-] ]]; then
+                printf '%s' "$ch"
+            else
+                printf '%%%02X' "'$ch"
+            fi
+        done
+        printf '\033\\'
+    }
     __wt_precmd() {
         local ret=$?
         printf '\033]133;D;%s\007' "$ret"   # end of previous command's output
         printf '\033]133;A\007'              # start of a new prompt
+        __wt_osc7                            # report cwd (OSC 7)
     }
     __wt_preexec() { printf '\033]133;C\007'; }   # start of command output
     autoload -Uz add-zsh-hook
     add-zsh-hook precmd  __wt_precmd
     add-zsh-hook preexec __wt_preexec
+    __wt_osc7   # report cwd immediately for the first prompt
 fi
 
 # Syntax highlighting (valid cmd = green, bad = red as you type).
@@ -141,3 +184,19 @@ fi
 if [ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
     source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/deva/miniforge3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/deva/miniforge3/etc/profile.d/conda.sh" ]; then
+        . "/home/deva/miniforge3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/deva/miniforge3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
