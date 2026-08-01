@@ -1,0 +1,194 @@
+---
+title: Agent workflow
+description: How to actually use the Leader+a agent layer and the herdr status pill — keyboard shortcuts, setup, and troubleshooting.
+status: live
+tags: [terminal, wezterm, agents, claude-code, herdr, keybindings]
+---
+
+# Agent workflow
+
+**Intro.** Task-oriented guide to running coding agents in the terminal: start
+Claude Code without leaving your directory, see which of several agents needs a
+decision, and feed terminal context into a prompt without reaching for the mouse.
+
+Two pieces do the work. [wezterm](./wezterm.mdx) provides the `Leader+a` layer
+and the context-copying keys; [herdr](./herdr.mdx) provides agent detection and
+state. You do not need herdr to use the `Leader+a` keys — they work standalone.
+
+---
+
+## Quick start
+
+```bash
+cd ~/coding/live/my-project     # 1. stand in the repo you care about
+# 2. press Ctrl+a  a  c         →  Claude Code opens in a new tab, already here
+```
+
+That's the whole loop. Everything below is refinement.
+
+To get the status pill as well, start a herdr session first (`Ctrl+a a h`, or
+`herdr` in a shell), then run your agents inside it.
+
+---
+
+## Reading the status pill
+
+Once agents are running, the **right side of the status bar** shows them. You
+don't interact with it; it's a glance target.
+
+| Display | Meaning | Do you care? |
+|---------|---------|--------------|
+| *(nothing)* | no agents running | — |
+| `󰚩 1` green | one agent, idle | no |
+| `󰚩 3  ● 2 working` green | three agents, two mid-task | no |
+| `󰚩 3  ▲ 1 blocked` **red** | one is waiting on you | **yes** |
+
+**Red is the only state that needs a reaction.** The value is that it's visible
+from a plain shell tab, or while working in a different project entirely — you
+don't have to cycle through tabs to discover an agent stalled ten minutes ago.
+
+Colours are Catppuccin: green `#a6e3a1`, red `#f38ba8`.
+
+---
+
+## Keyboard shortcuts
+
+`Leader` is **`Ctrl+a`**. Press and release it, *then* press the next key — it is
+a sequence, not a chord. You have 1 second.
+
+### Agent layer — `Leader+a`, then one key
+
+The status bar shows `AGENT` while it waits. It exits after one key, so it can
+never trap you. `Esc` or `q` backs out.
+
+| Sequence | Action |
+|----------|--------|
+| `Ctrl+a` `a` `c` | Claude Code in a **new tab**, inheriting the current directory |
+| `Ctrl+a` `a` `s` | Claude Code in a **split** beside the current pane |
+| `Ctrl+a` `a` `r` | `claude --resume` — pick a past session |
+| `Ctrl+a` `a` `k` | `claude --continue` — resume the most recent session |
+| `Ctrl+a` `a` `h` | start **herdr** |
+| `Ctrl+a` `a` `y` | copy last command **+ its output** as a markdown block |
+| `Ctrl+a` `a` `Y` | copy the **whole scrollback** |
+| `Ctrl+a` `a` `Esc` / `q` | cancel |
+
+The directory inheritance is the part worth internalising: `cd` to a repo, then
+`Ctrl+a a c`, and the agent starts there. No `cd` inside the agent.
+
+Panes stay alive after an agent exits, so the session's scrollback survives and
+you can read what happened.
+
+### Feeding context to an agent
+
+The half people forget. A command just failed and you want the agent to see it:
+
+| Sequence | Copies |
+|----------|--------|
+| `Ctrl+a` `a` `y` | the command **and** its output, pre-fenced as ` ```console ` — paste straight in |
+| `Ctrl+a` `a` `Y` | the entire scrollback, for handing over a long run |
+| `Ctrl+a` `y` | just the output, no command (older bind, still available) |
+| `Ctrl+a` `Space` | **quick-select** — labels every `file.py:42`, path, SHA, IP and URL on screen; type its letter to copy |
+| `Ctrl+a` `o` | label every URL on screen, type a letter to open it in the browser |
+
+**Quick-select is the sleeper.** Agent and compiler output is full of
+`src/main.py:42:10`. Quick-select grabs one in two keystrokes instead of a mouse
+drag, and the `file:line` pattern is ordered ahead of the generic path rule so it
+keeps the line number.
+
+### herdr's own keys (inside a herdr session)
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+g` `?` | show every active herdr binding |
+| `Ctrl+g` `c` | new tab |
+| `Ctrl+g` `v` / `-` | split vertical / horizontal |
+| `Ctrl+g` `q` | detach — processes keep running |
+| `Ctrl+alt` + `h/j/k/l` | focus pane left/down/up/right, **no prefix needed** |
+
+⚠️ **herdr's prefix here is `Ctrl+g`, not the `Ctrl+b` in its upstream docs.**
+`Ctrl+b` is vim's page-up, and `Ctrl+a` never reaches herdr because wezterm's
+leader intercepts it first. Its own `prefix+?` help screen will say `Ctrl+b`;
+ignore that. Reasoning in [herdr](./herdr.mdx).
+
+herdr is also mouse-first — click to focus, drag borders, right-click for menus.
+
+### Full keymap
+
+`Ctrl+a` `?` pages the complete cheatsheet in a new tab (`q` closes it). It lives
+in the config itself, so it cannot drift from the actual bindings.
+
+---
+
+## Enabling / prerequisites
+
+### 1. Config must be loaded
+
+| Platform | Config | Apply |
+|----------|--------|-------|
+| Linux | `chezmoi/dot_wezterm.lua` | `chezmoi apply ~/.wezterm.lua` |
+| Windows | `dotfiles/wezterm/wezterm-windows.lua` | already loaded via the `~/.wezterm.lua` stub |
+
+Most settings hot-reload. **Window decorations and the kitty keyboard protocol do
+not** — open a fresh window after first applying.
+
+### 2. Shell integration (OSC 133) — needed for the copy keys
+
+`Ctrl+a a y`, `Ctrl+a y` and prompt-jumping (`Ctrl+a` `↑`/`↓`) all rely on the
+shell emitting OSC 133 markers so wezterm knows where a command starts and ends.
+
+- **zsh on Linux** — wezterm's shell integration is on by default via
+  `/etc/profile.d/wezterm.sh` on most installs.
+- **Verify:** run any command, then press `Ctrl+a` `↑`. If the view jumps to the
+  previous prompt, markers are working.
+- **If it reports "No shell zones captured yet"**, your shell isn't emitting
+  them. A bare `pwsh` on Windows generally does not without extra setup.
+
+Everything else — launching agents, quick-select, the status pill — works
+without shell integration.
+
+### 3. herdr (only for the status pill)
+
+```bash
+bash ~/coding/workspace/dotfiles/scripts/install-herdr.sh
+chezmoi apply ~/.config/herdr/config.toml
+```
+
+The `Leader+a` keys work fine without herdr; you just get no pill.
+
+### 4. Shift+Enter in Claude Code
+
+`enable_kitty_keyboard = true` is what lets Claude Code see **Shift+Enter** as
+distinct from Enter, so it inserts a newline instead of submitting. Requires a
+**fresh window** after the config is applied — it does not hot-reload.
+
+---
+
+## Troubleshooting
+
+| Symptom | Cause / fix |
+|---------|-------------|
+| `Ctrl+a a c` does nothing | `Leader` is a *sequence* — release `Ctrl+a` before pressing `a`, then `c`. You have 1s. Watch for `AGENT` in the status bar. |
+| Status bar shows `AGENT` but keys do nothing | You're past the 2s key-table timeout. Press `Esc` and retry. |
+| No pill, even with agents running | herdr not on wezterm's PATH, or no server. Check `herdr agent list`. Polling **stops after 3 failures** — restart wezterm to retry. |
+| Pill never updates | It refreshes every 3s, not instantly. |
+| "No shell zones captured yet" | OSC 133 shell integration isn't active — see *Enabling* above. |
+| Shift+Enter submits instead of newline | Kitty keyboard not active. Confirm `enable_kitty_keyboard = true` and open a **fresh window**. |
+| Agent tab closes instantly | Should not happen — spawns are wrapped to keep the pane alive. If it does, the binary wasn't found; the error is in that pane's scrollback. |
+| `Ctrl+b` stolen inside herdr | It shouldn't be — the prefix is `Ctrl+g` here. If it is, `~/.config/herdr/config.toml` didn't apply. |
+
+### Why the pill isn't expensive
+
+`update-status` fires several times per second, and wezterm has no async
+subprocess API in config — every `run_child_process` blocks the event loop. So a
+timer polls `herdr agent list` every 3s into a cache, and `update-status` only
+*reads* that cache. One subprocess every few seconds, not hundreds a minute. If
+herdr is absent, polling stops permanently after 3 failures rather than spawning
+a doomed process forever.
+
+---
+
+## Links
+
+- Emulator config: [wezterm](./wezterm.mdx) · [wezterm (Windows)](./wezterm-windows.mdx)
+- Agent multiplexer: [herdr](./herdr.mdx)
+- Flatpak env gotcha that breaks `/voice` and agent PATH: [wezterm-flatpak-env-leak](../fixes/wezterm-flatpak-env-leak.md)

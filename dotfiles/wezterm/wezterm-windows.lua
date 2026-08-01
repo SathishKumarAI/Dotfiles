@@ -1,38 +1,53 @@
+-- WezTerm — WINDOWS variant.            install → %USERPROFILE%\.wezterm.lua
+--
+-- The Linux config is chezmoi/dot_wezterm.lua. This is a SEPARATE file, not a
+-- template, because the two diverge on the things that matter (shell, window
+-- system, process spawning) and a template would bury that behind conditionals.
+--
+-- Everything agent-related is IDENTICAL to the Linux config on purpose: same
+-- Leader+a layer, same keys, same quick-select. Muscle memory carries across
+-- machines; only the plumbing underneath differs.
+--
+-- Windows deltas vs Linux:
+--   shell         pwsh          (Linux: /bin/zsh --login)
+--   agent spawn   pwsh -NoExit  (Linux: zsh -lc '...; exec zsh -l')
+--   no enable_wayland / Flatpak handling — both are Linux-only concerns
+--   launch menu   PowerShell / Git Bash / Python  (no zsh, no bash --login)
+
 local wezterm = require("wezterm")
 local act = wezterm.action
 
--- Session persistence across restarts/reboots. resurrect.wezterm saves the
--- workspace/window/tab/PANE layout + each pane's cwd to disk, so a full layout
--- can be brought back after quitting WezTerm or rebooting. (The unix mux domain
--- further down already keeps panes alive across a GUI close/crash; resurrect
--- adds on-disk state that ALSO survives a reboot.) The plugin is archived but
--- working; the first load fetches it from GitHub, then it's cached locally.
--- pcall so a failed fetch/plugin never stops WezTerm from starting.
+-- Session persistence across restarts/reboots. Same plugin as Linux; the first
+-- load fetches from GitHub then caches locally. pcall so a failed fetch never
+-- stops WezTerm from starting.
+--
+-- ⚠ KNOWN WINDOWS ISSUE, measured not guessed: loading this plugin prints
+--   "The syntax of the command is incorrect." 3× on every launch. Isolated to
+--   the plugin itself — a bare config prints 0, this plugin alone prints 3. It
+--   is archived and shells out with POSIX syntax that cmd.exe rejects.
+--   WezTerm still starts fine (exit 0) and the rest of the config is unaffected,
+--   but SAVE/RESTORE (Leader+Shift+S / R) is UNVERIFIED on Windows — the failing
+--   calls are likely how it enumerates its state directory. Treat Windows
+--   session restore as "probably broken until you test it", and set
+--   ok_resurrect = false below to silence the noise if you don't use it.
 local ok_resurrect, resurrect = pcall(function()
   return wezterm.plugin.require("https://github.com/MLFlexer/resurrect.wezterm")
 end)
 if ok_resurrect then
-  -- Autosave every 5 min: on-disk state stays fresh with no keypress, so a
-  -- crash/reboot loses at most ~5 min of layout changes.
   resurrect.state_manager.periodic_save({
     interval_seconds = 5 * 60,
     save_workspaces = true,
     save_windows = true,
     save_tabs = true,
   })
-
-  -- Autosave on window close. WezTerm fires no dedicated "window-closed" GUI
-  -- event, but a window always loses focus as it closes, so saving whenever a
-  -- window goes unfocused captures the layout right before it disappears (and
-  -- also every time you switch away). Cheap: writes the current workspace state.
+  -- No dedicated "window-closed" GUI event exists, but a window always loses
+  -- focus as it closes — so saving on unfocus captures the layout right before
+  -- it disappears.
   wezterm.on("window-focus-changed", function(window)
     if window and not window:is_focused() and ok_resurrect then
       resurrect.state_manager.save_state(resurrect.workspace_state.get_workspace_state())
     end
   end)
-
-  -- Production hardening: surface plugin failures to the WezTerm log instead of
-  -- failing silently. Without this, a bad save/load path is invisible.
   wezterm.on("resurrect.error", function(err)
     wezterm.log_error("resurrect error: " .. tostring(err))
   end)
@@ -44,23 +59,20 @@ local config = wezterm.config_builder()
 config.front_end = "WebGpu"
 config.max_fps = 120
 config.animation_fps = 120
--- Native Wayland. XWayland is unavailable in this session (XOpenDisplay fails),
--- so enable_wayland=false made wezterm fail to start entirely. If the old
--- Mutter explicit-sync crash ("Protocol error os error 71") returns, upgrade
--- wezterm or switch front_end below to "OpenGL".
-config.enable_wayland = true
 
--- Font
+-- Font. NOTE: this machine has "JetBrains Mono" but NOT the Nerd Font build, so
+-- the Nerd Font family is listed first for other machines and falls through
+-- here. Nerd glyphs still render: WezTerm ships a built-in "Symbols Nerd Font
+-- Mono" and resolves icons like the robot glyph through it automatically.
+-- Install JetBrainsMono Nerd Font if you want the icons metrically matched.
 config.font = wezterm.font_with_fallback({
   { family = "JetBrainsMono Nerd Font", weight = "Medium" },
   { family = "JetBrains Mono", weight = "Medium" },
-  "Fira Code",
-  "monospace",
+  "Cascadia Code",
+  "Consolas",
 })
 config.font_size = 12.5
 config.line_height = 1.15
--- Ligatures + contextual alternates (JetBrainsMono Nerd Font ships them):
--- == -> != => become connected glyphs. calt/clig = context-aware shaping.
 config.harfbuzz_features = { "calt=1", "liga=1", "clig=1" }
 
 -- Catppuccin Mocha
@@ -68,9 +80,6 @@ config.color_scheme = "Catppuccin Mocha"
 config.window_background_opacity = 0.92
 config.text_background_opacity = 0.9
 
--- Subtle vertical Mocha gradient behind the text for depth. Stops stay close
--- to the base/crust colors so it reads as a gentle shade, not a rainbow. The
--- window_background_opacity above still applies, so transparency is preserved.
 config.window_background_gradient = {
   orientation = "Vertical",
   colors = { "#1e1e2e", "#181825", "#11111b" },
@@ -80,43 +89,24 @@ config.window_background_gradient = {
 
 -- Window
 config.window_padding = { left = 8, right = 8, top = 6, bottom = 6 }
--- Normal app window: TITLE gives GNOME's server-side titlebar with
--- minimize/maximize/close buttons + a draggable bar; RESIZE adds the resize
--- border so you can drag any edge. This is what makes WezTerm behave like a
--- regular Mutter window (Super+drag move, double-click titlebar to maximize,
--- header-bar buttons). Use "NONE" for a borderless clean edge (loses buttons),
--- or "RESIZE" for borders-only without the titlebar.
---
--- INTEGRATED_BUTTONS|RESIZE drops the separate GNOME titlebar and instead draws
--- the minimize/maximize/close buttons INSIDE the tab bar — a smaller, cleaner
--- frame with no wasted titlebar row. Requires the fancy tab bar at the top (see
--- Tab bar section). Move the window with the mouse by dragging an empty part of
--- the tab bar, or Super+left-drag anywhere.
+-- Window buttons drawn INSIDE the tab bar instead of a separate title bar.
+-- Works the same on Windows as on GNOME. Drag empty tab-bar space to move.
 config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
 config.window_close_confirmation = "NeverPrompt"
--- Fallback geometry if the mux can't maximize (e.g. headless / no GUI).
 config.initial_cols = 140
 config.initial_rows = 38
 
--- Start maximized so the window fills the screen on every launch. Maximize
--- (not ToggleFullScreen) keeps the tab bar + window controls visible; F11
--- still toggles true borderless fullscreen on demand.
 wezterm.on("gui-startup", function(cmd)
   local _, _, window = wezterm.mux.spawn_window(cmd or {})
   window:gui_window():maximize()
 end)
 
--- Window management: snap to screen halves, maximize, restore, fullscreen.
--- WezTerm exposes window geometry via the GUI window API; we compute against the
--- active screen so left/right halves work on whatever monitor the window is on.
--- (On Wayland the GNOME compositor may override positioning — if a snap is
--- ignored, GNOME's own Super+Left / Super+Right tiling still works.)
+-- Window management: snap to screen halves, maximize, restore.
 local function active_screen()
   local screens = wezterm.gui.screens()
   return screens.active or screens.main
 end
 
--- Snap the window to the left or right half of the active screen.
 local function snap_half(window, side)
   local s = active_screen()
   if not s then return end
@@ -130,13 +120,8 @@ local function snap_half(window, side)
   end
 end
 
-wezterm.on("snap-left", function(window)
-  snap_half(window, "left")
-end)
-wezterm.on("snap-right", function(window)
-  snap_half(window, "right")
-end)
--- Half-height/centered "restore" size — a comfortable non-maximized window.
+wezterm.on("snap-left", function(window) snap_half(window, "left") end)
+wezterm.on("snap-right", function(window) snap_half(window, "right") end)
 wezterm.on("snap-center", function(window)
   local s = active_screen()
   if not s then return end
@@ -146,41 +131,26 @@ wezterm.on("snap-center", function(window)
   gw:set_inner_size(w, h)
   gw:set_position(s.x + math.floor((s.width - w) / 2), s.y + math.floor((s.height - h) / 2))
 end)
-wezterm.on("win-maximize", function(window)
-  window:gui_window():maximize()
-end)
-wezterm.on("win-restore", function(window)
-  window:gui_window():restore()
-end)
+wezterm.on("win-maximize", function(window) window:gui_window():maximize() end)
+wezterm.on("win-restore", function(window) window:gui_window():restore() end)
 
--- Toggle the tab bar on demand. WezTerm can't reveal it on mouse-hover (no such
--- API), so this gives keyboard control: hide it for a clean full-screen view,
--- show it again when you need tabs. (hide_tab_bar_if_only_one_tab already hides
--- it automatically whenever a single tab is open.)
 wezterm.on("toggle-tab-bar", function(window)
   local overrides = window:get_config_overrides() or {}
-  if overrides.enable_tab_bar == false then
-    overrides.enable_tab_bar = true
-  else
-    overrides.enable_tab_bar = false
-  end
+  overrides.enable_tab_bar = not (overrides.enable_tab_bar == false) and false or true
   window:set_config_overrides(overrides)
 end)
 
--- Toggle background transparency: flip between the configured 0.92 and fully
--- solid (1.0) on the fly — handy when a screenshot/readability needs no bleed.
 wezterm.on("toggle-opacity", function(window)
   local overrides = window:get_config_overrides() or {}
   if overrides.window_background_opacity == 1.0 then
-    overrides.window_background_opacity = nil  -- back to config default (0.92)
+    overrides.window_background_opacity = nil
   else
     overrides.window_background_opacity = 1.0
   end
   window:set_config_overrides(overrides)
 end)
 
--- Custom tab titles: index + a Nerd Font icon for the running process + title,
--- with the active tab accented in Mauve and a [Z] marker when the pane is zoomed.
+-- Tab titles: index + process icon + title, active tab in Mauve, [Z] when zoomed.
 local PROC_ICONS = {
   ["nvim"] = " ",
   ["vim"] = " ",
@@ -192,10 +162,11 @@ local PROC_ICONS = {
   ["docker"] = " ",
   ["ssh"] = " ",
   ["btop"] = " ",
-  ["htop"] = " ",
   ["zellij"] = " ",
-  ["zsh"] = " ",
+  ["pwsh"] = " ",
+  ["powershell"] = " ",
   ["bash"] = " ",
+  ["cmd"] = " ",
   ["claude"] = "󰚩 ",
   ["herdr"] = "󰕰 ",
 }
@@ -207,17 +178,18 @@ local function tab_title(tab)
 end
 
 wezterm.on("format-tab-title", function(tab, _tabs, _panes, _cfg, _hover, max_width)
-  local proc = (tab.active_pane.foreground_process_name or ""):gsub(".*/", "")
+  -- Windows process names carry a .exe suffix and a backslash path; strip both
+  -- so the icon table (which keys on bare names) matches.
+  local proc = (tab.active_pane.foreground_process_name or "")
+    :gsub(".*[/\\]", ""):gsub("%.exe$", "")
   local icon = PROC_ICONS[proc] or " "
   local zoom = tab.active_pane.is_zoomed and " [Z]" or ""
   local title = tab_title(tab)
   -- Claude Code is a Node wrapper, so it usually reports as "node" and the
-  -- process-name lookup above misses it. Fall back to the pane title, which
-  -- carries "claude", so agent tabs stay identifiable at a glance.
+  -- lookup above misses it. Fall back to the pane title, which carries "claude".
   if not PROC_ICONS[proc] and title:lower():find("claude", 1, true) then
     icon = PROC_ICONS["claude"]
   end
-  -- Leave room for "  N  " + icon + zoom marker.
   local budget = max_width - 8
   if #title > budget and budget > 1 then
     title = title:sub(1, budget - 1) .. "…"
@@ -245,10 +217,11 @@ end)
 -- second, and wezterm has no async subprocess API in the config — every
 -- run_child_process blocks the event loop. So a timer refreshes a cache and
 -- update-status only ever READS that cache. One subprocess every few seconds
--- instead of hundreds a minute.
+-- instead of hundreds a minute. Matters more on Windows, where spawning a
+-- process is markedly slower than on Linux.
 --
 -- `herdr agent list` emits a single line of JSON (it has no --json flag; that
--- errors). Real shape:
+-- errors). Verified shape on herdr 0.7.5-preview:
 --   {"result":{"agents":[{"agent":"claude","agent_status":"idle",...}],...}}
 -- We COUNT agent_status occurrences rather than parsing JSON: no dependency,
 -- and an upstream schema change degrades to "no pill" instead of a broken config.
@@ -292,9 +265,8 @@ end
 -- Start after a short delay so it never competes with GUI startup.
 wezterm.time.call_after(1, herdr_poll)
 
--- Status bar: workspace pill on the left; leader + active key-table on the right.
+-- Status bar: workspace pill left; leader + active key-table right.
 wezterm.on("update-status", function(window, _pane)
-  -- Left: active workspace name in a Mauve pill.
   window:set_left_status(wezterm.format({
     { Background = { Color = "#cba6f7" } },
     { Foreground = { Color = "#1e1e2e" } },
@@ -305,7 +277,6 @@ wezterm.on("update-status", function(window, _pane)
     { Text = " " },
   }))
 
-  -- Right: herdr agent state + leader indicator + modal key-table name.
   local cells = {}
 
   -- Agent pill, read from the cache the poller above maintains. Hidden entirely
@@ -347,12 +318,9 @@ wezterm.on("update-status", function(window, _pane)
   window:set_right_status(wezterm.format(cells))
 end)
 
--- Tab bar
--- Fancy tab bar is required for INTEGRATED_BUTTONS (window controls live here
--- instead of a titlebar). Fancy tab bar only renders at the TOP, so the bottom
--- placement is off. Tab bar stays visible even with one tab — otherwise the
--- min/max/close buttons would vanish and you'd have no mouse way to move/close
--- the window.
+-- Tab bar. Fancy bar required for INTEGRATED_BUTTONS, and it only renders at
+-- the top — so bottom placement is off and the bar stays visible with one tab
+-- (otherwise the window buttons would vanish).
 config.enable_tab_bar = true
 config.use_fancy_tab_bar = true
 config.hide_tab_bar_if_only_one_tab = false
@@ -360,7 +328,6 @@ config.tab_bar_at_bottom = false
 config.tab_max_width = 28
 
 config.colors = {
-  -- Selection, cursor, scrollbar and pane-split lines (Catppuccin Mocha).
   selection_fg = "#1e1e2e",
   selection_bg = "#f5e0dc",
   cursor_bg = "#f5e0dc",
@@ -379,29 +346,22 @@ config.colors = {
   },
 }
 
--- Fancy tab bar frame (holds the integrated window buttons). Catppuccin Mocha
--- crust/base so the frame reads as one piece with the tab bar colors above; a
--- slightly smaller font keeps the bar compact so it doesn't cost much height.
 config.window_frame = {
   active_titlebar_bg = "#11111b",
   inactive_titlebar_bg = "#11111b",
-  font = wezterm.font({ family = "JetBrainsMono Nerd Font", weight = "Bold" }),
+  font = wezterm.font({ family = "JetBrains Mono", weight = "Bold" }),
   font_size = 11.0,
 }
 
 -- Cursor
 config.default_cursor_style = "BlinkingBlock"
 config.cursor_blink_rate = 600
--- Smooth the blink instead of a hard on/off flash.
 config.cursor_blink_ease_in = "EaseOut"
 config.cursor_blink_ease_out = "EaseIn"
 
 -- Visual depth / clarity
--- Dim panes that aren't focused so the active one stands out.
 config.inactive_pane_hsb = { saturation = 0.9, brightness = 0.7 }
--- Show a scrollbar (handy with the 10k-line scrollback).
 config.enable_scroll_bar = true
--- Non-intrusive flash on the bell (audible bell stays Disabled below).
 config.visual_bell = {
   fade_in_duration_ms = 75,
   fade_out_duration_ms = 75,
@@ -410,38 +370,31 @@ config.visual_bell = {
   target = "CursorColor",
 }
 
--- Scrollback. Left at 10k on purpose: herdr has its own scrollback plus history
--- replay for agent runs, so there's no reason to spend RAM twice on a machine
--- that already needs OOM/swap tooling.
 config.scrollback_lines = 10000
 
 -- Kitty keyboard protocol. Lets TUIs receive key events the legacy encoding
 -- cannot express — notably SHIFT+ENTER as distinct from Enter, which is how
 -- Claude Code inserts a newline in its prompt instead of submitting it.
--- If an older TUI starts mis-reading keys, this is the line to revert.
+-- Revert this line if an older TUI starts mis-reading keys.
 config.enable_kitty_keyboard = true
 
--- Shell — zsh so autosuggestions / syntax-highlighting / fzf+fd are active
--- (configured in ~/.zshrc; bash does not get them).
-config.default_prog = { "/bin/zsh", "--login" }
+-- Shell. PowerShell 7 (pwsh), not Windows PowerShell 5 — pipeline chain
+-- operators, ternary and null-coalescing all live in 7+.
+config.default_prog = { "pwsh", "-NoLogo" }
 
--- Persistent local sessions. A unix mux domain keeps panes/tabs alive in a
--- background server, so they survive closing/crashing the GUI. Attach with
--- `Leader+u` (act.AttachDomain) or from a shell: `wezterm connect unix`.
--- For always-persistent launches, run `wezterm connect unix` instead of plain
--- `wezterm` (left opt-in so the normal launch path / maximize stays simple).
+-- Persistent local sessions. On Windows the mux domain is backed by a named
+-- pipe rather than a unix socket, but the behaviour is the same: panes survive
+-- closing/crashing the GUI. Attach with Leader+u.
 config.unix_domains = { { name = "unix" } }
 
--- Agent launchers (Claude Code, herdr). Both run as HOST processes even though
--- the WezTerm GUI is a Flatpak, and both resolve through the shell's PATH
--- (~/.local/bin symlinks, mise shims) — so every spawn goes through a LOGIN
--- shell. See docs/fixes/wezterm-flatpak-env-leak.md.
+-- Agent launchers (Claude Code, herdr).
 --
--- The trailing `exec zsh -l` is load-bearing: exit_behavior = "Close" would
--- otherwise destroy the tab the moment claude exits, taking the session's whole
--- scrollback with it, and a "command not found" would flash past unreadably.
+-- `-NoExit` is the Windows counterpart to Linux's `exec zsh -l` trick: it keeps
+-- the pane alive after the agent exits, so the session's scrollback survives and
+-- a "command not found" stays readable instead of the tab vanishing instantly
+-- (window_close_confirmation is NeverPrompt and panes close on exit).
 local function agent_cmd(cmd)
-  return { "/bin/zsh", "-lc", cmd .. "; exec /bin/zsh -l" }
+  return { "pwsh", "-NoLogo", "-NoExit", "-Command", cmd }
 end
 
 -- Current pane's cwd, so a spawned agent starts in the repo you're looking at.
@@ -471,46 +424,44 @@ local function spawn_agent(cmd, split)
   end)
 end
 
--- Launch menu: multiple profiles in one click (Zsh first = default)
+-- Launch menu. Bare names resolve via PATH (scoop shims, WindowsApps, mise).
 config.launch_menu = {
-  { label = " Zsh", args = { "/bin/zsh", "--login" } },
-  { label = " Bash", args = { "/bin/bash", "--login" } },
-  -- Bare names resolve via PATH so this works on any host (system pkgs,
-  -- mise shims, ~/.local/bin) without hardcoding per-machine absolute paths.
+  { label = " PowerShell", args = { "pwsh", "-NoLogo" } },
+  { label = " Windows PowerShell", args = { "powershell.exe", "-NoLogo" } },
+  { label = " Git Bash", args = { "C:\\Program Files\\Git\\bin\\bash.exe", "-i", "-l" } },
+  { label = " Command Prompt", args = { "cmd.exe" } },
+  { label = " Python REPL", args = { "python" } },
   { label = " Zellij", args = { "zellij" } },
-  { label = " Zellij (new session)", args = { "zellij", "-s", "work" } },
-  { label = " Python REPL", args = { "python3" } },
-  { label = " Node REPL", args = { "node" } },
-  { label = " btop", args = { "btop" } },
-  -- Agents. Login-shell wrapped for the same PATH/Flatpak reason as above.
+  { label = " lazygit", args = { "lazygit" } },
+  -- Agents. pwsh -NoExit wrapped so the pane survives the session ending.
   { label = "󰚩 Claude Code", args = agent_cmd("claude") },
   { label = "󰚩 Claude Code (resume)", args = agent_cmd("claude --resume") },
   { label = "󰕰 Herdr (agent multiplexer)", args = agent_cmd("herdr") },
 }
 
--- Leader key (tmux-style). Ctrl+a then a second key. Existing Ctrl+Shift binds
--- are untouched; this just adds a second, modal way to drive panes/workspaces.
+-- Leader key (tmux-style). Ctrl+a then a second key.
 config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 1000 }
 
--- Quick-select copy: type the Leader+Space hint, then a letter, to copy any
--- match to the clipboard. These ADD to WezTerm's built-in patterns (URLs, etc).
+-- Quick-select copy: Leader+Space, then a letter, copies any match.
 config.quick_select_patterns = {
   -- file:line[:col] FIRST — agent, compiler and stack-trace output is full of
-  -- these, and it must beat the generic path rule below, or "src/main.py:42"
+  -- these, and it must beat the generic path rules below, or "src/main.py:42"
   -- gets grabbed without the line number that made it worth copying.
   "[\\w./~+-]+\\.[A-Za-z0-9_]+:\\d+(?::\\d+)?",
+  -- Windows absolute paths (C:\Users\... ), which the POSIX rule below misses.
+  "[A-Za-z]:\\\\[\\w\\\\.@%+-]+",
   "[0-9a-f]{7,40}",                     -- git commit SHAs
   "(?:[0-9]{1,3}\\.){3}[0-9]{1,3}",     -- IPv4 addresses
   "0x[0-9a-fA-F]+",                     -- hex literals
-  "[~./][\\w./@%+-]+",                  -- file paths
+  "[~./][\\w./@%+-]+",                  -- POSIX-style file paths
   "[\\w.+-]+@[\\w.-]+\\.[A-Za-z]{2,}",  -- email addresses
 }
 
 -- Cheatsheet overlay (Leader+?). WezTerm has no text-overlay API, so this writes
--- the keymap to a temp file and pages it in a new tab (q to close). Keep in sync
--- with the binds below when you add/remove keys.
+-- the keymap to a temp file and pages it in a new tab. Keep in sync with the
+-- binds below when you add/remove keys.
 local CHEATSHEET = [[
-  WezTerm keybindings — Leader = Ctrl+a (then a key within 1s)
+  WezTerm keybindings (Windows) — Leader = Ctrl+a (then a key within 1s)
 
   PANES
     Ctrl+Shift+d / e        split horizontal / vertical
@@ -520,69 +471,61 @@ local CHEATSHEET = [[
     Ctrl+Shift+x            close pane           |  Leader+x  close
     Leader+p                pick pane by letter
     Leader+r                resize mode (hjkl, Esc exits)
-    Ctrl+Shift+Alt+H/J/K/L  resize pane
 
   TABS
     Ctrl+Shift+t            new tab    |  Ctrl+Shift+w / Leader+q  close
     Ctrl+Tab / Ctrl+Shift+Tab   next / prev tab
     Alt+1..9                jump to tab 1..9
 
-  WORKSPACES (apps)
+  WORKSPACES
     Leader+n                new named workspace
     Leader+w                workspace switcher (fuzzy)
-    Leader+Tab / Leader+]   next workspace   |  Leader+Shift+Tab  prev
     Ctrl+Shift+Space        fuzzy switcher (apps/tabs/workspaces/commands)
-
-  SCROLLBACK & SEARCH  (needs shell integration, on by default)
-    Leader+Up / Down        jump to previous / next shell prompt
-    Leader+y                copy the LAST command's output
-    Leader+[                copy mode (vim motions)
-    Ctrl+Shift+f / Leader+f search
-    Ctrl+Shift+PageUp/Down  scroll half page
-
-  SELECT / COPY
-    Leader+Space            quick-select (URLs, SHAs, IPs, paths, emails)
-    Leader+o                open a URL on screen in the browser
-    Leader+e                char / emoji picker (copies)
-    Ctrl+Shift+c / v        copy / paste     |  drag = copy, middle-click = paste
-
-  WINDOW
-    Super+Left / Right      snap to left / right half   (Leader+h / l too)
-    Super+Up / Down         maximize / restore
-    Leader+m / c            maximize / center
-    Super+Return / F11      fullscreen        |  Leader+Shift+F  fullscreen
-    Super+h / Leader+,      minimize
-    Leader+b                toggle tab bar
-    Leader+Shift+O          toggle transparency
 
   AGENTS  (Leader+a, then one key)
     Leader+a c              Claude Code in a new tab (inherits cwd)
     Leader+a s              Claude Code in a split beside this pane
     Leader+a r / k          claude --resume / --continue
-    Leader+a h              herdr (agent multiplexer; its own prefix is Ctrl+g)
+    Leader+a h              herdr (agent multiplexer)
     Leader+a y              copy last command + its output as a markdown block
     Leader+a Y              copy the whole scrollback
+
+  SCROLLBACK & SEARCH  (needs shell integration)
+    Leader+Up / Down        jump to previous / next shell prompt
+    Leader+y                copy the LAST command's output
+    Leader+[                copy mode (vim motions)
+    Ctrl+Shift+f / Leader+f search
+
+  SELECT / COPY
+    Leader+Space            quick-select (paths, SHAs, IPs, file:line, emails)
+    Leader+o                open a URL on screen in the browser
+    Leader+e                char / emoji picker (copies)
+    Ctrl+Shift+c / v        copy / paste   |  drag = copy, middle-click = paste
+
+  WINDOW
+    Leader+h / l            snap to left / right half
+    Leader+m / c            maximize / center
+    F11                     fullscreen     |  Leader+Shift+F  fullscreen
+    Leader+,                minimize
+    Leader+b                toggle tab bar
+    Leader+Shift+O          toggle transparency
 
   LAUNCH
     Ctrl+Shift+p            profile launcher  |  Ctrl+Shift+z  Zellij in new tab
     Ctrl+Shift+Alt+P        command palette
-    Leader+u                attach persistent mux session  (shell: wtp)
+    Leader+u                attach persistent mux session
     Leader+?                this cheatsheet
 
   SESSION (resurrect — survives close/reboot)
     Leader+Shift+S          save current layout to disk
     Leader+Shift+R          restore a saved layout (fuzzy picker)
-    (autosaves every 5 min + whenever a window loses focus/closes)
 
   Font: Ctrl+= / Ctrl+- / Ctrl+0   bigger / smaller / reset
 ]]
 
 local function show_cheatsheet(window, pane)
-  -- Write to $HOME (shared between the Flatpak sandbox and the host), NOT
-  -- os.tmpname(). The GUI runs in the WezTerm Flatpak whose /tmp is private,
-  -- but spawned panes run on the HOST via flatpak-spawn --host — so a sandbox
-  -- /tmp path is invisible to the host `less` and the tab dies instantly.
-  local path = (os.getenv("HOME") or "/tmp") .. "/.wezterm-cheatsheet.txt"
+  local home = os.getenv("USERPROFILE") or os.getenv("HOME") or "."
+  local path = home .. "\\.wezterm-cheatsheet.txt"
   local f = io.open(path, "w")
   if not f then
     window:toast_notification("WezTerm", "Cheatsheet: cannot write " .. path, nil, 3000)
@@ -590,8 +533,10 @@ local function show_cheatsheet(window, pane)
   end
   f:write(CHEATSHEET)
   f:close()
+  -- Paged with pwsh's own pager so this works with no extra tooling installed.
   window:perform_action(act.SpawnCommandInNewTab({
-    args = { "bash", "-lc", "less -R " .. path .. "; rm -f " .. path },
+    args = { "pwsh", "-NoLogo", "-Command",
+      "Get-Content '" .. path .. "' | Out-Host -Paging; Remove-Item '" .. path .. "'" },
   }), pane)
 end
 
@@ -638,9 +583,7 @@ config.keys = {
   { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
   { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
 
-  -- Font size. `+` is Shift+`=` on US layouts, so a bare CTRL+`+` never
-  -- matches (the real event is CTRL|SHIFT). Bind the physical `=` for the
-  -- easy press and `+` under CTRL|SHIFT so both key combos work.
+  -- Font size. `+` is Shift+`=` on US layouts, so bind both forms.
   { key = "=", mods = "CTRL", action = act.IncreaseFontSize },
   { key = "+", mods = "CTRL|SHIFT", action = act.IncreaseFontSize },
   { key = "-", mods = "CTRL", action = act.DecreaseFontSize },
@@ -650,48 +593,39 @@ config.keys = {
   { key = "p", mods = "CTRL|SHIFT", action = act.ShowLauncher },
 
   -- Quick Zellij in new tab
-  { key = "z", mods = "CTRL|SHIFT", action = act.SpawnCommandInNewTab({
-    args = { "zellij" },
-  }) },
+  { key = "z", mods = "CTRL|SHIFT", action = act.SpawnCommandInNewTab({ args = { "zellij" } }) },
 
   -- Command palette
   { key = "P", mods = "CTRL|SHIFT|ALT", action = act.ActivateCommandPalette },
 
-  -- Scroll (PageUp/Down so Ctrl+Shift+d stays the split-pane key)
+  -- Scroll
   { key = "PageUp", mods = "CTRL|SHIFT", action = act.ScrollByPage(-0.5) },
   { key = "PageDown", mods = "CTRL|SHIFT", action = act.ScrollByPage(0.5) },
 
   -- Search
   { key = "f", mods = "CTRL|SHIFT", action = act.Search("CurrentSelectionOrEmptyString") },
 
-  -- Toggle fullscreen
+  -- Fullscreen
   { key = "F11", mods = "NONE", action = act.ToggleFullScreen },
 
-  -- Window management (snap halves / maximize / restore / fullscreen).
-  -- Super+Arrows mirror GNOME's tiling muscle memory; leader variants also below.
-  { key = "LeftArrow", mods = "SUPER", action = act.EmitEvent("snap-left") },
-  { key = "RightArrow", mods = "SUPER", action = act.EmitEvent("snap-right") },
-  { key = "UpArrow", mods = "SUPER", action = act.EmitEvent("win-maximize") },
-  { key = "DownArrow", mods = "SUPER", action = act.EmitEvent("win-restore") },
-  { key = "Return", mods = "SUPER", action = act.ToggleFullScreen },
+  -- NOTE: no SUPER (Windows key) binds. Windows reserves Win+Left/Right/Up/Down
+  -- for its own Snap and hands them to the OS before WezTerm sees them, so the
+  -- Linux config's Super+Arrow snapping is dropped here. The Leader equivalents
+  -- below do the same job.
 
-  -- Leader (Ctrl+a) chords — power-user layer, additive to everything above.
-  -- Pass a literal Ctrl+a through to the shell (readline beginning-of-line).
+  -- Leader (Ctrl+a) chords.
   { key = "a", mods = "LEADER|CTRL", action = act.SendKey({ key = "a", mods = "CTRL" }) },
-  -- Pane splits (mnemonic | and -) and management.
   { key = "|", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
   { key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
   { key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
   { key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = false }) },
   { key = "q", mods = "LEADER", action = act.CloseCurrentTab({ confirm = false }) },
-  -- New OS window (Leader+Shift+N; bare Leader+n below makes a new workspace).
   { key = "N", mods = "LEADER|SHIFT", action = act.SpawnWindow },
   { key = "p", mods = "LEADER", action = act.PaneSelect({ alphabet = "asdfghjkl" }) },
   { key = "f", mods = "LEADER", action = act.Search("CurrentSelectionOrEmptyString") },
   { key = "[", mods = "LEADER", action = act.ActivateCopyMode },
   { key = " ", mods = "LEADER", action = act.QuickSelect },
   { key = "e", mods = "LEADER", action = act.CharSelect({ copy_on_select = true }) },
-  -- Window management via leader (Vim hjkl + arrows both work).
   { key = "LeftArrow", mods = "LEADER", action = act.EmitEvent("snap-left") },
   { key = "RightArrow", mods = "LEADER", action = act.EmitEvent("snap-right") },
   { key = "h", mods = "LEADER", action = act.EmitEvent("snap-left") },
@@ -699,14 +633,9 @@ config.keys = {
   { key = "m", mods = "LEADER", action = act.EmitEvent("win-maximize") },
   { key = "c", mods = "LEADER", action = act.EmitEvent("snap-center") },
   { key = "F", mods = "LEADER|SHIFT", action = act.ToggleFullScreen },
-  -- Hide/show the tab bar from the keyboard (no hover-reveal exists in WezTerm).
   { key = "b", mods = "LEADER", action = act.EmitEvent("toggle-tab-bar") },
-  -- Minimize the window (act.Hide). Super+H also minimizes via GNOME.
-  { key = "h", mods = "SUPER", action = act.Hide },
   { key = ",", mods = "LEADER", action = act.Hide },
-  -- Persistent sessions: attach the unix mux domain (survives GUI restart).
   { key = "u", mods = "LEADER", action = act.AttachDomain("unix") },
-  -- Keyboard URL hints: label every link, type to pick, opens in browser.
   { key = "o", mods = "LEADER", action = act.QuickSelectArgs({
     label = "open url",
     patterns = { "https?://\\S+" },
@@ -715,9 +644,7 @@ config.keys = {
       if url and url ~= "" then wezterm.open_with(url) end
     end),
   }) },
-  -- Toggle background transparency (0.92 <-> solid).
   { key = "O", mods = "LEADER|SHIFT", action = act.EmitEvent("toggle-opacity") },
-  -- Enter modal resize mode (status bar shows RESIZE); hjkl resize, Esc exits.
   { key = "r", mods = "LEADER", action = act.ActivateKeyTable({ name = "resize_pane", one_shot = false }) },
   -- Agent layer (status bar shows AGENT). one_shot: fires a single key then
   -- exits, so it never traps you. Leader+a is free — only LEADER|CTRL+a is
@@ -725,17 +652,14 @@ config.keys = {
   { key = "a", mods = "LEADER", action = act.ActivateKeyTable({
     name = "agent", one_shot = true, timeout_milliseconds = 2000,
   }) },
-  -- App/command suggestions: one fuzzy switcher over launch-menu apps, open
-  -- tabs, workspaces and the full command list. Type to filter ("app suggestions").
   { key = "Space", mods = "CTRL|SHIFT", action = act.ShowLauncherArgs({
     flags = "FUZZY|LAUNCH_MENU_ITEMS|TABS|WORKSPACES|COMMANDS",
   }) },
-  -- Move between workspaces ("apps") with the keyboard.
   { key = "Tab", mods = "LEADER", action = act.SwitchWorkspaceRelative(1) },
   { key = "Tab", mods = "LEADER|SHIFT", action = act.SwitchWorkspaceRelative(-1) },
   { key = "]", mods = "LEADER", action = act.SwitchWorkspaceRelative(1) },
 
-  -- Workspaces.
+  -- Workspaces
   { key = "w", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
   { key = "n", mods = "LEADER", action = act.PromptInputLine({
     description = "New workspace name:",
@@ -746,13 +670,12 @@ config.keys = {
     end),
   }) },
 
-  -- Cheatsheet overlay (pages the full keymap in a new tab; q closes it).
+  -- Cheatsheet overlay
   { key = "?", mods = "LEADER", action = wezterm.action_callback(show_cheatsheet) },
 
-  -- Shell-integration nav (OSC 133): jump between shell prompts in scrollback.
+  -- Shell-integration nav (OSC 133).
   { key = "UpArrow", mods = "LEADER", action = act.ScrollToPrompt(-1) },
   { key = "DownArrow", mods = "LEADER", action = act.ScrollToPrompt(1) },
-  -- Copy the LAST command's output (its semantic "Output" zone) to the clipboard.
   { key = "y", mods = "LEADER", action = wezterm.action_callback(function(window, pane)
     local zones = pane:get_semantic_zones("Output")
     if not zones or #zones == 0 then
@@ -765,9 +688,7 @@ config.keys = {
   end) },
 }
 
--- Session persistence keybinds (resurrect.wezterm) — only wired if the plugin
--- loaded. Leader+Shift+S saves the current workspace layout (panes + cwds) to
--- disk; Leader+Shift+R opens a fuzzy picker of saved sessions to restore.
+-- Session persistence keybinds (resurrect) — only wired if the plugin loaded.
 if ok_resurrect then
   table.insert(config.keys, {
     key = "S", mods = "LEADER|SHIFT",
@@ -795,7 +716,7 @@ end
 
 -- Copy the last command AND its output as a fenced markdown block — the shape
 -- you actually want when pasting a failure into an agent. Uses OSC 133 semantic
--- zones (shell integration, on by default). Leader+y still copies output alone.
+-- zones. Leader+y still copies output alone.
 local function copy_last_exchange(window, pane)
   local inputs = pane:get_semantic_zones("Input")
   local outputs = pane:get_semantic_zones("Output")
@@ -827,9 +748,7 @@ end
 
 -- Modal key-tables. Activated by leader chords above; status bar shows the mode.
 config.key_tables = {
-  -- Agent layer. Herdr owns agent DETECTION, state and notifications once you
-  -- are inside it (docs/terminal/herdr.mdx); this table is only about starting
-  -- an agent and feeding it terminal context — the emulator's own job.
+  -- Agent layer. Identical to the Linux config so muscle memory carries over.
   agent = {
     { key = "c", action = spawn_agent("claude") },
     { key = "s", action = spawn_agent("claude", true) },
@@ -837,15 +756,11 @@ config.key_tables = {
     { key = "k", action = spawn_agent("claude --continue") },
     { key = "h", action = spawn_agent("herdr") },
     { key = "y", action = wezterm.action_callback(copy_last_exchange) },
-    -- SHIFT is explicit: WezTerm reports Shift+y as key "Y" WITH mods=SHIFT, so
-    -- a bare key = "Y" can fail to match. Matches how the shifted binds in
-    -- config.keys above are written (LEADER|SHIFT for N / O / F).
     { key = "Y", mods = "SHIFT", action = wezterm.action_callback(copy_scrollback) },
     { key = "Escape", action = "PopKeyTable" },
     { key = "q", action = "PopKeyTable" },
   },
 
-  -- Resize the active pane with hjkl/arrows; Esc or Enter leaves the mode.
   resize_pane = {
     { key = "h", action = act.AdjustPaneSize({ "Left", 3 }) },
     { key = "l", action = act.AdjustPaneSize({ "Right", 3 }) },
@@ -863,17 +778,13 @@ config.key_tables = {
 -- Mouse bindings
 config.mouse_bindings = {
   { event = { Up = { streak = 1, button = "Left" } }, mods = "CTRL", action = act.OpenLinkAtMouseCursor },
-  -- Copy-on-select: finishing a left-drag copies to clipboard + primary.
   { event = { Up = { streak = 1, button = "Left" } }, mods = "NONE",
     action = act.CompleteSelection("ClipboardAndPrimarySelection") },
-  -- Middle-click pastes the primary selection (X11-style).
   { event = { Down = { streak = 1, button = "Middle" } }, mods = "NONE",
     action = act.PasteFrom("PrimarySelection") },
 }
 
--- Hyperlinks: keep the built-in URL detection, then add a GitHub issue/PR
--- shorthand (owner/repo#123 → issue link). Kept narrow on purpose so plain
--- file paths like src/main aren't turned into bogus links.
+-- Hyperlinks: built-in URL detection plus a GitHub issue/PR shorthand.
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
 table.insert(config.hyperlink_rules, {
   regex = [[\b([\w.-]+)/([\w.-]+)#(\d+)\b]],
