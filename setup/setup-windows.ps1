@@ -82,6 +82,35 @@ Scoop-Install @("mise","chezmoi")
 Step "Nerd Font (terminal glyphs)"
 Scoop-Install @("JetBrainsMono-NF")
 
+Step "PowerShell profile (shell init for zoxide/starship/mise)"
+# scoop installs the binaries; without this file none of them are wired into
+# the shell, so `z` does not exist and the prompt stays default.
+$profileSrc = Join-Path (Split-Path -Parent $Here) "assets\powershell-profile.ps1"
+# NOT $PROFILE: these scripts are documented as `powershell -File ...`, which is
+# Windows PowerShell 5.1, so $PROFILE would resolve to Documents\WindowsPowerShell
+# and leave PowerShell 7 - the shell actually used - with no profile. Target both
+# hosts explicitly; each is written only if it has none.
+$profileDsts = @(
+  (Join-Path ([Environment]::GetFolderPath("MyDocuments")) "PowerShell\Microsoft.PowerShell_profile.ps1"),
+  (Join-Path ([Environment]::GetFolderPath("MyDocuments")) "WindowsPowerShell\Microsoft.PowerShell_profile.ps1")
+)
+if (-not (Test-Path -LiteralPath $profileSrc)) {
+  Write-Host "  skip (missing): $profileSrc"
+} else {
+  foreach ($profileDst in $profileDsts) {
+    if (Test-Path -LiteralPath $profileDst) {
+      Write-Host "  profile already exists, not overwriting: $profileDst"
+      Write-Host "  compare with: $profileSrc"
+    } elseif ($DryRun) {
+      Write-Host "[DryRun] copy $profileSrc -> $profileDst"
+    } else {
+      New-Item -ItemType Directory -Force -Path (Split-Path -Parent $profileDst) | Out-Null
+      Copy-Item -LiteralPath $profileSrc -Destination $profileDst
+      Write-Host "  installed: $profileDst"
+    }
+  }
+}
+
 Step "Fix USER PATH (auto-detect installed tools)"
 $pathScript = Join-Path $Here "update-user-path.ps1"
 if (Test-Path -LiteralPath $pathScript) {

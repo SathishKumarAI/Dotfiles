@@ -73,7 +73,10 @@ STAGE_META = {
 CATEGORY_LABEL = {
     "core": "Core", "python": "Python", "runtime": "Runtimes", "cli": "Modern CLI",
     "shell": "Shell & terminal", "editor": "Editor & git", "devops": "DevOps", "ai": "AI",
+    "docs": "Docs & OCR",
 }
+PROFILE_PATH = Path.home() / "Documents" / "PowerShell" / "Microsoft.PowerShell_profile.ps1"
+PROFILE_SAMPLE = REPO / "assets" / "powershell-profile.ps1"
 
 ALLOW_RUN = False
 RUN_TOKEN = secrets.token_urlsafe(24)
@@ -170,6 +173,19 @@ TOOLS = [
     ("nvim", "editor"), ("code", "editor"), ("lazygit", "editor"),
     ("docker", "devops"), ("minikube", "devops"), ("psql", "devops"), ("wsl", "devops"),
     ("claude", "ai"),
+    # Docs group. Neither installer touches PATH, so both were installed and
+    # unresolvable until update-user-path.ps1 learned to find them. GNU.Wget2
+    # ships as wget2.exe - there is no `wget` on a Windows box.
+    ("pandoc", "docs"), ("tesseract", "docs"), ("wget2", "docs"),
+]
+
+# A tool on PATH is not a tool you can use. On Windows nothing creates a
+# PowerShell profile, so zoxide/starship/mise install fine and stay inert -
+# `z` simply does not exist. Probe the profile, not just the binaries.
+SHELL_INIT = [
+    ("zoxide", "zoxide init", "z / zi directory jumping"),
+    ("starship", "starship init", "prompt"),
+    ("mise", "mise activate", "runtime shims"),
 ]
 
 
@@ -197,6 +213,28 @@ def probe_tools():
                 present, path = True, shim + "  (mise)"
         out.append({"name": name, "category": cat, "present": present, "path": path})
     return out
+
+
+def probe_shell():
+    """Is the PowerShell profile in place, and is each tool actually wired in?
+
+    Presence on PATH and presence in the shell are different facts. This reads
+    the profile text rather than launching pwsh, so it stays a cheap read-only
+    probe like the rest of this file.
+    """
+    text = ""
+    present = PROFILE_PATH.exists()
+    if present:
+        try:
+            text = PROFILE_PATH.read_text(encoding="utf-8-sig", errors="replace")
+        except OSError:
+            present = False
+    inits = [{"tool": tool, "marker": marker, "why": why,
+              "installed": bool(shutil.which(tool)), "wired": marker in text}
+             for tool, marker, why in SHELL_INIT]
+    return {"profilePath": str(PROFILE_PATH), "profilePresent": present,
+            "samplePath": str(PROFILE_SAMPLE), "sampleAvailable": PROFILE_SAMPLE.exists(),
+            "inits": inits}
 
 
 def probe_disks():
@@ -416,6 +454,7 @@ def build_payload():
         "machine": state.get("machine", {}), "ml": state.get("ml", {}),
         "stages": stages, "gpu": probe_gpu(), "tools": probe_tools(),
         "disks": probe_disks(), "categoryLabels": CATEGORY_LABEL,
+        "shell": probe_shell(),
         "history": load_history()[-25:][::-1],
     }
 
@@ -672,6 +711,11 @@ PAGE = r"""<!doctype html>
         <div id="gpu"></div></section></div>
       <div>
         <section class="panel"><h2>ML runtime</h2><div id="ml"></div></section>
+        <section class="panel"><h2>Shell integration</h2>
+          <p class="note">Installed is not the same as usable. Nothing on Windows creates a
+            PowerShell profile, so these tools can sit on <code>PATH</code> and still do
+            nothing &mdash; no <code>z</code>, no prompt, no shims.</p>
+          <div id="shell"></div></section>
         <section class="panel"><h2>Machine</h2><div id="machine"></div></section>
       </div>
     </div>
@@ -838,6 +882,33 @@ function render(d){
       '<span class="tool '+(pk[k]?"y":"n")+'"><span aria-hidden="true">'+(pk[k]?"✓":"·")+'</span>'+esc(k)+'</span>').join("") + '</div>';
     el("ml").innerHTML = h;
   } else el("ml").innerHTML = '<div class="empty">No ML venv recorded. Run <code>ml</code> then <code>verify</code>.</div>';
+
+  const sh = d.shell||{}, inits = sh.inits||[];
+  if (sh.profilePresent === undefined) {
+    el("shell").innerHTML = '<div class="empty">No shell probe in this payload.</div>';
+  } else {
+    // Three states, because the middle one is the trap: the binary is there,
+    // the profile is not, so the tool silently does nothing.
+    let h = '<div class="tools">' + inits.map(i => {
+      const cls = (i.installed && i.wired) ? "y" : "n";
+      const gl  = (i.installed && i.wired) ? "✓" : (i.installed ? "!" : "·");
+      const note = (i.installed && i.wired) ? i.why
+                 : (i.installed ? "installed, not wired" : "not installed");
+      return '<span class="tool '+cls+'" title="'+esc(note)+'"><span aria-hidden="true">'
+        +gl+'</span>'+esc(i.tool)+'</span>';
+    }).join("") + '</div>';
+    h += '<dl class="kv" style="margin-top:11px"><dt>Profile</dt><dd>'
+      + (sh.profilePresent ? esc(sh.profilePath) : "missing") + '</dd></dl>';
+    const inert = inits.filter(i => i.installed && !i.wired);
+    if (!sh.profilePresent || inert.length) {
+      h += '<div class="banner" style="margin-top:11px"><strong>'
+        + (sh.profilePresent ? esc(inert.length + " tool(s) installed but not wired.")
+                             : "No PowerShell profile.")
+        + '</strong> Copy the sample from the repo, then reopen the terminal:'
+        + '<br><code>Copy-Item assets\\powershell-profile.ps1 $PROFILE</code></div>';
+    }
+    el("shell").innerHTML = h;
+  }
 
   const m = d.machine||{}; let mh="";
   if (m.cpu) mh += '<dl class="kv"><dt>OS</dt><dd>'+esc(m.os||"")+'</dd><dt>CPU</dt><dd>'+esc(m.cpu)

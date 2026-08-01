@@ -256,11 +256,21 @@ function Probe-Tools($state) {
     @{ n = "lazygit";  c = "editor" },
     @{ n = "docker";   c = "devops" }, @{ n = "minikube"; c = "devops" },
     @{ n = "psql";     c = "devops" }, @{ n = "wsl";    c = "devops" },
-    @{ n = "claude";   c = "ai" }
+    @{ n = "claude";   c = "ai" },
+    # Docs group. Their installers do not touch PATH, so they were installed and
+    # invisible until update-user-path.ps1 learned to find them.
+    @{ n = "pandoc";   c = "docs" }, @{ n = "tesseract"; c = "docs" },
+    @{ n = "wget2";    c = "docs" }
   )
   $tools = @()
   foreach ($t in $want) {
-    $cmd = Get-Command $t.n -ErrorAction SilentlyContinue | Select-Object -First 1
+    # -CommandType Application, not a bare Get-Command: a shell profile can
+    # shadow a tool's name with a function (`mise activate` defines one), and a
+    # function has no .Source, so an installed tool reported as missing the
+    # moment a profile existed. Ask for the executable specifically.
+    $cmd = Get-Command $t.n -CommandType Application -ErrorAction SilentlyContinue |
+           Select-Object -First 1
+    if (-not $cmd) { $cmd = Get-Command $t.n -ErrorAction SilentlyContinue | Select-Object -First 1 }
     $present = $false; $path = ""
     if ($cmd -and $cmd.Source) {
       # Only python gets the zero-byte test - that Store alias is a dead stub.

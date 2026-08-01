@@ -94,7 +94,7 @@ python tools\mlops_dashboard.py --allow-run  # buttons live
 
 | Tab | What it answers |
 |---|---|
-| **Overview** | Did the GPU/PyTorch pairing actually work? (the gate, telemetry, ML runtime) |
+| **Overview** | Did the GPU/PyTorch pairing actually work? (the gate, telemetry, ML runtime, shell integration) |
 | **Pipeline** | What are the stages, what state is each in, and run any of them |
 | **Console** | What is happening *right now* - live stdout, colourised, follow-mode |
 | **Tools** | What is installed, by category, probed live |
@@ -148,7 +148,24 @@ the problem: they need a server, an inventory, and a daemon. This panel is
 ~950 lines of stdlib Python with no service to maintain. The moment a second
 machine appears, switch to Ansible + Semaphore rather than growing this.
 
-## Four bugs this pipeline exposed
+### The shell-integration panel
+
+Added 2026-08-01, because the inventory could report **30/30 present** while
+`z` did not exist. Presence on `PATH` and presence *in the shell* are different
+facts, and only the first was ever measured.
+
+The panel reads `$PROFILE` and reports three states per tool — wired, installed
+but inert, or absent — so the middle state stops being invisible:
+
+```json
+"shell": { "profilePresent": true,
+           "inits": [ { "tool": "zoxide", "installed": true, "wired": true } ] }
+```
+
+It parses the profile text rather than launching `pwsh`, keeping it as cheap
+and read-only as every other probe on the page.
+
+## Six bugs this pipeline exposed
 
 Running the installers *through* an orchestrator surfaced failures that running
 them by hand did not. All are fixed; they are recorded because each is a class,
@@ -176,6 +193,27 @@ Tools installed during a session are invisible to that session. This made the
 CLI tools; and made the inventory report 4/30 tools when 30 were present. Fix:
 re-read PATH from the registry (`Sync-PathFromRegistry`) before probing.
 
+**5. A green inventory measured the wrong thing.**
+Every check tested whether a binary resolved on `PATH`. It did — and `zoxide`,
+`starship` and `mise` were still doing nothing, because Windows ships no
+PowerShell profile to initialise them. A pipeline that reports 30/30 while the
+shell is bare is measuring installation, not capability. Fix:
+`setup-windows.ps1` installs `assets/powershell-profile.ps1`, and the dashboard
+probes the profile. Two adjacent cases of the same class: `tesseract` and
+`wget2` were installed by the `apps` stage and unreachable, because their
+installers do not touch `PATH` and no probe looked for them. Both are now in
+the inventory under **Docs & OCR** — which is why the count reads 33, not 30.
+
+**6. Fixing bug 5 broke the probe — the shell answered for the tool.**
+Installing the profile dropped the inventory from 33/33 to **32/33**: `mise`
+went missing while `mise --version` worked fine. `mise activate` defines a
+PowerShell **function** named `mise`, `Get-Command` returns the function ahead
+of the executable, and a function has no `.Source` — which the probe required.
+So the fix for "tools installed but not wired" made a wired tool report as not
+installed. Fix: ask for `-CommandType Application` first, falling back to a
+bare lookup. `tools/mlops_dashboard.py` was never affected — `shutil.which`
+searches `PATH`, and cannot see a PowerShell function.
+
 Two related probe corrections:
 
 - A zero-byte executable is *usually* a dead Microsoft Store alias, but
@@ -201,5 +239,6 @@ it never blocks on the distro's first-run username prompt.
 ## See also
 
 - [Windows Setup](./windows.mdx) - the individual installers, Store-stub trap, wheel channels
+- [Windows Validation 2026-08-01](./windows-validation-2026-08-01.md) - this pipeline probed against the live machine
 - [Provisioning Architecture](./architecture.mdx) - the three-layer model
 - `setup/pipeline-windows-ml.ps1` · `tools/mlops_dashboard.py`

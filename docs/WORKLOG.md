@@ -1,5 +1,54 @@
 # Worklog
 
+## 2026-08-01 - Windows validation: 33/33 tools, and the check that was measuring the wrong thing
+
+**Summary:** Probed every feature and application this repo provisions on
+Windows against the live machine. The pipeline was sound — the *verification*
+was not. Full report: [setup/windows-validation-2026-08-01.md](setup/windows-validation-2026-08-01.md).
+
+**The finding.** `zoxide`, `starship` and `mise` were installed, on `PATH`, and
+reported present by every probe — and completely inert. `z` did not exist,
+because **no PowerShell profile existed at all** (all four candidate paths
+empty). Windows creates none, and the Windows scripts never did either, while
+the Linux side has always appended `eval "$(zoxide init bash)"` to `.bashrc`.
+Nothing caught it because every check tested `PATH`, and `PATH` was correct.
+
+| Fix | Where |
+|---|---|
+| Profile: zoxide/starship/mise init, PSReadLine, `ll`/`la`/`cat`/`lg`, `ws`/`dot`/`ml` | `assets/powershell-profile.ps1` (new) |
+| Installs it when absent, never overwrites | `setup/setup-windows.ps1` |
+| **Shell integration** panel — probes the profile, not the binary | `tools/mlops_dashboard.py` |
+
+Same class, two more cases: `tesseract` and `wget2` were installed by the
+`apps` stage and unreachable — neither installer touches `PATH`, and no probe
+looked for them. Both added to `update-user-path.ps1` and to the inventory
+under a new **Docs & OCR** category. Count moved 30/30 -> **33/33**.
+
+**Everything else, verified:** 13/13 scoop, 29/32 winget (ExplorerPatcher,
+Zebar and Brave removed on purpose per the 2026-07-31 audit), torch
+2.11.0+cu128 with a real matmul on sm_120, dashboard routes 200 with all three
+CSRF guards holding (no token / bad token / foreign `Origin` -> 403).
+
+**Two stale claims corrected.** The audit's headline blocker is gone —
+`vmcompute.exe` is present, `wsl --status` reads Default Version 2. What is
+left is a missing distro and a stopped Docker Desktop, neither a blocker.
+And `tools/check_docs.py` found **15 broken links** from the docs-library move:
+`md files/` went under `docs/` but links kept their old `../` depth, and four
+pointed at `~/coding/CLAUDE.md`, which is outside this repo and cannot be
+linked relatively. Now 269/269 clean.
+
+**The fix bit back, twice.** `$PROFILE` under `powershell -File` is 5.1's path,
+so the profile would have landed in `WindowsPowerShell` and left pwsh 7 — the
+shell actually used — bare; both hosts are now written explicitly. Then the
+inventory fell 33 -> 32: `mise` read as missing while `mise --version` worked,
+because `mise activate` defines a PowerShell **function** named `mise`,
+`Get-Command` prefers it, and a function has no `.Source`. Probes now ask for
+`-CommandType Application` first. Back to 33/33.
+
+**Gotcha worth keeping:** PowerShell writes `pipeline-state.json` with a UTF-8
+BOM. `load_state()` handles it (`utf-8-sig`); a plain `json.load` dies with
+`Expecting value: line 1 column 1`.
+
 ## 2026-07-31 20:25 - Plugin audit: 30 enabled -> 10, ~14k tokens off every prompt
 
 **Summary:** Audited all 31 installed Claude Code plugins against three

@@ -15,19 +15,25 @@ Legend: ✅ live · ⚠️ diverged (live ≠ repo) · ⏳ pending (in repo, not
 
 ## Windows / ML workstation
 
-Status checked **2026-07-31** on the Windows 11 box (Ryzen 9800X3D, RTX 5070 Ti).
+Re-validated **2026-08-01** on the Windows 11 box (Ryzen 9800X3D, RTX 5070 Ti) —
+full report: [Windows Validation](./setup/windows-validation-2026-08-01.md).
 The rest of this page is the Rocky Linux snapshot from 2026-06-08.
 
 | Feature | Status | Doc |
 |---------|--------|-----|
 | Windows base toolset (`setup.ps1`) | OK live | [setup/windows](./setup/windows.mdx) |
-| Application restore (`install-windows-apps.ps1`) | OK live | [setup/windows](./setup/windows.mdx) |
+| Application restore (`install-windows-apps.ps1`) | OK 29/32 - 3 removed on purpose | [setup/windows-validation](./setup/windows-validation-2026-08-01.md) |
+| scoop CLI cluster | OK 13/13 | [setup/windows](./setup/windows.mdx) |
+| PowerShell `$PROFILE` (z, prompt, shims) | OK live - was missing entirely until 2026-08-01 | [setup/windows](./setup/windows.mdx) |
 | Python 3.12 + uv + venv | OK live | [setup/windows](./setup/windows.mdx) |
 | PyTorch 2.11.0+cu128, CUDA verified on device | OK live | [setup/windows](./setup/windows.mdx) |
-| Orchestrated pipeline (6 stages) | OK live | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
-| MLOps dashboard (`tools/mlops_dashboard.py`) | OK live | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
-| Tool inventory | OK 30/30 | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
-| WSL2 + Ubuntu | BLOCKED - needs `wsl --install --no-distribution` as admin + reboot | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
+| Orchestrated pipeline (6 stages) | OK live - 5 ok, `wsl` opt-in | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
+| MLOps dashboard (`tools/mlops_dashboard.py`) | OK live - routes + all 3 CSRF guards verified | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
+| Tool inventory | OK 33/33 | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
+| Docs internal links (`tools/check_docs.py`) | OK 260/260 - was 15 broken | [setup/windows-validation](./setup/windows-validation-2026-08-01.md) |
+| Virtual Machine Platform (`vmcompute`) | OK present - the 2026-07-31 blocker is cleared | [setup/windows-validation](./setup/windows-validation-2026-08-01.md) |
+| WSL2 + Ubuntu | PENDING - unblocked, no distro yet (`-IncludeWsl`) | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
+| Docker engine | PENDING - Desktop not running; missing-VM cause gone | [setup/windows-validation](./setup/windows-validation-2026-08-01.md) |
 | Store `python.exe` alias disabled | PENDING - manual Windows toggle | [setup/windows](./setup/windows.mdx) |
 | Claude Code plugins | OK live | [ai-coding/plugins](./ai-coding/plugins.mdx) |
 

@@ -5,6 +5,11 @@ Windows 11 Home 26200 | Ryzen 7 9800X3D | 31.2 GB | RTX 5070 Ti 16 GB | 1x 1920x
 Snapshot taken after the Windows -> ML/DevOps provisioning run. 65 programs in
 Add/Remove Programs: 30 installed by the pipeline, 35 pre-existing.
 
+> **Resolved 2026-08-01.** `vmcompute.exe` is present and `wsl --status` reports
+> Default Version 2. What is left is not a blocker: no distro is installed, and
+> Docker Desktop is simply not running. See
+> [Windows Validation](./windows-validation-2026-08-01.md).
+
 ## Blocker: Virtual Machine Platform is not enabled
 
 This one setting breaks **both** Docker and WSL2.

@@ -22,6 +22,7 @@ traps that break Python and CUDA, and what is deliberately left out.
 setup.ps1                  ensure winget + scoop, then ->
   setup-windows.ps1        shared toolset (Git, WezTerm, VS Code, nvim, gh, Miniforge,
                            + scoop: rg fd bat fzf zoxide starship zellij lazygit delta eza mise chezmoi)
+                           + assets/powershell-profile.ps1 -> $PROFILE (if none)
   update-user-path.ps1     repair USER PATH (backs up first, -DryRun safe)
 
 install-windows-apps.ps1   Windows-only apps: GlazeWM+Zebar, PowerToys, Obsidian,
@@ -38,7 +39,7 @@ Every script takes `-DryRun` and changes nothing in that mode. Run it first.
 | Script | Installs | Needs admin | Time |
 |---|---|---|---|
 | `setup.ps1` | winget check, scoop bootstrap | no | 1 min |
-| `setup-windows.ps1` | 7 winget apps + 13 scoop CLI tools + Nerd Font | no | 10–15 min |
+| `setup-windows.ps1` | 7 winget apps + 13 scoop CLI tools + Nerd Font + `$PROFILE` | no | 10–15 min |
 | `update-user-path.ps1` | nothing — repairs USER PATH only | no | seconds |
 | `install-windows-apps.ps1` | 6 groups, ~20 apps | some installers | 15–25 min |
 | `install-ml-windows.ps1` | Python, uv, venv, torch, ~45 libs | no | 10–20 min |
@@ -95,7 +96,95 @@ switch **off** `python.exe` and `python3.exe`. This is a per-user Windows
 toggle; no script can flip it. `install-ml-windows.ps1` detects the stub and
 tells you, then continues.
 
-## Trap 2 — GPU wheels and compute capability
+## Trap 2 — installed is not wired: the PowerShell profile
+
+Windows creates **no PowerShell profile by default**. scoop installs `zoxide`,
+`starship` and `mise`; nothing initialises them. The binaries sit on `PATH`,
+every probe reports them present, and `z` still does not exist.
+
+This is the Windows counterpart of the `eval "$(zoxide init bash)"` line the
+Linux scripts append to `.bashrc` — and it was missing until 2026-08-01.
+
+```powershell
+Test-Path $PROFILE          # False on a fresh box
+Copy-Item assets\powershell-profile.ps1 $PROFILE
+```
+
+`setup-windows.ps1` now copies `assets/powershell-profile.ps1` into place when
+no profile exists, and never overwrites one that does. The profile guards every
+block, so a missing tool is skipped rather than throwing:
+
+| Wired | Gives you |
+|---|---|
+| `zoxide init powershell` | `z` / `zi` |
+| `starship init powershell` | the prompt |
+| `mise activate pwsh` | runtime shims |
+| PSReadLine | history-predicted completion, `↑`/`↓` prefix search |
+| `eza` / `bat` / `lazygit` | `ll` `la` `lt` `cat` `lg` |
+| repo shortcuts | `ws` `dot` `ml` (the stand-in for `scripts/w.sh`) |
+
+`cd` is deliberately left alone — zoxide's `--cmd cd` hook would shadow it.
+
+The PSReadLine block is gated on an interactive console: `-PredictionSource
+History` throws when stdout is redirected, and an unguarded throw there aborts
+the rest of the profile.
+
+## Trap 3 — installers that never touch PATH
+
+Two of the `Docs` group install cleanly and stay unreachable:
+
+| Tool | Reality |
+|---|---|
+| `tesseract` | lands in `C:\Program Files\Tesseract-OCR`, not added to `PATH` |
+| `wget` | `GNU.Wget2` ships the binary as **`wget2.exe`** — there is no `wget` |
+
+`update-user-path.ps1` now detects both, and the pipeline inventory tracks them
+under a **Docs & OCR** category. Note that a shell keeps the `PATH` it launched
+with — after any repair, reopen the terminal or the tool still reads as missing.
+
+## PATH repair — and why `setx` is what broke it
+
+`update-user-path.ps1` exists because of one command:
+
+```powershell
+setx PATH "$env:PATH;C:\new\thing"     # never do this
+```
+
+`setx` **rewrites** the value and truncates at 1024 characters, and expanding
+`$env:PATH` first merges System entries into the User variable. The result on
+this machine: `winget`, `git` and `zoxide` all vanished from a working shell,
+and `winget list zoxide` still reported it installed — because the package was
+fine and only the shim's folder was gone.
+
+The rules the script follows, and the ones to follow by hand:
+
+| Do | Don't |
+|---|---|
+| `[Environment]::SetEnvironmentVariable(..., "User")` | `setx PATH ...` |
+| Back up the old value first (`~/path_backup/`) | Edit System PATH unless truly required |
+| Add only folders that exist, deduped case-insensitively | Assume the running shell sees the change |
+
+A shell keeps the `PATH` it launched with, so **reopen the terminal** after any
+repair — or re-read it in place:
+
+```powershell
+$env:Path = [Environment]::GetEnvironmentVariable("Path","Machine") + ";" +
+            [Environment]::GetEnvironmentVariable("Path","User")
+```
+
+One-time, if scripts refuse to run at all:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+Health check — `-DryRun` first, always:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup\update-user-path.ps1 -DryRun
+```
+
+## Trap 4 — GPU wheels and compute capability
 
 `pip install torch` can resolve to a wheel with **no compiled kernels for your
 card**. It installs cleanly, `torch.cuda.is_available()` may even return
@@ -180,6 +269,7 @@ Stirling-PDF, ONLYOFFICE. Chrome Remote Desktop is superseded here by RustDesk
 
 ## See also
 
+- [Windows Validation 2026-08-01](./windows-validation-2026-08-01.md) — every claim on this page, probed against the live machine
 - [Provisioning Architecture](./architecture.mdx) — the three-layer model
 - [Installation Reference](./installation-reference.mdx) — the Linux inventory
 - `dotfiles/windows_setup/conda/setup.md` — conda on Windows
