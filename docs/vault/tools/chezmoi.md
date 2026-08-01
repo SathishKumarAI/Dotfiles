@@ -1,5 +1,8 @@
 # chezmoi
 
+> Obsidian note. Canonical doc: [`chezmoi.mdx`](../../automation/chezmoi.mdx) —
+> update that first; this is the vault-side summary.
+
 **What:** Dotfiles manager. Tracks config files in Git, deploys them across machines.
 **Config source:** `~/.local/share/chezmoi/`
 

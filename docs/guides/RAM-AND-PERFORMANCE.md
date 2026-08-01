@@ -68,6 +68,54 @@ containers; three of those left running = your RAM is gone.
 **Recommended combo for this box:** zram + systemd-oomd (auto-prevent) · lazydocker (stacks are
 the main hogs) · `ram-monster.py --serve` (tailored kill UI) · `btop` / `glances -w` (watch).
 
+## Boot time and disk — the Arch laptop notes
+
+Absorbed from the former `docs/md files/SYSTEM-TUNING.md` (2026-08-01). Snapshot
+was the **i7-6600U laptop, 16G, Arch** on 2026-06-05 — boot 36.8s of which
+**21.7s was userspace**, and `/` 81% full on a 32G root. Different machine from
+the Rocky desktop above, so treat the numbers as that box's, not this one's.
+
+**Boot — three units cost most of the userspace time:**
+
+```bash
+sudo systemctl disable --now NetworkManager-wait-online.service  # 5.4s, unblocks the chain
+sudo systemctl disable --now docker.service docker.socket containerd.service  # 1.4s, was unused
+sudo systemctl disable --now gnome-remote-desktop.service        # 5.4s, only if not RDP-ing in
+```
+
+Took userspace ~21s -> ~10s. **Leave alone:** TPM units (tied to disk /
+secure boot), `tlp`, `gdm`, NetworkManager itself. Manual `docker start` still
+works after disabling the socket; re-enable with `systemctl enable --now`.
+
+**CPU governor** was pinned to `powersave` by tlp, scaling at 47%. On AC:
+`CPU_SCALING_GOVERNOR_ON_AC=performance` in `/etc/tlp.conf`, then
+`systemctl restart tlp`.
+
+**Root filesystem** — the pacman cache was 5G of the 32G root:
+
+```bash
+sudo paccache -rk1                 # keep 1 old version per package
+sudo paccache -ruk0                # drop all uninstalled packages
+sudo journalctl --vacuum-size=50M
+rm -rf ~/.cache/yay/*              # 1.8G of AUR build cache
+```
+
+Frees ~4G, root 81% -> ~60%. **Do not blind-delete** browser profile dirs
+(`~/.config/google-chrome` was 5.7G) — clear those from inside the browser.
+
+**Re-diagnose later:**
+
+```bash
+systemd-analyze                    # total boot
+systemd-analyze blame | head -20   # slowest units
+systemd-analyze critical-chain     # dependency chain
+df -h / ; du -xhd1 ~ | sort -rh | head
+journalctl --disk-usage ; systemctl --failed
+```
+
+`paccache.timer` and `fstrim.timer` are enabled; `ncdu` and `bleachbit` are the
+two worth adding when disk gets tight.
+
 ## Related
 - `guides/TROUBLESHOOTING.md` — HDD slowness, boot time, other known issues.
 - `desktop/disk-usage-and-relocation.md` — docker/containerd disk relocation (different problem: disk, not RAM).

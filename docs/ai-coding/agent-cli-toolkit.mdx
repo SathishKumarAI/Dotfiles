@@ -16,7 +16,7 @@ git-worktree workflow in [agent-workflows](./agent-workflows.mdx).
 > **with full permissions** — they execute shell, push to git, and loop
 > autonomously. The skills installer itself prints *"Review skills before use; they
 > run with full agent permissions."* Installs here deliberately **avoided every
-> `curl | sh` one-liner** (per [`CLAUDE.md`](../../../CLAUDE.md) policy) in favour of
+> `curl | sh` one-liner** (per `CLAUDE.md` policy) in favour of
 > `go install`, `npm`, and plain `git clone`. Read a tool's source before pointing
 > it at a real repo, and prefer running them inside a worktree / disposable branch.
 

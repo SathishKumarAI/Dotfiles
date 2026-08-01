@@ -1,5 +1,8 @@
 # mise
 
+> Obsidian note. Canonical doc: [`mise.mdx`](../../automation/mise.mdx) —
+> update that first; this is the vault-side summary.
+
 **What:** Single tool that manages all language runtimes.
 **Replaces:** pyenv, nvm, goenv, sdkman, rustup
 **Config:** `~/.config/mise/config.toml`
