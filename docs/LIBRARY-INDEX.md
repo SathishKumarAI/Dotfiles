@@ -19,6 +19,20 @@ repo (version-controlled) as of 2026-06-18. Start here.
 | [features/FEATURES.md](features/FEATURES.md) | Feature + change catalog of my 18 built apps (bujo, Pickleball-Vision-LLM, Dotfiles, Job/Nexus-Automations, …). |
 | [features/UI-UX-FEATURES.md](features/UI-UX-FEATURES.md) | General frontend UI/UX reference (12 sections): layout, forms, feedback, visual design, motion, a11y/perf, components, onboarding, liquid glass, Laws of UX, distinctive design, AI-friendly sites. |
 
+## Setup & platform
+| Doc | What it covers |
+|-----|----------------|
+| [setup/windows.mdx](setup/windows.mdx) | Windows dev + ML setup: script inventory, the Microsoft Store Python-stub trap, GPU compute-capability to PyTorch-wheel table, WSL2 driver rule. |
+| [setup/ml-devops-pipeline.mdx](setup/ml-devops-pipeline.mdx) | Six-stage orchestrated pipeline (bare box to verified CUDA workstation), state schema, local dashboard, and the four idempotency bugs it exposed. |
+| [setup/architecture.mdx](setup/architecture.mdx) | Three-layer provisioning model. |
+| [setup/installation-reference.mdx](setup/installation-reference.mdx) | Per-script inventory + timings (Linux snapshot). |
+
+## AI coding
+| Doc | What it covers |
+|-----|----------------|
+| [ai-coding/index.mdx](ai-coding/index.mdx) | Claude Code, skills, hooks, MCP, agent workflows, SDK. |
+| [ai-coding/plugins.mdx](ai-coding/plugins.mdx) | Installed plugin set with **measured** always-on token costs, marketplace commands, and the `mlflow` hooks workaround. |
+
 ## Desktop (system)
 | Doc | What it covers |
 |-----|----------------|

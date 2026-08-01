@@ -1,5 +1,216 @@
 # Worklog
 
+## 2026-07-31 19:55 - Dashboard became a control plane; log formatter; shipped a broken page and fixed it
+
+**Summary:** Turned the read-only dashboard into a local job runner (AWX/Semaphore
+shape, one machine), added a log formatter, and shipped a page whose JavaScript
+did not parse. The last part is the lesson.
+
+**Control plane.** `tools/mlops_dashboard.py` now runs pipeline stages on click,
+streams stdout to per-run log files, and records what each run changed.
+Five tabs: Overview, Pipeline, Console, Tools, History.
+
+- Run history **measures rather than parses**: the server snapshots which tools
+  resolve before a stage and again after, and records the set difference. "This
+  run added `go`" is an observation, not a guess from installer output.
+- Logs: `setup/state/logs/<timestamp>-<stage>.log`, index in `history.json`.
+  Both gitignored - machine state, not source.
+
+**Security.** `--allow-run` is off by default; a page that can start installers
+is a real attack surface. Three guards, all verified:
+
+| Request | Result |
+|---|---|
+| no token | `403 bad or missing token` |
+| wrong token | `403 bad or missing token` |
+| valid token, foreign Origin | `403 cross-origin request refused` |
+| unknown stage | `400 unknown stage` |
+| valid token + same origin | run starts, log streams |
+
+**Log readability.** Root cause first: `Run-Script` was letting each child's
+entire stdout become the scriptblock's return value, so a stage's `detail` field
+held one unbroken multi-KB line. Fixed with `| Out-Host`. Then a formatter on
+top - measured on a real `base` run: 16,451 bytes, 93 formatted lines,
+**69 noise lines collapsed**, 20 winget/scoop package blocks folded into single
+verdict lines. Drops PowerShell's `+ CategoryInfo` / `+ FullyQualifiedErrorId` /
+caret boilerplate. Four filters (all / changes / problems / raw), text search,
+per-line stage gutter.
+
+**The failure worth recording.** The page's entire `<script>` failed to parse,
+so nothing on the UI worked - the user found it, not me. Two escaping
+casualties from writing JS through Python heredocs:
+
+1. a regex-escape pattern arrived mangled as `/[.*+?^${}()|[\]\]/g` - an
+   unterminated character class;
+2. `"
+"` became a **literal newline inside a string literal**.
+
+Either alone kills the whole script. I had verified Python syntax and HTTP 200,
+neither of which can detect broken JS.
+
+**Fixes + new checks:** both rewrites removed the hazard rather than escaping
+harder (`indexOf` highlighting instead of a regex; `String.fromCharCode(10)`
+instead of `"
+"`). Verification now includes, run against the page rendered
+offline:
+
+- `node --check` on the extracted `<script>`
+- every `el("id")` the JS references must exist in the HTML (catches the
+  `clearCon` class of bug - a removed element still referenced)
+- tab/view id parity, and every class queried by JS present in the markup
+
+**Open:**
+- **ExplorerPatcher** was installed from the old machine's inventory and makes
+  Windows 11 render as Windows 10. Faithful to the inventory, probably not
+  wanted - remove with `winget uninstall valinet.ExplorerPatcher`.
+- Chrome extension still not connected, so no rendered-page inspection.
+
+---
+
+## 2026-07-31 19:25 - Windows box provisioned end-to-end; pipeline + dashboard built; 4 idempotency bugs fixed
+
+**Summary:** Ran the Windows/ML scripts for real, then wrapped them in an
+orchestrated pipeline and a local dashboard. Running them *through* an
+orchestrator exposed four failures that running them by hand never did.
+
+**Result:** 30/30 tools present. torch 2.11.0+cu128 with CUDA verified on the
+RTX 5070 Ti by an actual device matmul, not just `is_available()`. WSL2 is the
+only outstanding item and is blocked on elevation, not on this repo.
+
+**Installed:** VS Code, PowerShell 7, Neovim, gh, Miniforge3; scoop + rg fd bat
+fzf zoxide starship zellij lazygit delta eza mise chezmoi + JetBrainsMono NF;
+GlazeWM, Zebar, PowerToys, ExplorerPatcher, WizTree, MSVC Build Tools, Node 24,
+jq, wget, Postman, PostgreSQL 17, minikube, Docker Desktop, Obsidian, Pandoc,
+MiKTeX, Tesseract, LibreOffice, LM Studio, OBS, Brave, Zen; Python 3.12.10, uv,
+Go 1.26.5 (mise), and 246 Python packages.
+
+**Root causes (all four are classes, not one-offs):**
+1. **`powershell -File` flattens arrays.** `-Stages a,b` arrives as the single
+   string `"a,b"`. The switch matched nothing, so the pipeline reported success
+   while doing zero work. Hit three separate times.
+2. **`[ValidateSet]` binds before the script runs**, so it rejected the
+   comma-joined string outright and no in-script fix could help.
+3. **`uv venv` errors on an existing environment**, so every `ml` re-run failed.
+   `--clear` would have deleted a 2.6 GB torch install.
+4. **A shell holds the PATH it launched with.** The `base` stage concluded
+   scoop was missing, reinstalled it, then skipped all 13 CLI tools; the
+   inventory reported 4/30 tools when 30 were present.
+
+**Changes:**
+- `setup/pipeline-windows-ml.ps1` - **new.** Six idempotent, timed, resumable
+  stages writing `setup/state/pipeline-state.json`.
+- `tools/mlops_dashboard.py` - **new.** Stdlib-only server on :8765. Live GPU
+  telemetry, tool inventory, stage timeline. Palette validated with the
+  `dataviz` validator (two earlier attempts failed on lightness band and
+  normal-vision separation).
+- `setup/setup.ps1`, `setup-windows.ps1`, `install-windows-apps.ps1` -
+  `Sync-PathFromRegistry` added; ValidateSet removed in favour of manual
+  validation after splitting.
+- `setup/install-ml-windows.ps1` - reuses an existing venv.
+- `setup/install-wsl-ubuntu.ps1` - distinguishes firmware-virtualization-off
+  from Windows-component-missing (the built-in error conflates them); installs
+  with `--no-launch` so it cannot hang on the username prompt.
+- `docs/setup/ml-devops-pipeline.mdx`, `docs/ai-coding/plugins.mdx` - new.
+
+**Probe corrections:** a zero-byte exe is usually a dead Store alias, but
+`winget`'s launcher is zero bytes and real - the test is now scoped to
+`python`/`python3`. mise-managed runtimes sit behind mise shims, so the probe
+falls back to `mise which`.
+
+**Open:**
+- **WSL2 blocked.** Firmware virtualization is ON (`VirtualizationFirmwareEnabled:
+  True`); the Windows *Virtual Machine Platform* component is not. Needs
+  `wsl --install --no-distribution` from an admin shell, then a reboot.
+- Microsoft Store `python.exe`/`python3.exe` aliases still ON - manual toggle.
+- 31 Claude Code plugins installed; `posthog` disabled (23.2k always-on tokens,
+  53% of the bill). `semgrep` uninstalled - its PostToolUse hook blocked every
+  file write with "Not logged into Semgrep Guardian".
+- `ponytail` plugin still unlocated.
+- Linux equivalent of the ML installer still to write.
+
+---
+
+## 2026-07-31 18:45 — Windows/ML provisioning path built; 3 latent PowerShell bugs fixed; 32 Claude plugins installed
+
+**Summary:** Audited the repo for what it can install on a *Windows* machine and
+found two gaps: the ML/Python story did not exist at all, and the Windows
+scripts that did exist **could not run**. Built the missing ML + WSL2 layer,
+fixed the broken scripts, then installed and measured a 32-plugin Claude Code
+set.
+
+**Machine:** Windows 11 Home 26200 · Ryzen 7 9800X3D · 31.2 GB RAM · **RTX 5070
+Ti 16 GB (Blackwell, sm_120, compute cap 12.0)** · driver 610.47 / CUDA UMD 13.3
+· C: 1.7 TB free. Before this session: only winget, git, WezTerm, wsl (no
+distro). No real Python, no conda, no node, no scoop.
+
+**Root causes (pre-existing, all latent until someone ran the Windows path):**
+1. **Em dashes broke two scripts.** `setup.ps1` (4 parse errors) and
+   `setup-windows.ps1` (3) are UTF-8 **without BOM**. Windows PowerShell 5.1
+   decodes BOM-less `.ps1` as ANSI, so `—` (`E2 80 94`) becomes `â€"` — and that
+   third byte is U+201D, a smart closing quote, which PowerShell honours as a
+   **string terminator**. Every string after one em dash was mis-parsed.
+2. **`where.exe` + stderr redirect.** `update-user-path.ps1` used
+   `& where.exe $c 2>$null`. On 5.1 that wraps output in a `NativeCommandError`;
+   combined with the script's `$ErrorActionPreference = "Stop"`, the validation
+   loop **aborted on the first missing tool**.
+3. **`$IsWindows` under StrictMode.** `setup.ps1` referenced `$IsWindows`, which
+   does not exist in 5.1 — a bare reference throws under
+   `Set-StrictMode -Version Latest`.
+4. **`mlflow@1.0.0` plugin fails to load.** Its manifest declares
+   `"hooks": "./hooks/hooks.json"`, but that path is auto-loaded — duplicate
+   load, whole plugin dead. Upstream packaging bug.
+
+**Changes:**
+- `setup/install-ml-windows.ps1` — **new.** Reads `nvidia-smi --query-gpu=compute_cap`
+  and maps it to a PyTorch wheel channel (≥12.0 → `cu128`, ≥8.9 → `cu128`,
+  ≥7.0 → `cu126`, else `cpu`), installs real CPython + uv, builds a venv, pulls
+  torch from the explicit CUDA index, then **proves** it with a 2048×2048 device
+  matmul rather than trusting `torch.cuda.is_available()`. Detects the 0-byte
+  Microsoft Store `python.exe` alias that shadows real installs. **Never touches
+  GPU drivers** — read-only `nvidia-smi`.
+- `setup/ml/requirements-ml.txt` — **new.** ~45 libs. torch deliberately excluded:
+  it must come from the CUDA index or the resolver can pick a wheel with no
+  kernels for the card.
+- `setup/install-windows-apps.ps1` — **new.** Restores the app set from
+  `dotfiles/misc/all_programs.txt` (the old machine's 123-program inventory) in
+  6 groups. All 24 winget IDs verified against the live source. Drivers/OEM
+  packages excluded by design. Also installs `assets/glazewm-sample-config.yaml`.
+- `setup/install-wsl-ubuntu.ps1` + `setup/wsl/bootstrap-wsl.sh` — **new.** WSL2 +
+  Ubuntu with CUDA passthrough. Documents why you must **never** install a Linux
+  NVIDIA driver inside the distro (it overwrites the `/usr/lib/wsl/lib` stubs the
+  Windows driver projects in).
+- `setup/setup.ps1`, `setup-windows.ps1`, `update-user-path.ps1` — **fixed** all
+  three bugs above; converted all six `.ps1` to ASCII.
+- `docs/setup/windows.mdx` — **new.** Run order, script inventory, the Store-stub
+  trap, the compute-capability → wheel-channel table, the WSL driver rule.
+- `docs/ai-coding/plugins.mdx` — **new.** 32-plugin inventory with *measured*
+  always-on token costs, the `mlflow` workaround, marketplace commands.
+- `README.md` — Windows quick-start now lists all four scripts; ML-environments
+  TODO closed (done via uv, not conda).
+
+**Verification:** all 6 `.ps1` files pass `[Parser]::ParseFile` (were 7 errors);
+dry-runs of `install-ml-windows.ps1`, `install-windows-apps.ps1 -Groups All`,
+`update-user-path.ps1`, and `setup.ps1` all run clean. GPU detection correctly
+reports compute cap 12 → `cu128`. `bash -n` passes on `bootstrap-wsl.sh`.
+*(Superseded by the 2026-07-31 19:25 entry above: the scripts were subsequently
+run and the machine provisioned end-to-end.)*
+
+**Plugins:** 32 installed across `claude-plugins-official` + `caveman`, all
+enabled after patching the `mlflow` manifest. Measured **~44.1k tokens
+always-on** — of which **`posthog` alone is 23.2k (133 skills), 53% of the
+bill**. Disabling it drops the total to ~21k. Full table in
+`docs/ai-coding/plugins.mdx`.
+
+**Open:**
+- Microsoft Store `python.exe`/`python3.exe` aliases still ON — must be toggled
+  off by hand (Settings → Apps → Advanced → App execution aliases); no script
+  can do it.
+- `ponytail` plugin requested but not found in any marketplace; source unknown.
+- The `mlflow` manifest patch reverts on plugin update.
+- Linux equivalent of `install-ml-windows.ps1` still to write.
+
+---
+
 ## 2026-07-14 13:30 — Voice dictation: mic capture fixed (parec → pw-cat), ydotool half found missing
 
 **Summary:** Ran down "the microphone doesn't work". Mic hardware was fine — the

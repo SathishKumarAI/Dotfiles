@@ -52,14 +52,32 @@ bash setup/setup.sh --os arch      # force a target if detection is wrong
 ### Windows
 
 ```powershell
-# From the repo's setup/ folder, in PowerShell:
+# From the repo's setup/ folder, in PowerShell. Every script takes -DryRun.
 powershell -ExecutionPolicy Bypass -File .\setup.ps1 -DryRun   # preview, change nothing
 powershell -ExecutionPolicy Bypass -File .\setup.ps1           # ensure winget+scoop, then install
 
-# then:
+# OR do all of it in one orchestrated, resumable pipeline (recommended):
+powershell -ExecutionPolicy Bypass -File .\pipeline-windows-ml.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File .\pipeline-windows-ml.ps1
+python ..\tools\mlops_dashboard.py      # live dashboard on http://127.0.0.1:8765
+
+# then, as needed:
+powershell -ExecutionPolicy Bypass -File .\install-windows-apps.ps1  # GlazeWM, PowerToys, Obsidian, ...
+powershell -ExecutionPolicy Bypass -File .\install-ml-windows.ps1    # Python + uv + GPU-matched PyTorch
+powershell -ExecutionPolicy Bypass -File .\install-wsl-ubuntu.ps1    # WSL2 + Ubuntu (CUDA passthrough)
+
 chezmoi init --apply SathishKumarAI/Dotfiles
 mise install
 ```
+
+> **Pipeline + dashboard:** [`docs/setup/ml-devops-pipeline.mdx`](docs/setup/ml-devops-pipeline.mdx)
+>
+> **Full Windows guide:** [`docs/setup/windows.mdx`](docs/setup/windows.mdx) —
+> script inventory, the Microsoft Store Python-stub trap, the GPU wheel/compute
+> capability table, and the WSL2 driver rule.
+>
+> **No script in this repo installs, updates, or modifies a GPU driver.** The ML
+> scripts only *read* `nvidia-smi` to select a matching PyTorch wheel.
 
 > **Per-OS scripts:** the main entry detects the OS and runs the matching
 > orchestrator — all in [`setup/`](setup/):
@@ -69,6 +87,11 @@ mise install
 > | Rocky / Fedora / RHEL | `setup.sh` | `setup-rocky.sh` | dnf + WezTerm + GNOME theme |
 > | Arch / Manjaro | `setup.sh` | `setup-arch.sh` | pacman/yay + GNOME extensions + TLP |
 > | Windows 10/11 | `setup.ps1` | `setup-windows.ps1` | winget + scoop (+ `update-user-path.ps1`) |
+>
+> Windows has three extra, optional layers with no Linux counterpart:
+> `install-windows-apps.ps1` (the app set restored from
+> `dotfiles/misc/all_programs.txt`), `install-ml-windows.ps1` (Python + CUDA
+> stack), and `install-wsl-ubuntu.ps1` + `wsl/bootstrap-wsl.sh`.
 >
 > All three orchestrators install the same toolset (modern CLI, starship,
 > zellij, mise, neovim, lazygit, WezTerm, chezmoi). The Linux pair shares the
@@ -390,7 +413,7 @@ Full details: [setup/FULL_TOOLS_INVENTORY.md](setup/FULL_TOOLS_INVENTORY.md)
 - [ ] **Obsidian Git plugin** — Auto-commit vault to GitHub for cross-machine sync
 - [ ] **Obsidian Spaced Repetition** — Flashcard plugin for coding study (Python, system design, ML concepts)
 - [ ] **SSH config** — Managed `~/.ssh/config` for common hosts (via chezmoi with encryption)
-- [ ] **Conda environments** — Pre-built `environment.yml` files for AI/ML projects (torch, transformers, langchain)
+- [x] **ML environments** — done via uv instead of conda: `setup/install-ml-windows.ps1` + `setup/ml/requirements-ml.txt` (GPU-matched torch, transformers, langchain). See [`docs/setup/windows.mdx`](docs/setup/windows.mdx). *Linux equivalent still to do.*
 - [ ] **Hyprland config** — Alternative to GNOME for tiling WM enthusiasts (Wayland-native)
 - [ ] **GNOME dconf backup** — Export full `dconf dump /` as a restorable file in chezmoi
 

@@ -1,0 +1,205 @@
+---
+title: Windows to ML/DevOps Pipeline
+description: One orchestrated, idempotent, resumable pipeline that takes a bare Windows box to a verified CUDA workstation - plus a local dashboard that renders its state.
+status: live
+tags: [setup, windows, ml, pipeline, cuda, dashboard, devops]
+---
+
+# Windows to ML/DevOps Pipeline
+
+**Intro.** The individual installers each do one job. This is the layer above
+them: one command, six ordered stages, each idempotent and timed, writing a
+machine-readable state file that a local dashboard renders. Re-running is
+always safe.
+
+> **Driver policy:** no stage installs, updates, or modifies a GPU driver.
+> `nvidia-smi` is read only, used to pick a PyTorch wheel channel and to show
+> telemetry.
+
+## Run it
+
+```powershell
+cd setup
+powershell -ExecutionPolicy Bypass -File .\pipeline-windows-ml.ps1 -DryRun   # preview
+powershell -ExecutionPolicy Bypass -File .\pipeline-windows-ml.ps1           # full run
+powershell -ExecutionPolicy Bypass -File .\pipeline-windows-ml.ps1 -Stages verify   # refresh data only
+powershell -ExecutionPolicy Bypass -File .\pipeline-windows-ml.ps1 -From ml         # resume
+powershell -ExecutionPolicy Bypass -File .\pipeline-windows-ml.ps1 -IncludeWsl      # opt into WSL2
+```
+
+Then see it:
+
+```powershell
+python tools\mlops_dashboard.py              # http://127.0.0.1:8765, read-only
+python tools\mlops_dashboard.py --allow-run  # enable the install buttons
+python tools\mlops_dashboard.py --once snapshot.html
+```
+
+## Stages
+
+| # | Stage | Wraps | Idempotent behaviour |
+|---|-------|-------|----------------------|
+| 01 | `preflight` | - | Pure probe. Machine, GPU, disk. Changes nothing. |
+| 02 | `base` | `setup.ps1` | winget/scoop report "already installed" and continue. |
+| 03 | `apps` | `install-windows-apps.ps1` | Same; GlazeWM config is never overwritten. **Installs ExplorerPatcher, which makes Windows 11 look like Windows 10** - see [Windows Setup](./windows.mdx). |
+| 04 | `ml` | `install-ml-windows.ps1` | Reuses an existing venv rather than clearing it. |
+| 05 | `wsl` | `install-wsl-ubuntu.ps1` | Opt-in. Skipped unless `-IncludeWsl`. |
+| 06 | `verify` | - | Tool inventory + live torch/CUDA probe. |
+
+A stage that has already succeeded is skipped unless `-Force`. State lives in
+`setup/state/pipeline-state.json`.
+
+## The state file
+
+Schema 1, consumed by `tools/mlops_dashboard.py`:
+
+```json
+{
+  "schema": 1, "pipeline": "windows-ml", "updated": "...",
+  "machine": { "cpu": "...", "ramGB": 31.2, "cores": 8, "threads": 16 },
+  "gpu":     { "name": "...", "computeCap": 12.0, "torchChannel": "cu128",
+               "architecture": "Blackwell (sm_120)", "vramTotalMB": 16303 },
+  "stages":  [ { "id": "ml", "status": "ok", "durationSec": 4.2, "detail": "..." } ],
+  "tools":   [ { "name": "uv", "category": "python", "present": true, "path": "..." } ],
+  "ml":      { "torch": "2.11.0+cu128", "cudaAvailable": true, "matmulOk": true }
+}
+```
+
+## The dashboard
+
+Stdlib-only Python - the same dependency-free rule `setup/md2html.py` follows.
+It reads the state file and adds live read-only probes on top, so GPU telemetry
+updates every 5 seconds while the pipeline data stays as recorded.
+
+The signature element is the **capability gate**: compute capability on the
+left, the wheel channel it selects on the right. That single decision is what
+the whole pipeline hangs off, so it leads the page rather than a generic stat
+row.
+
+Colour is validated, not eyeballed. The status trio
+`#2ea37f / #b28f10 / #cf4a55` passes all five checks of the `dataviz`
+validator against a dark surface: lightness band, chroma floor, CVD
+separation, normal-vision floor, and contrast. Every status also carries a
+glyph and a text label, so state is never conveyed by colour alone.
+
+## The control panel
+
+The dashboard is a local job runner, not just a readout - the same shape as
+AWX/Semaphore for Ansible or Rundeck for shell jobs, scoped to one machine.
+
+```powershell
+python tools\mlops_dashboard.py              # read-only (default)
+python tools\mlops_dashboard.py --allow-run  # buttons live
+```
+
+| Tab | What it answers |
+|---|---|
+| **Overview** | Did the GPU/PyTorch pairing actually work? (the gate, telemetry, ML runtime) |
+| **Pipeline** | What are the stages, what state is each in, and run any of them |
+| **Console** | What is happening *right now* - live stdout, colourised, follow-mode |
+| **Tools** | What is installed, by category, probed live |
+| **History** | What did each run actually change |
+
+**Run history measures, it does not parse.** Before starting a stage the server
+snapshots which tools resolve; after it finishes it snapshots again and records
+the set difference. So "this run added `go` and `uv`" is an observation, not a
+guess based on installer output.
+
+Logs land in `setup/state/logs/<timestamp>-<stage>.log`, one file per run, and
+history in `setup/state/history.json`. Both are gitignored - they are machine
+state, not source.
+
+### Why `--allow-run` is off by default
+
+A page that can start installers is a real attack surface: any website open in
+your browser can issue requests to `localhost`. Three guards apply, and all
+three must pass:
+
+1. the listener binds `127.0.0.1` only,
+2. every POST carries a token generated per server start and embedded in the
+   page, so a blind cross-site POST cannot guess it,
+3. the `Origin`/`Referer` must match this server.
+
+Verified behaviour:
+
+| Request | Result |
+|---|---|
+| no token | `403 bad or missing token` |
+| wrong token | `403 bad or missing token` |
+| valid token, foreign `Origin` | `403 cross-origin request refused` |
+| unknown stage name | `400 unknown stage` |
+| valid token + same origin | run starts, log streams |
+
+Do not expose this port to a network.
+
+### Alternatives worth knowing
+
+If this outgrows one machine, the established tools do the same job properly:
+
+| Tool | Fit |
+|---|---|
+| **Ansible + AWX / Semaphore UI** | The real answer for multi-machine. Web UI, job templates, run history, RBAC. Ansible has solid Windows support over WinRM/SSH. |
+| **Rundeck** | Job runner for arbitrary scripts with a web UI and audit log. Less opinionated than Ansible. |
+| **Chocolatey Central Management** | Windows package management at fleet scale. |
+| **Windows Admin Center** | Microsoft's own browser-based machine admin. |
+
+For a single workstation driven from a dotfiles repo, those are heavier than
+the problem: they need a server, an inventory, and a daemon. This panel is
+~950 lines of stdlib Python with no service to maintain. The moment a second
+machine appears, switch to Ansible + Semaphore rather than growing this.
+
+## Four bugs this pipeline exposed
+
+Running the installers *through* an orchestrator surfaced failures that running
+them by hand did not. All are fixed; they are recorded because each is a class,
+not a one-off.
+
+**1. `powershell -File` flattens array arguments.**
+`-Stages preflight,verify` arrives as one string `"preflight,verify"`, not two
+elements. It silently matched no stage, so the pipeline reported success while
+doing nothing. Hit three times (pipeline `-Stages`, pipeline `-AppGroups`, and
+the child script's `-Groups`). Fix: split on commas inside every script.
+
+**2. `[ValidateSet]` cannot be worked around after the fact.**
+Validation runs at parameter-bind time, before the script can split the string,
+so the comma-joined value was rejected outright. Fix: drop the attribute and
+validate manually after splitting.
+
+**3. `uv venv` refuses to reuse an existing environment.**
+Every re-run of the `ml` stage failed. `--clear` "fixes" it by deleting a
+multi-gigabyte torch install. Fix: detect the venv and skip creation - the
+package installs are idempotent anyway.
+
+**4. A shell holds the PATH it launched with.**
+Tools installed during a session are invisible to that session. This made the
+`base` stage conclude scoop was missing, **reinstall it**, then skip all 13
+CLI tools; and made the inventory report 4/30 tools when 30 were present. Fix:
+re-read PATH from the registry (`Sync-PathFromRegistry`) before probing.
+
+Two related probe corrections:
+
+- A zero-byte executable is *usually* a dead Microsoft Store alias, but
+  `winget`'s launcher is also zero bytes and entirely real. The test is now
+  scoped to `python`/`python3`.
+- mise-managed runtimes (`go`, `node`) sit behind mise shims, not the raw PATH.
+  The probe now falls back to `mise which`.
+
+## WSL2 and a misleading error
+
+`wsl --status` reports *"virtualization is not enabled on this machine"* for
+**two unrelated causes**:
+
+| Cause | Check | Fix |
+|---|---|---|
+| Firmware virtualization off | `(Get-CimInstance Win32_Processor).VirtualizationFirmwareEnabled` | Reboot to UEFI, enable **SVM Mode** (AMD) / **VT-x** (Intel) |
+| Windows component missing | the same message, firmware reads `True` | `wsl --install --no-distribution` **as admin**, then reboot |
+
+`install-wsl-ubuntu.ps1` distinguishes them and refuses to send you into the
+BIOS when the firmware is already fine. It also installs with `--no-launch`, so
+it never blocks on the distro's first-run username prompt.
+
+## See also
+
+- [Windows Setup](./windows.mdx) - the individual installers, Store-stub trap, wheel channels
+- [Provisioning Architecture](./architecture.mdx) - the three-layer model
+- `setup/pipeline-windows-ml.ps1` · `tools/mlops_dashboard.py`

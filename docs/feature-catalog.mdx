@@ -13,6 +13,24 @@ host. Status checked **2026-06-08** against `chezmoi status` + tool availability
 
 Legend: ✅ live · ⚠️ diverged (live ≠ repo) · ⏳ pending (in repo, not applied) · ❌ missing (install/build)
 
+## Windows / ML workstation
+
+Status checked **2026-07-31** on the Windows 11 box (Ryzen 9800X3D, RTX 5070 Ti).
+The rest of this page is the Rocky Linux snapshot from 2026-06-08.
+
+| Feature | Status | Doc |
+|---------|--------|-----|
+| Windows base toolset (`setup.ps1`) | OK live | [setup/windows](./setup/windows.mdx) |
+| Application restore (`install-windows-apps.ps1`) | OK live | [setup/windows](./setup/windows.mdx) |
+| Python 3.12 + uv + venv | OK live | [setup/windows](./setup/windows.mdx) |
+| PyTorch 2.11.0+cu128, CUDA verified on device | OK live | [setup/windows](./setup/windows.mdx) |
+| Orchestrated pipeline (6 stages) | OK live | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
+| MLOps dashboard (`tools/mlops_dashboard.py`) | OK live | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
+| Tool inventory | OK 30/30 | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
+| WSL2 + Ubuntu | BLOCKED - needs `wsl --install --no-distribution` as admin + reboot | [setup/ml-devops-pipeline](./setup/ml-devops-pipeline.mdx) |
+| Store `python.exe` alias disabled | PENDING - manual Windows toggle | [setup/windows](./setup/windows.mdx) |
+| Claude Code plugins | OK live | [ai-coding/plugins](./ai-coding/plugins.mdx) |
+
 ## Shell & prompt
 
 | Feature | Status | Doc |

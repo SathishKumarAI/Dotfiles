@@ -16,6 +16,7 @@ workflow for running multiple agents in parallel.
 |------|------|
 | [claude-code](./claude-code.mdx) | The CLI, settings, deny-list, memory system |
 | [skills](./skills.mdx) | Vetted skill marketplaces + the install script |
+| [plugins](./plugins.mdx) | The 32 installed plugins + their measured context cost |
 | [hooks](./hooks.mdx) | Worklog Stop hook + the `/document` workflow |
 | [mcp-servers](./mcp-servers.mdx) | Configured + recommended MCP servers |
 | [agent-workflows](./agent-workflows.mdx) | Git-worktree parallel agents for large projects |
@@ -29,9 +30,12 @@ workflow for running multiple agents in parallel.
    `.sh` scripts you run yourself.
 2. **Vetted only** — skills/plugins are security-reviewed before install; the
    `caveman` plugin uses the plugin path, never the `curl|bash` one-liner.
-3. **Documented** — a Stop hook nudges `/document` so each session lands in
+3. **Budgeted** — plugins cost context on *every* session. Measure with
+   `claude plugin details <name>` and `disable` what is not earning its slot;
+   see [plugins](./plugins.mdx).
+4. **Documented** — a Stop hook nudges `/document` so each session lands in
    `docs/WORKLOG.md`.
-4. **Parallel + isolated** — large refactors fan out across **git worktrees** so
+5. **Parallel + isolated** — large refactors fan out across **git worktrees** so
    agents never clobber each other.
 
 ## Sources

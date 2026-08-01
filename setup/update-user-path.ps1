@@ -1,6 +1,6 @@
 <#
 update-user-path.ps1
-USER PATH ONLY — Auto-detect tools by EXE and add their parent folders.
+USER PATH ONLY - Auto-detect tools by EXE and add their parent folders.
 
 Features:
 - User PATH only (no System vars)
@@ -70,13 +70,12 @@ function Backup-UserPath {
 }
 
 function Resolve-ExeDir([string]$exeName, [string[]]$fallbackPaths) {
-  # 1) Prefer existing PATH resolution
-  try {
-    $w = & where.exe $exeName 2>$null
-    if ($LASTEXITCODE -eq 0 -and $w) {
-      return (Split-Path -Parent ($w | Select-Object -First 1))
-    }
-  } catch { }
+  # 1) Prefer existing PATH resolution.
+  #    Get-Command, not `where.exe ... 2>$null`: on Windows PowerShell 5.1,
+  #    redirecting a native command's stderr wraps it in a NativeCommandError,
+  #    which throws under $ErrorActionPreference = "Stop".
+  $cmd = Get-Command $exeName -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($cmd -and $cmd.Source) { return (Split-Path -Parent $cmd.Source) }
 
   # 2) Search common install locations
   foreach ($p in $fallbackPaths) {
@@ -132,9 +131,10 @@ Add-LatestPostgresBin "C:\Program Files (x86)\PostgreSQL"
 
 # Final validation
 Write-Host "`nValidation:"
-$check = @("winget","scoop","git","python","conda","node","npm","docker","gh","starship","wezterm","nvim","mise","chezmoi","zoxide")
+$check = @("winget","scoop","git","python","conda","node","npm","docker","gh","starship","wezterm","nvim","mise","chezmoi","zoxide","uv")
 foreach ($c in $check) {
-  if (& where.exe $c 2>$null) { Write-Host "OK   $c" } else { Write-Host "MISS $c" }
+  # Same reason as Resolve-ExeDir: never redirect a native command's stderr here.
+  if (Get-Command $c -ErrorAction SilentlyContinue) { Write-Host "OK   $c" } else { Write-Host "MISS $c" }
 }
 
 Write-Host "`nDone. Close and reopen terminals."

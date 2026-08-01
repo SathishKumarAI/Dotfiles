@@ -1,0 +1,169 @@
+---
+title: Windows Setup — Dev, ML, and WSL2
+description: The full Windows provisioning path — base dev environment, the restored application set, a GPU-matched PyTorch stack, and WSL2 with CUDA passthrough. Includes the Store-stub Python trap and the Blackwell wheel rule.
+status: live
+tags: [setup, windows, ml, cuda, pytorch, wsl, gpu]
+---
+
+# Windows Setup — Dev, ML, and WSL2
+
+**Intro.** This repo is Linux-first, but the Windows path is complete: four
+PowerShell scripts take a bare Windows 11 box to a working ML workstation.
+This page is the map — what each script installs, the two Windows-specific
+traps that break Python and CUDA, and what is deliberately left out.
+
+> **Driver policy:** no script in this repo installs, updates, or modifies a
+> GPU driver. They only *read* `nvidia-smi` to pick the right PyTorch wheel.
+> Driver management stays manual, on purpose.
+
+## Run order
+
+```
+setup.ps1                  ensure winget + scoop, then ->
+  setup-windows.ps1        shared toolset (Git, WezTerm, VS Code, nvim, gh, Miniforge,
+                           + scoop: rg fd bat fzf zoxide starship zellij lazygit delta eza mise chezmoi)
+  update-user-path.ps1     repair USER PATH (backs up first, -DryRun safe)
+
+install-windows-apps.ps1   Windows-only apps: GlazeWM+Zebar, PowerToys, Obsidian,
+                           Postman, PostgreSQL, MSVC Build Tools, LM Studio, ...
+install-ml-windows.ps1     real Python + uv + venv + GPU-matched PyTorch + ML libs
+install-wsl-ubuntu.ps1     WSL2 + Ubuntu, CUDA passthrough
+  wsl/bootstrap-wsl.sh     (run inside Ubuntu) base pkgs + uv + GPU verify
+```
+
+Every script takes `-DryRun` and changes nothing in that mode. Run it first.
+
+## Script inventory
+
+| Script | Installs | Needs admin | Time |
+|---|---|---|---|
+| `setup.ps1` | winget check, scoop bootstrap | no | 1 min |
+| `setup-windows.ps1` | 7 winget apps + 13 scoop CLI tools + Nerd Font | no | 10–15 min |
+| `update-user-path.ps1` | nothing — repairs USER PATH only | no | seconds |
+| `install-windows-apps.ps1` | 6 groups, ~20 apps | some installers | 15–25 min |
+| `install-ml-windows.ps1` | Python, uv, venv, torch, ~45 libs | no | 10–20 min |
+| `install-wsl-ubuntu.ps1` | WSL2 + Ubuntu | yes (feature enable) | 5–10 min + reboot |
+
+`install-windows-apps.ps1` is grouped — `-Groups Desktop,Dev,Docs` is the
+default; `-Groups All` takes everything:
+
+| Group | Contents |
+|---|---|
+| `Desktop` | GlazeWM, Zebar, PowerToys, ExplorerPatcher, WizTree |
+| `Dev` | MSVC Build Tools, Node LTS, jq, wget, Postman, PostgreSQL 17, minikube, Docker Desktop |
+| `Docs` | Obsidian, Pandoc, MiKTeX, Tesseract OCR, LibreOffice |
+| `AI` | LM Studio, Claude Code |
+| `Media` | OBS Studio |
+| `Browsers` | Brave, Zen Browser |
+
+The group contents are reconstructed from `dotfiles/misc/all_programs.txt`, a
+123-program inventory of the previous Windows machine. OEM and driver packages
+in that inventory (Dell, Intel, Realtek, NVIDIA) are excluded by design.
+
+## Caveat — ExplorerPatcher changes how Windows looks
+
+`install-windows-apps.ps1` installs **ExplorerPatcher** in the `Desktop` group
+because it was present in `dotfiles/misc/all_programs.txt`. That is a faithful
+restore, but be aware what it does: **it reverts the Windows 11 shell to the
+Windows 10 taskbar and Start menu.** If Windows suddenly looks a version old
+after running the pipeline, this is why - not a broken install.
+
+```powershell
+winget uninstall valinet.ExplorerPatcher   # restore the Windows 11 shell
+```
+
+Or skip it up front by choosing groups: `-Groups Dev,Docs,AI`.
+
+The same applies to anything else restored from that inventory: it reflects the
+*previous* machine, not necessarily what you want on this one. Review the group
+lists before a first run.
+
+## Trap 1 — the Microsoft Store Python stub
+
+Windows ships 0-byte "App Execution Alias" files:
+
+```
+%LOCALAPPDATA%\Microsoft\WindowsApps\python.exe    <- 0 bytes, opens the Store
+```
+
+`WindowsApps` sits early on PATH, so it **shadows every real Python install**.
+Symptoms: `python` opens the Store, or exits silently, or `pip` targets the
+wrong interpreter.
+
+**Fix:** Settings → Apps → Advanced app settings → App execution aliases →
+switch **off** `python.exe` and `python3.exe`. This is a per-user Windows
+toggle; no script can flip it. `install-ml-windows.ps1` detects the stub and
+tells you, then continues.
+
+## Trap 2 — GPU wheels and compute capability
+
+`pip install torch` can resolve to a wheel with **no compiled kernels for your
+card**. It installs cleanly, `torch.cuda.is_available()` may even return
+`True`, and then the first real op dies with:
+
+```
+CUDA error: no kernel image is available for execution on the device
+```
+
+The rule: match the wheel channel to the GPU's compute capability.
+
+| GPU generation | Compute cap | Channel |
+|---|---|---|
+| Blackwell (RTX 50-series) | 12.0 | `cu128` or newer |
+| Ada / Hopper (RTX 40-series) | 8.9 / 9.0 | `cu128` |
+| Ampere / Turing / Volta | 7.0–8.6 | `cu126` |
+| older / none | — | `cpu` |
+
+`install-ml-windows.ps1` reads `nvidia-smi --query-gpu=compute_cap` and picks
+the channel automatically; override with `-CudaChannel cu126`. It always
+installs from the explicit index:
+
+```powershell
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+```
+
+and then **proves** it works — the verify step runs a real 2048×2048 matmul on
+the device rather than trusting `is_available()`.
+
+## Why uv, not conda
+
+The repo installs Miniforge (via `setup-windows.ps1`) but builds ML
+environments with **uv**:
+
+| | uv | conda |
+|---|---|---|
+| Resolution speed | seconds | minutes |
+| PyTorch CUDA index | native `--index-url` | channel juggling |
+| Matches Linux side | yes (`install-workflow-tools.sh`) | no |
+| conda-only binaries | no | yes |
+
+Use conda when a package genuinely has no wheel (some GPU FAISS builds, a few
+geo/bio stacks). Guide: `dotfiles/windows_setup/conda/setup.md` — note its
+correct advice to use `conda init` and **never** put conda on PATH manually.
+
+## WSL2 and the driver rule
+
+WSL2 gives you every Linux script in this repo plus CUDA passthrough. The one
+rule that matters:
+
+> **Never install a Linux NVIDIA driver inside the distro.** The Windows
+> driver is projected in at `/usr/lib/wsl/lib`. An `apt install nvidia-driver-*`
+> overwrites those stubs and breaks CUDA in WSL.
+
+`bootstrap-wsl.sh` verifies passthrough (`/dev/dxg` + `nvidia-smi`) and never
+installs a driver. If you need `nvcc` inside WSL, install only the
+**`wsl-ubuntu`** CUDA repo variant — it ships the toolkit without a driver.
+
+## Not covered
+
+Install by hand — account-bound, licensed, or machine-specific: Visual Studio
+Community 2022, Zoom, iCloud, OneDrive, Dell SupportAssist, AVG, JDownloader,
+Stirling-PDF, ONLYOFFICE. Chrome Remote Desktop is superseded here by RustDesk
+(`chezmoi/private_dot_config/remote-desktop/`).
+
+## See also
+
+- [Provisioning Architecture](./architecture.mdx) — the three-layer model
+- [Installation Reference](./installation-reference.mdx) — the Linux inventory
+- `dotfiles/windows_setup/conda/setup.md` — conda on Windows
+- `assets/glazewm-sample-config.yaml` — tiling config, copied into place by `install-windows-apps.ps1`
