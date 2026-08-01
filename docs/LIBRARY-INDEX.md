@@ -33,6 +33,7 @@ repo (version-controlled) as of 2026-06-18. Start here.
 |-----|----------------|
 | [ai-coding/index.mdx](ai-coding/index.mdx) | Claude Code, skills, hooks, MCP, agent workflows, SDK. |
 | [ai-coding/plugins.mdx](ai-coding/plugins.mdx) | Installed plugin set with **measured** always-on token costs, marketplace commands, and the `mlflow` hooks workaround. |
+| [PLUGIN-AUDIT.md](PLUGIN-AUDIT.md) | 2026-07-31 plugin audit: 31-row keep/disable decision table, env-key + missing-binary gaps, redundancy map, and the operating guide — per-repo `enabledPlugins` scoping, mid-session toggling, what to measure. 30 enabled → 10. |
 
 ## Desktop (system)
 | Doc | What it covers |

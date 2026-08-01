@@ -1,5 +1,81 @@
 # Worklog
 
+## 2026-07-31 20:25 - Plugin audit: 30 enabled -> 10, ~14k tokens off every prompt
+
+**Summary:** Audited all 31 installed Claude Code plugins against three
+questions - does it work, does anyone use it, what does it cost per message.
+Six were unusable (auth never set up), three had no toolchain on this box, five
+duplicated a built-in. Disabled 21. Always-on context went ~20.9k -> **~6.9k**.
+
+**The measurement that mattered.** Cost is charged at three separate sites and
+only one responds to disabling:
+
+| Site | Charged | Shrink by |
+|---|---|---|
+| System prompt (skill + agent descriptions) | every message | disabling - nothing else |
+| MCP tool schemas | on load | already deferred via `ToolSearch` |
+| Hooks | per session / per message | disable, or opt-out env var |
+
+Agent descriptions turned out to cost more per item than skill descriptions -
+they ship full multi-example blocks. `pr-review-toolkit` billed 2,033 tokens
+from **six agents and one skill**, outranking plugins with ten skills.
+
+**Why each one went** - four causes, all verified rather than assumed:
+
+- **Auth never configured, so the MCP could not work at all:** `github`
+  (`GITHUB_PERSONAL_ACCESS_TOKEN` unset), `pinecone`, `exa`, `sentry`,
+  `firecrawl`, `huggingface-skills` (OAuth `authenticate` never run). Worst
+  trade in the set - full context bill every message, zero capability.
+- **Toolchain absent:** `gopls-lsp` (no `go`), `rust-analyzer-lsp` (no `rustc`),
+  `lua-lsp` (no `lua-language-server`). Checked with `command -v`, not guessed.
+- **Duplicates a built-in:** `chrome-devtools-mcp` + `playwright` vs
+  `claude-in-chrome`; `serena` vs LSP + Grep; `exa` vs WebSearch;
+  `pr-review-toolkit` vs `/review` + `/security-review` + `code-review` (four
+  overlapping reviewers, kept one).
+- **Domain not active:** `qdrant-skills`, `duckdb-skills`, `pydantic-ai`,
+  `mcp-server-dev`, `agent-sdk-dev`, `nvidia-skills`, `context7`.
+
+**Kept (10):** `plugin-dev` 2,349 · `mlflow` 1,987 · `caveman` 1,420 ·
+`superpowers` 688 · `claude-md-management` 175 · `skill-creator` 112 ·
+`frontend-design` 78 · `code-review` 20 · `typescript-lsp` 0 · `pyright-lsp` 0.
+
+**Decisions:**
+- **Disabled, not uninstalled**, and every plugin listed explicitly as `false`
+  rather than deleted from the key. Re-enabling is a one-character edit and
+  nothing silently reappears on plugin update.
+- **Per-repo scoping is the answer to "auto enable/disable"** - there is no
+  built-in unused-plugin reaper. A repo's `.claude/settings.json` takes the same
+  `enabledPlugins` key and layers over the user file, so `huggingface-skills`
+  can cost its 5k only inside `pickleball-vision-llm`.
+- Kept `caveman` despite two hooks per message - output compression is
+  net-negative cost. Kept `superpowers` despite its SessionStart hook
+  re-injecting the full skill body (~700 tok); that injection is what makes the
+  skills fire at all.
+- Turned `huggingface-skills` off (5,029 tokens, the single largest line) since
+  its MCP was unauthenticated and therefore unusable anyway. Re-scope per repo
+  when HF work resumes.
+
+**Changes:**
+- `~/.claude/settings.json` - `enabledPlugins` rewritten, 10 true / 21 false.
+  Backup at `~/.claude/settings.json.bak`. JSON validated with `node -e`.
+- `docs/PLUGIN-AUDIT.md` (new) - 31-row decision table with per-plugin cost,
+  status, and problem; environment-gap table; redundancy map; operating guide
+  covering per-repo scoping, mid-session toggling, and measurement commands.
+- `docs/ai-coding/plugins.mdx` - snapshot updated to post-audit state, added
+  current-enabled table, the three-cost-sites model, scoping section, and a
+  change log. Kept the measured per-plugin cost table as reference.
+- `docs/LIBRARY-INDEX.md` - indexed the new audit doc.
+
+**Follow-ups:**
+- [ ] `npm i -g pyright` - `pyright-lsp` is enabled but its binary is missing,
+      which is pure cost until fixed. Or turn it off.
+- [ ] Add `.claude/settings.json` scoping files to `pickleball-vision-llm`
+      (huggingface-skills, mlflow) and verify layering works with `/plugin`.
+- [ ] Run `/context` right after a `/clear` post-restart to confirm the ~6.9k
+      floor; re-measure with `claude plugin details` if it disagrees.
+- [ ] Decide on `mlflow` - its UserPromptSubmit hook fires on every message;
+      first candidate to cut if MLflow work stops.
+
 ## 2026-07-31 20:15 - Machine audit; Docker root-caused; ExplorerPatcher removed
 
 **Summary:** Audited all 65 installed programs and root-caused Docker. Removed
