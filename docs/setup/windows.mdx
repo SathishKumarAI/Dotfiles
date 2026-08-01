@@ -141,6 +141,23 @@ Use conda when a package genuinely has no wheel (some GPU FAISS builds, a few
 geo/bio stacks). Guide: `dotfiles/windows_setup/conda/setup.md` — note its
 correct advice to use `conda init` and **never** put conda on PATH manually.
 
+## Docker on Windows Home
+
+**Docker Desktop does not require Windows Pro.** Pro is only needed for the
+Hyper-V backend and Windows containers. On Home, Docker uses the **WSL2
+backend**, which runs on *Virtual Machine Platform* - a Hyper-V subset that
+Home does include.
+
+If `docker version` returns a 500 on the Linux engine while Docker Desktop is
+visibly running, the engine has no VM to start on:
+
+```powershell
+Test-Path "$env:SystemRoot\System32mcompute.exe"   # False => component missing
+wsl --install --no-distribution                      # admin, then reboot
+```
+
+The same missing component blocks WSL2, so one fix clears both.
+
 ## WSL2 and the driver rule
 
 WSL2 gives you every Linux script in this repo plus CUDA passthrough. The one

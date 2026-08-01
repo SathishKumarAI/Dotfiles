@@ -24,6 +24,7 @@ repo (version-controlled) as of 2026-06-18. Start here.
 |-----|----------------|
 | [setup/windows.mdx](setup/windows.mdx) | Windows dev + ML setup: script inventory, the Microsoft Store Python-stub trap, GPU compute-capability to PyTorch-wheel table, WSL2 driver rule. |
 | [setup/ml-devops-pipeline.mdx](setup/ml-devops-pipeline.mdx) | Six-stage orchestrated pipeline (bare box to verified CUDA workstation), state schema, local dashboard, and the four idempotency bugs it exposed. |
+| [setup/machine-audit-2026-07-31.md](setup/machine-audit-2026-07-31.md) | Post-provisioning audit: the Virtual Machine Platform blocker (breaks Docker + WSL2), duplicate installs, disk, startup, vendor bloat. |
 | [setup/architecture.mdx](setup/architecture.mdx) | Three-layer provisioning model. |
 | [setup/installation-reference.mdx](setup/installation-reference.mdx) | Per-script inventory + timings (Linux snapshot). |
 

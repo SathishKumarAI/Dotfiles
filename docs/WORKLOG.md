@@ -1,5 +1,40 @@
 # Worklog
 
+## 2026-07-31 20:15 - Machine audit; Docker root-caused; ExplorerPatcher removed
+
+**Summary:** Audited all 65 installed programs and root-caused Docker. Removed
+ExplorerPatcher, stopped GlazeWM/Zebar.
+
+**Docker was never a Windows Pro problem.** Docker Desktop runs on Home via the
+WSL2 backend; Pro is only needed for the Hyper-V backend and Windows
+containers. The real cause is that the **Virtual Machine Platform optional
+component was never enabled** - `vmcompute.exe` does not exist on disk - so the
+Linux engine has no VM to start on and `docker version` returns a 500. Firmware
+virtualization (SVM) was already on. The same component blocks WSL2, so
+`wsl --install --no-distribution` + reboot clears both.
+
+**Duplicate installs found.** `rg`, `fd`, `fzf`, `zoxide` each exist twice: a
+winget copy that predated the run and a scoop copy added by
+`setup-windows.ps1`. scoop wins on PATH; the winget copies are dead weight.
+`python` also resolves twice, real 3.12.10 ahead of the dead Store stub.
+
+**Desktop changes reverted:**
+- ExplorerPatcher **uninstalled** - it was making Windows 11 render as Windows
+  10. Its uninstaller killed `explorer.exe` and did not restart it; had to
+  relaunch manually. `HKCU:\Software\ExplorerPatcher` left in place (inert).
+- GlazeWM + Zebar **stopped, kept installed**. Low value on a single 1080p
+  screen given FancyZones, Windows Snap and zellij already overlap; genuinely
+  worth re-enabling with a second monitor, where per-monitor workspaces have no
+  native Windows equivalent. Neither has an autostart entry.
+
+**Changes:** `docs/setup/machine-audit-2026-07-31.md` (new), `windows.mdx`
+gains a "Docker on Windows Home" section, LIBRARY-INDEX updated.
+
+**Open:** Virtual Machine Platform still not enabled (needs admin + reboot);
+Store python aliases still on; 4 duplicate CLI installs not yet pruned.
+
+---
+
 ## 2026-07-31 19:55 - Dashboard became a control plane; log formatter; shipped a broken page and fixed it
 
 **Summary:** Turned the read-only dashboard into a local job runner (AWX/Semaphore
