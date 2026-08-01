@@ -152,7 +152,7 @@ If `docker version` returns a 500 on the Linux engine while Docker Desktop is
 visibly running, the engine has no VM to start on:
 
 ```powershell
-Test-Path "$env:SystemRoot\System32mcompute.exe"   # False => component missing
+Test-Path "$env:SystemRoot\System32\vmcompute.exe"   # False => component missing
 wsl --install --no-distribution                      # admin, then reboot
 ```
 
