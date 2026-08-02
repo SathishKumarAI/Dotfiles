@@ -1,3 +1,7 @@
+> **ARCHIVED 2026-08-01 — not the canonical doc.**
+> Merged into [`chezmoi.mdx`](../../automation/chezmoi.mdx); edit that one. Kept here for the
+> original wording only. See [archive README](../README.md).
+
 # chezmoi
 
 > Obsidian note. Canonical doc: [`chezmoi.mdx`](../../automation/chezmoi.mdx) —

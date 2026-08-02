@@ -3,8 +3,11 @@
 All development tools on this machine.
 
 ## Core (The Two Pillars)
-- [[mise]] — Language version manager (Python, Node, Go, 500+)
-- [[chezmoi]] — Dotfiles manager across machines
+- [mise](../../automation/mise.mdx) — Language version manager (Python, Node, Go, 500+)
+- [chezmoi](../../automation/chezmoi.mdx) — Dotfiles manager across machines
+
+> The vault-side `[[mise]]` / `[[chezmoi]]` notes were archived 2026-08-01 —
+> they restated the docs above. Originals: `docs/archive/vault-tools/`.
 
 ## Languages & Runtimes
 | Tool | Version | Managed By |

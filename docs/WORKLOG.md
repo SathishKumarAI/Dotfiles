@@ -1,5 +1,30 @@
 # Worklog
 
+## 2026-08-01 - Docs consolidation: one topic, one doc; originals archived
+
+**Summary:** Four subjects were documented twice. `docs/md files/` was a legacy
+dump whose space-in-path names produced every `%20` link in the tree; its
+content merged into the canonical docs, and the originals moved to
+[`docs/archive/`](archive/README.md) rather than being deleted.
+
+| Archived | Merged into |
+|---|---|
+| `md-files/KEYBOARD-SHORTCUTS.md` (420 ln) | `terminal/KEYBOARD-SHORTCUTS.md` — 250 -> 457 ln |
+| `md-files/zoxide.md` | `shell/zoxide.mdx` |
+| `md-files/path_fix.md` | `setup/windows.mdx` |
+| `md-files/SYSTEM-TUNING.md` | `guides/RAM-AND-PERFORMANCE.md` |
+| `vault-tools/{mise,chezmoi}.md` | `automation/{mise,chezmoi}.mdx` |
+
+Each archived file carries an ARCHIVED banner naming its canonical replacement,
+and `LIBRARY-INDEX.md` now opens with a topic -> canonical-doc table — the one
+place to look up where a subject lives. Three similarly-named `FEATURES` docs
+each state which question they answer (bring-up checklist vs built-app catalog
+vs live machine status).
+
+**Kept on purpose:** `rocky-dev-setup/` is a byte-identical copy of five
+`setup/` docs and three scripts, but it is gitignored — local only, never
+committed, so it is not repo duplication.
+
 ## 2026-08-01 - Windows validation: 33/33 tools, and the check that was measuring the wrong thing
 
 **Summary:** Probed every feature and application this repo provisions on

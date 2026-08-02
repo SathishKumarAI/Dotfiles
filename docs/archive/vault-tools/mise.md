@@ -1,3 +1,7 @@
+> **ARCHIVED 2026-08-01 — not the canonical doc.**
+> Merged into [`mise.mdx`](../../automation/mise.mdx); edit that one. Kept here for the
+> original wording only. See [archive README](../README.md).
+
 # mise
 
 > Obsidian note. Canonical doc: [`mise.mdx`](../../automation/mise.mdx) —

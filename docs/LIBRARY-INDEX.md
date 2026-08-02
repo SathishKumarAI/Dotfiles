@@ -18,13 +18,14 @@ a topic's home changes, change it here first.
 | Windows setup, PATH, CUDA | [setup/windows.mdx](setup/windows.mdx) |
 | RAM, boot time, disk tuning | [guides/RAM-AND-PERFORMANCE.md](guides/RAM-AND-PERFORMANCE.md) |
 | zoxide | [shell/zoxide.mdx](shell/zoxide.mdx) |
+| Superseded originals | [archive/](archive/README.md) — read-only, never canonical |
 
-**Retired 2026-08-01.** `docs/md files/` is gone — its four documents were
-merged into the canonical files above (`KEYBOARD-SHORTCUTS.md` →
-`terminal/`, `zoxide.md` → `shell/zoxide.mdx`, `path_fix.md` →
-`setup/windows.mdx`, `SYSTEM-TUNING.md` → `guides/RAM-AND-PERFORMANCE.md`).
-The folder's space-in-path names were also the source of every `%20` link in
-the tree.
+**Retired 2026-08-01, archived not deleted.** `docs/md files/` and two
+duplicate Obsidian tool notes now live under
+[`archive/`](archive/README.md) with their originals intact — merged into the
+canonical files above, banner on each, nothing linked from live docs. The
+retired folder's space-in-path names were also the source of every `%20` link
+in the tree.
 
 Two files keep similar names on purpose, because they answer different
 questions: [`FEATURES.md`](../FEATURES.md) at the repo root is the **per-machine
