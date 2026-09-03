@@ -1,5 +1,5 @@
 <#
-setup.ps1 — main Windows entry point (the PowerShell counterpart of setup.sh).
+setup.ps1 - main Windows entry point (the PowerShell counterpart of setup.sh).
 Ensures the package managers (winget + scoop) are present, then runs the
 Windows orchestrator (setup-windows.ps1).
 
@@ -22,16 +22,33 @@ $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 function Have($cmd) { return [bool](Get-Command $cmd -ErrorAction SilentlyContinue) }
 
-if (-not $IsWindows -and $PSVersionTable.PSVersion.Major -ge 6) {
+# A shell holds the PATH it was launched with. When these scripts run from a
+# long-lived session (or from pipeline-windows-ml.ps1), tools installed earlier
+# in the same session look missing - which made this script reinstall scoop and
+# skip every tool that depended on it. Re-read the real PATH from the registry.
+function Sync-PathFromRegistry {
+  $env:Path = [Environment]::GetEnvironmentVariable("Path","Machine") + ";" +
+              [Environment]::GetEnvironmentVariable("Path","User")
+}
+Sync-PathFromRegistry
+
+
+# $IsWindows only exists in PowerShell 6+. Under Windows PowerShell 5.1 a bare
+# reference to it throws with Set-StrictMode -Version Latest, so probe safely.
+$onWindows = $true
+if ($PSVersionTable.PSVersion.Major -ge 6) {
+  $onWindows = [bool](Get-Variable -Name IsWindows -ValueOnly -ErrorAction SilentlyContinue)
+}
+if (-not $onWindows) {
   Write-Host "This is the Windows entry point. On Linux/macOS run: bash setup/setup.sh"
   exit 1
 }
 
-Write-Host "Windows setup — ensuring package managers ..."
+Write-Host "Windows setup - ensuring package managers ..."
 
 # winget ships with modern Windows; we don't auto-install it.
 if (Have winget) { Write-Host "  winget: found" }
-else { Write-Host "  winget: NOT found — install 'App Installer' from the Microsoft Store, then re-run" }
+else { Write-Host "  winget: NOT found - install 'App Installer' from the Microsoft Store, then re-run" }
 
 # scoop is the user-space manager for the CLI dev tools; offer to install it.
 if (Have scoop) {
@@ -41,7 +58,7 @@ if (Have scoop) {
 } elseif ($DryRun) {
   Write-Host "  scoop:  not found ([DryRun] would install via the official one-liner)"
 } else {
-  Write-Host "  scoop:  not found — installing (user-scope, no admin) ..."
+  Write-Host "  scoop:  not found - installing (user-scope, no admin) ..."
   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
   Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
 }

@@ -1,6 +1,6 @@
 ---
 title: zoxide
-description: Frecency-based smart cd — jump to directories by partial name.
+description: Frecency-based smart cd — jump to directories by partial name. Install and shell init for bash, zsh, fish and PowerShell, plus how the scoring actually works.
 status: live
 tags: [shell, navigation, zoxide]
 ---
@@ -9,7 +9,12 @@ tags: [shell, navigation, zoxide]
 
 **Intro.** A smarter `cd` that remembers the directories you visit and ranks them
 by *frecency* (frequency + recency), so `z proj` jumps straight to your most-used
-matching directory. Initialized in both shells (`eval "$(zoxide init bash|zsh)"`).
+matching directory. Nothing crawls the filesystem and nothing indexes in the
+background — a shell hook records each directory change into a small local
+database.
+
+> **Canonical.** Absorbed the former `docs/md files/zoxide.md` on 2026-08-01.
+> This is the only zoxide doc.
 
 ## Why this
 
@@ -17,12 +22,52 @@ Replaces manual `cd ../../some/deep/path` with `z path`. Pairs naturally with
 fzf (interactive pick via `zi`). Chosen over `autojump`/`z.sh` because it's a
 single Rust binary, actively maintained, and shell-agnostic.
 
-## Install / enable
+## How the ranking works
+
+Each directory carries one score:
+
+- incremented on every `chdir`,
+- decayed over time,
+- results ranked by the weighted result.
+
+So frequently used paths dominate, and recently used paths beat stale ones. It
+is a behaviour-learning layer, not a table of aliases — which is why adding
+manual directory aliases on top tends to fight it.
+
+## Install
+
+| Platform | Command |
+|---|---|
+| Rocky / Fedora | `sudo dnf install zoxide` |
+| Debian / Ubuntu | `sudo apt install zoxide` |
+| Arch | `sudo pacman -S zoxide` |
+| macOS | `brew install zoxide` |
+| Windows | `scoop install zoxide` (this repo's `setup-windows.ps1`) |
 
 ```bash
-# binary at ~/.local/bin/zoxide; shells auto-init it when present
-z --version
+zoxide --version
 ```
+
+## Shell initialization — required
+
+The binary alone does nothing. Without an init line in your shell config there
+is **no `z` command at all**; the tool installs cleanly and stays inert.
+
+```bash
+eval "$(zoxide init bash)"      # ~/.bashrc
+eval "$(zoxide init zsh)"       # ~/.zshrc
+zoxide init fish | source       # ~/.config/fish/config.fish
+```
+
+```powershell
+# $PROFILE — see assets/powershell-profile.ps1
+Invoke-Expression (& { (zoxide init powershell | Out-String) })
+```
+
+Windows ships **no PowerShell profile by default**, which is exactly how this
+box ended up with zoxide installed and `z` undefined — see
+[Windows Setup](../setup/windows.mdx). Keep the init line in the dotfiles repo,
+not typed by hand, so a new machine behaves identically after clone + install.
 
 ## Usage
 
@@ -31,14 +76,21 @@ z --version
 | `z foo` | cd to highest-ranked dir matching "foo" |
 | `z foo bar` | match on multiple keywords |
 | `zi foo` | interactive fzf pick among matches |
+| `z -l foo` | list matches and their scores instead of jumping |
 | `z -` | previous directory |
+
+If `fzf` is installed, interactive selection works with no extra configuration.
 
 ## Customization
 
-- The database lives at `~/.local/share/zoxide/db.zo`.
-- Optionally alias `cd=z` (not done by default to keep muscle memory).
+- Database: `~/.local/share/zoxide/db.zo` (Windows: `%LOCALAPPDATA%\zoxide`).
+  Small, portable, safe to back up.
+- `alias cd=z` replaces `cd` globally. Not done by default here, to keep `cd`
+  predictable in scripts; the PowerShell profile leaves `cd` alone for the same
+  reason.
 
 ## Links
 
 - Upstream: <https://github.com/ajeetdsouza/zoxide>
-- Related: [zsh](./zsh.mdx) (fzf integration)
+- Prior art — frequency-based jumping: <https://github.com/rupa/z>
+- Related: [zsh](./zsh.mdx) (fzf integration) · [Windows Setup](../setup/windows.mdx)

@@ -1,0 +1,76 @@
+# Herdr — terminal multiplexer for coding agents.        → ~/.config/herdr/config.toml
+#
+# This is a deliberately MINIMAL OVERLAY, not a full config. Herdr merges it over
+# its built-in defaults, so every key here is one we actively disagree with
+# upstream about. Keeping it small means upstream default changes reach us
+# instead of being silently pinned by a copy-pasted full config.
+#
+# To see everything that can go here:   herdr --default-config
+# After editing a running server:       herdr server reload-config
+#
+# Docs: https://herdr.dev/docs/configuration/
+
+
+[keys]
+# Prefix is ctrl+g here, NOT upstream's ctrl+b. Two separate collisions force it:
+#
+#   ctrl+b  is vim's page-up. docs/terminal/index.mdx records that zellij and
+#           tmux were both deliberately moved OFF ctrl+b for exactly this reason;
+#           letting herdr grab it would undo that decision a third time.
+#   ctrl+a  is unavailable — WezTerm's leader intercepts it in the emulator, so
+#           the keypress never reaches herdr at all.
+#
+# Consequence to remember: upstream docs, tutorials and herdr's own `prefix+?`
+# help screen all say ctrl+b. They will not match this machine.
+prefix = "ctrl+g"
+
+# Prefix-free direct chords for the motion you do constantly. Upstream's keyboard
+# guide calls ctrl+alt "the safe default" — terminals leave it untouched, macOS
+# option-composing doesn't interfere, and it survives terminals without modern
+# keyboard protocols. Verified free here: WezTerm's pane-resize binds are
+# CTRL|SHIFT|ALT, not CTRL|ALT.
+#
+# If one of these does nothing, GNOME ate it before herdr saw it — rebind it.
+focus_pane_left  = ["prefix+h", "ctrl+alt+h"]
+focus_pane_down  = ["prefix+j", "ctrl+alt+j"]
+focus_pane_up    = ["prefix+k", "ctrl+alt+k"]
+focus_pane_right = ["prefix+l", "ctrl+alt+l"]
+
+
+[terminal]
+# THE IMPORTANT ONE. Herdr ships nushell as its default shell. Left alone, agent
+# panes would have none of this machine's setup: no zsh aliases, no
+# autosuggestions/syntax-highlighting, no fzf+fd wiring — and critically none of
+# the Flatpak env guard in ~/.zshrc that un-leaks XDG_*/DBUS_*/ALSA_* when the
+# shell is spawned from the WezTerm Flatpak. That guard is what keeps chezmoi,
+# gsettings, notify-send and Claude Code's /voice working.
+# See docs/fixes/wezterm-flatpak-env-leak.md.
+default_shell = "/bin/zsh"
+
+# New panes open in the cwd of the pane you split from, which is what you want
+# when a project workspace has several panes in one repo.
+new_cwd = "follow"
+
+
+[theme]
+# Catppuccin Mocha everywhere (CLAUDE.md house rule). auto_switch off — this
+# machine is dark-only, and letting it follow the system would flip agent panes
+# to Latte mid-session.
+name = "catppuccin"
+auto_switch = false
+dark_name = "catppuccin"
+
+
+# ── Not set, deliberately ────────────────────────────────────────────────────
+#
+# [ui.sidebar.agents]  — the sidebar's default rows already show state icon,
+#   workspace, tab and agent. Customise only once you know which columns you
+#   actually look at while several agents run in parallel.
+#
+# [ui.toast] / [ui.sound]  — herdr's own notification delivery is on by default.
+#   Left alone on purpose: WezTerm's config deliberately does NOT also raise
+#   agent notifications, so there is exactly one thing telling you an agent is
+#   blocked, not two.
+#
+# [update]  — herdr is pre-1.0 and versions its client/server protocol, so the
+#   version is pinned in scripts/install-herdr.sh instead of self-updating.

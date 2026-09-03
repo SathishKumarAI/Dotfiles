@@ -1,7 +1,15 @@
-> **Moved:** the canonical, always-current feature reference now lives in the
-> docs tree → [`docs/feature-catalog.mdx`](docs/feature-catalog.mdx) (with a doc
-> per feature under [`docs/`](docs/index.mdx)). This file is kept as the original
-> per-machine bring-up checklist with the fast-path commands.
+> **Scope of this file:** the original **per-machine bring-up checklist** for the
+> Rocky desktop, with fast-path commands. It is not the live status of any
+> machine and not a catalog of built apps — three similarly-named docs exist and
+> each answers a different question:
+>
+> | Question | Doc |
+> |---|---|
+> | What is live on this machine right now? | [`docs/feature-catalog.mdx`](docs/feature-catalog.mdx) |
+> | What do I still need to install on the Rocky box? | **this file** |
+> | What features do my 18 built apps have? | [`docs/features/FEATURES.md`](docs/features/FEATURES.md) |
+>
+> Where any topic is documented: [`docs/LIBRARY-INDEX.md`](docs/LIBRARY-INDEX.md).
 
 # Feature Parity Checklist — Bring This Machine Up to Full Setup
 

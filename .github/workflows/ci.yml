@@ -1,0 +1,41 @@
+name: CI
+
+# Lint setup scripts and validate the WezTerm config so doc/config drift and
+# shell bugs get caught before merge (see WORKLOG follow-ups).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  shell:
+    name: shellcheck + bash -n
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: bash -n (syntax) on all .sh
+        run: |
+          fail=0
+          while IFS= read -r -d '' f; do
+            bash -n "$f" || { echo "::error file=$f::bash -n failed"; fail=1; }
+          done < <(find . -name '*.sh' -not -path './.git/*' -print0)
+          exit $fail
+      - name: shellcheck (-S warning)
+        run: |
+          find . -name '*.sh' -not -path './.git/*' -print0 \
+            | xargs -0 -r shellcheck -S warning || true   # advisory, non-blocking
+
+  wezterm:
+    name: wezterm config validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install wezterm
+        run: |
+          curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
+          sudo apt-get update && sudo apt-get install -y wezterm
+      - name: Validate config (ls-fonts loads the lua)
+        run: wezterm --config-file chezmoi/dot_wezterm.lua ls-fonts >/dev/null

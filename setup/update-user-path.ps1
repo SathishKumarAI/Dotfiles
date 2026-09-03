@@ -1,6 +1,6 @@
 <#
 update-user-path.ps1
-USER PATH ONLY — Auto-detect tools by EXE and add their parent folders.
+USER PATH ONLY - Auto-detect tools by EXE and add their parent folders.
 
 Features:
 - User PATH only (no System vars)
@@ -70,13 +70,15 @@ function Backup-UserPath {
 }
 
 function Resolve-ExeDir([string]$exeName, [string[]]$fallbackPaths) {
-  # 1) Prefer existing PATH resolution
-  try {
-    $w = & where.exe $exeName 2>$null
-    if ($LASTEXITCODE -eq 0 -and $w) {
-      return (Split-Path -Parent ($w | Select-Object -First 1))
-    }
-  } catch { }
+  # 1) Prefer existing PATH resolution.
+  #    Get-Command, not `where.exe ... 2>$null`: on Windows PowerShell 5.1,
+  #    redirecting a native command's stderr wraps it in a NativeCommandError,
+  #    which throws under $ErrorActionPreference = "Stop".
+  #    -CommandType Application: a loaded profile can shadow a tool's name with
+  #    a function (mise does), and a function has no .Source to take a folder from.
+  $cmd = Get-Command $exeName -CommandType Application -ErrorAction SilentlyContinue |
+         Select-Object -First 1
+  if ($cmd -and $cmd.Source) { return (Split-Path -Parent $cmd.Source) }
 
   # 2) Search common install locations
   foreach ($p in $fallbackPaths) {
@@ -109,7 +111,12 @@ $tools = @(
   @{ name="chezmoi.exe";  fallbacks=@() },
   @{ name="conda.exe";    fallbacks=@("$env:USERPROFILE\miniforge3\Scripts\conda.exe", "$env:USERPROFILE\anaconda3\Scripts\conda.exe") },
   @{ name="python.exe";   fallbacks=@() },
-  @{ name="zoxide.exe";   fallbacks=@() }
+  @{ name="zoxide.exe";   fallbacks=@() },
+  # Tesseract's installer does not touch PATH, so `tesseract` stays unresolvable
+  # after a successful winget install unless this adds it.
+  @{ name="tesseract.exe"; fallbacks=@("C:\Program Files\Tesseract-OCR\tesseract.exe", "C:\Program Files (x86)\Tesseract-OCR\tesseract.exe") },
+  # GNU.Wget2 ships the binary as wget2.exe - there is no `wget` on this box.
+  @{ name="wget2.exe";    fallbacks=@() }
 )
 
 foreach ($t in $tools) {
@@ -132,9 +139,10 @@ Add-LatestPostgresBin "C:\Program Files (x86)\PostgreSQL"
 
 # Final validation
 Write-Host "`nValidation:"
-$check = @("winget","scoop","git","python","conda","node","npm","docker","gh","starship","wezterm","nvim","mise","chezmoi","zoxide")
+$check = @("winget","scoop","git","python","conda","node","npm","docker","gh","starship","wezterm","nvim","mise","chezmoi","zoxide","uv","pandoc","tesseract","wget2")
 foreach ($c in $check) {
-  if (& where.exe $c 2>$null) { Write-Host "OK   $c" } else { Write-Host "MISS $c" }
+  # Same reason as Resolve-ExeDir: never redirect a native command's stderr here.
+  if (Get-Command $c -ErrorAction SilentlyContinue) { Write-Host "OK   $c" } else { Write-Host "MISS $c" }
 }
 
 Write-Host "`nDone. Close and reopen terminals."

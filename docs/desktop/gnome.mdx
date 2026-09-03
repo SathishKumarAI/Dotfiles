@@ -18,6 +18,9 @@ tuning. Theme: Catppuccin Mocha.
 |--------|-----------|
 | `setup/gnome-desktop-setup.sh` | Fonts, Catppuccin GTK theme, icons, base extensions, shortcuts |
 | `setup/gnome-taskbar.sh` | Dash-to-Panel taskbar layout |
+| `setup/panel-position-top.sh` | Move the Dash-to-Panel taskbar to the **top** edge (toggle back with `POSITION=BOTTOM`) |
+| `setup/panel-modern-style.sh` | Modern **floating-dock** restyle — rounded, blurred, centered icons, Catppuccin Mocha |
+| `setup/install-content-dock.sh` | Install **Dash-to-Dock** as a content-sized (auto-width) floating app dock; hands app icons over from D2P |
 | `setup/gnome-panel-extras.sh` | Clock/battery%/tray panel extras |
 | `setup/gnome-extra-extensions.sh` | Additional extensions |
 | `setup/install-extras.sh` | cliphist / rofimoji / qalc tools for the menus |
@@ -33,6 +36,100 @@ blur-my-shell · clipboard-indicator · just-perfection-desktop · tiling-assist
 Caffeine, Media Controls are provisioned by the scripts.) Manage via the
 **Extensions** app or `gnome-extensions list --enabled`.
 
+## Taskbar position (top vs bottom)
+
+GNOME's own bar is always at the top; the Windows-style **taskbar** (window
+buttons + tray) is the [Dash-to-Panel](https://extensions.gnome.org/extension/1160/dash-to-panel/)
+extension, which defaults to the **bottom** edge. Flip it to the top:
+
+```bash
+bash setup/panel-position-top.sh            # taskbar → TOP
+POSITION=BOTTOM bash setup/panel-position-top.sh   # back to BOTTOM
+```
+
+The script enables Dash-to-Panel if needed, counts monitors, and writes
+`panel-positions` (the per-monitor JSON, keyed by monitor index — e.g.
+`{"0":"TOP","1":"TOP"}`) plus the legacy `panel-position` fallback. No sudo;
+idempotent. On Wayland a panel that doesn't jump immediately needs a
+**log out + back in**.
+
+### Modern floating-dock look
+
+For a detached, rounded, blurred dock with centered app icons (instead of a
+plain solid bar), run:
+
+```bash
+bash setup/panel-modern-style.sh
+```
+
+It restyles Dash-to-Panel + [blur-my-shell](https://extensions.gnome.org/extension/3193/blur-my-shell/):
+top position, side/top margins + `global-border-radius` (floating), centered
+taskbar, dot indicators in Catppuccin **mauve**, a translucent Catppuccin
+**base** background, panel blur, and intellihide auto-hide. All keys are written
+with `dconf` and the look is tunable via env vars:
+
+```bash
+# shorter, always-visible dock with a bigger gap
+SIDE_MARGIN=200 INTELLIHIDE=false bash setup/panel-modern-style.sh
+```
+
+| Var | Default | Effect |
+|-----|---------|--------|
+| `SIZE` | `48` | Dock height (px) |
+| `SIDE_MARGIN` | `12` | Left/right edge gap — bigger = shorter, more dock-like |
+| `TB_MARGIN` | `8` | Top edge gap |
+| `RADIUS` | `16` | Corner radius |
+| `OPACITY` | `0.15` | Background opacity (0 clear → 1 solid) |
+| `INTELLIHIDE` | `true` | Auto-hide; reveal by pushing the pointer to the top edge |
+| `ALIGN` | `LEFT` | App-icon alignment: `LEFT` hugs the left edge and grows right with each app opened (no wasted left gap); `CENTER`; `RIGHT` |
+
+Fine-tune anything live in **Dash-to-Panel preferences**. To drop back to a
+plain solid bar, re-run `panel-position-top.sh`.
+
+> **Want the bar itself to shrink to its icons?** Dash-to-Panel's bar always
+> spans the full monitor width — only the *icons* hug content (`ALIGN=LEFT`).
+> For a dock whose background physically resizes to its contents, use the
+> content-sized dock below.
+
+### Content-sized floating dock (Dash-to-Dock)
+
+For an app dock whose **width tracks its icons** — only the space it needs,
+growing/shrinking as you open and close apps — install Dash-to-Dock:
+
+```bash
+bash setup/install-content-dock.sh
+```
+
+It downloads Dash-to-Dock (version-matched to the running Shell, no sudo) and
+**extracts it manually** — `gnome-extensions install` is avoided because it
+needs a live Shell D-Bus and silently no-ops in headless/SSH/sandboxed shells.
+It then configures a top, centered, **auto-width** (`extend-height=false`),
+auto-hiding frosted dock in Catppuccin Mocha. Tunables:
+
+| Var | Default | Effect |
+|-----|---------|--------|
+| `ICON` | `48` | Max icon size (px); dock height tracks it |
+| `OPACITY` | `0.15` | Dock background opacity |
+| `POSITION` | `TOP` | `TOP` / `BOTTOM` / `LEFT` / `RIGHT` |
+| `AUTOHIDE` | `true` | Intellihide — hides under windows, reveals on hover |
+| `HIDE_D2P_TASKBAR` | `false` | After the dock works, set `true` to hide D2P's app icons and de-duplicate |
+
+**Finish in two steps** (Wayland scans new extensions only at login):
+
+1. Run the script, then **log out + back in**.
+2. Toggle *Dash to Dock* on in the **Extensions** app, or run
+   `gnome-extensions enable dash-to-dock@micxgx.gmail.com`.
+
+The script deliberately leaves D2P's app icons in place so you're never left
+with no icons before the dock loads; hide them later with
+`HIDE_D2P_TASKBAR=true bash setup/install-content-dock.sh`.
+
+Revert (re-show D2P app icons, disable the dock):
+
+```bash
+bash setup/install-content-dock.sh --revert
+```
+
 ## Custom shortcuts (set by this repo)
 
 | Shortcut | Action |
@@ -46,17 +143,17 @@ Caffeine, Media Controls are provisioned by the scripts.) Manage via the
 | `Super + Shift + S` | Region screenshot → clipboard |
 
 Window/workspace/multi-monitor keys: see the full
-[`md files/KEYBOARD-SHORTCUTS.md`](../../md%20files/KEYBOARD-SHORTCUTS.md#gnome--window-management).
+[`terminal/KEYBOARD-SHORTCUTS.md`](../terminal/KEYBOARD-SHORTCUTS.md#gnome--window-management).
 
 ## Idle / power tuning
 
 GNOME blanks at 3 min and suspends at 10 min on battery / 30 min on AC (battery
 saving). On laptops this pairs with **TLP** (`setup/laptop-battery.sh`,
 `setup/tlp/01-battery-saver.conf`). Deep dive:
-[`md files/SYSTEM-TUNING.md`](../../md%20files/SYSTEM-TUNING.md).
+[`guides/RAM-AND-PERFORMANCE.md`](../guides/RAM-AND-PERFORMANCE.md).
 
 ## Links
 
 - Scripts: `setup/gnome-*.sh`
-- Full keys: [`md files/KEYBOARD-SHORTCUTS.md`](../../md%20files/KEYBOARD-SHORTCUTS.md)
-- Tuning: [`md files/SYSTEM-TUNING.md`](../../md%20files/SYSTEM-TUNING.md)
+- Full keys: [`terminal/KEYBOARD-SHORTCUTS.md`](../terminal/KEYBOARD-SHORTCUTS.md)
+- Tuning: [`guides/RAM-AND-PERFORMANCE.md`](../guides/RAM-AND-PERFORMANCE.md)

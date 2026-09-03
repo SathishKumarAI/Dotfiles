@@ -9,6 +9,10 @@ fi
 if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]; then
     PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 fi
+# rustup/cargo binaries (eza, delta, atuin, ripgrep-tools, etc.) live here
+if ! [[ "$PATH" =~ "$HOME/.cargo/bin" ]]; then
+    PATH="$PATH:$HOME/.cargo/bin"
+fi
 export PATH
 
 # mise — language version manager
@@ -45,7 +49,7 @@ fi
 
 # Conda
 if [ -f "$HOME/miniforge3/etc/profile.d/conda.sh" ]; then
-    . "$HOME/miniforge3/etc/profile.d/conda.sh"
+# . "$HOME/miniforge3/etc/profile.d/conda.sh"  # commented out by conda initialize
 fi
 
 # Aliases
@@ -74,3 +78,19 @@ if [ -d ~/.bashrc.d ]; then
     done
 fi
 unset rc
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/deva/miniforge3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/deva/miniforge3/etc/profile.d/conda.sh" ]; then
+        . "/home/deva/miniforge3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/deva/miniforge3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+

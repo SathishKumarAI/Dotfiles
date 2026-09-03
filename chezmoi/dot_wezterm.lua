@@ -1,6 +1,43 @@
 local wezterm = require("wezterm")
 local act = wezterm.action
 
+-- Session persistence across restarts/reboots. resurrect.wezterm saves the
+-- workspace/window/tab/PANE layout + each pane's cwd to disk, so a full layout
+-- can be brought back after quitting WezTerm or rebooting. (The unix mux domain
+-- further down already keeps panes alive across a GUI close/crash; resurrect
+-- adds on-disk state that ALSO survives a reboot.) The plugin is archived but
+-- working; the first load fetches it from GitHub, then it's cached locally.
+-- pcall so a failed fetch/plugin never stops WezTerm from starting.
+local ok_resurrect, resurrect = pcall(function()
+  return wezterm.plugin.require("https://github.com/MLFlexer/resurrect.wezterm")
+end)
+if ok_resurrect then
+  -- Autosave every 5 min: on-disk state stays fresh with no keypress, so a
+  -- crash/reboot loses at most ~5 min of layout changes.
+  resurrect.state_manager.periodic_save({
+    interval_seconds = 5 * 60,
+    save_workspaces = true,
+    save_windows = true,
+    save_tabs = true,
+  })
+
+  -- Autosave on window close. WezTerm fires no dedicated "window-closed" GUI
+  -- event, but a window always loses focus as it closes, so saving whenever a
+  -- window goes unfocused captures the layout right before it disappears (and
+  -- also every time you switch away). Cheap: writes the current workspace state.
+  wezterm.on("window-focus-changed", function(window)
+    if window and not window:is_focused() and ok_resurrect then
+      resurrect.state_manager.save_state(resurrect.workspace_state.get_workspace_state())
+    end
+  end)
+
+  -- Production hardening: surface plugin failures to the WezTerm log instead of
+  -- failing silently. Without this, a bad save/load path is invisible.
+  wezterm.on("resurrect.error", function(err)
+    wezterm.log_error("resurrect error: " .. tostring(err))
+  end)
+end
+
 local config = wezterm.config_builder()
 
 -- Performance
@@ -43,11 +80,19 @@ config.window_background_gradient = {
 
 -- Window
 config.window_padding = { left = 8, right = 8, top = 6, bottom = 6 }
--- Borderless. Under native Wayland (GNOME/Mutter) "RESIZE" still let Mutter draw
--- a server-side titlebar; "NONE" removes it for a clean edge. Window starts
--- maximized and snaps via keybinds, so the lost resize border isn't missed
--- (GNOME Super+drag still moves/resizes). Revert to "RESIZE" if you want borders.
-config.window_decorations = "NONE"
+-- Normal app window: TITLE gives GNOME's server-side titlebar with
+-- minimize/maximize/close buttons + a draggable bar; RESIZE adds the resize
+-- border so you can drag any edge. This is what makes WezTerm behave like a
+-- regular Mutter window (Super+drag move, double-click titlebar to maximize,
+-- header-bar buttons). Use "NONE" for a borderless clean edge (loses buttons),
+-- or "RESIZE" for borders-only without the titlebar.
+--
+-- INTEGRATED_BUTTONS|RESIZE drops the separate GNOME titlebar and instead draws
+-- the minimize/maximize/close buttons INSIDE the tab bar — a smaller, cleaner
+-- frame with no wasted titlebar row. Requires the fancy tab bar at the top (see
+-- Tab bar section). Move the window with the mouse by dragging an empty part of
+-- the tab bar, or Super+left-drag anywhere.
+config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
 config.window_close_confirmation = "NeverPrompt"
 -- Fallback geometry if the mux can't maximize (e.g. headless / no GUI).
 config.initial_cols = 140
@@ -151,6 +196,8 @@ local PROC_ICONS = {
   ["zellij"] = " ",
   ["zsh"] = " ",
   ["bash"] = " ",
+  ["claude"] = "󰚩 ",
+  ["herdr"] = "󰕰 ",
 }
 
 local function tab_title(tab)
@@ -164,6 +211,12 @@ wezterm.on("format-tab-title", function(tab, _tabs, _panes, _cfg, _hover, max_wi
   local icon = PROC_ICONS[proc] or " "
   local zoom = tab.active_pane.is_zoomed and " [Z]" or ""
   local title = tab_title(tab)
+  -- Claude Code is a Node wrapper, so it usually reports as "node" and the
+  -- process-name lookup above misses it. Fall back to the pane title, which
+  -- carries "claude", so agent tabs stay identifiable at a glance.
+  if not PROC_ICONS[proc] and title:lower():find("claude", 1, true) then
+    icon = PROC_ICONS["claude"]
+  end
   -- Leave room for "  N  " + icon + zoom marker.
   local budget = max_width - 8
   if #title > budget and budget > 1 then
@@ -185,6 +238,60 @@ wezterm.on("format-tab-title", function(tab, _tabs, _panes, _cfg, _hover, max_wi
   }
 end)
 
+-- ── herdr agent state in the status bar ─────────────────────────────────────
+-- Shows how many agents are working/blocked without switching to their tabs.
+--
+-- WHY A POLLER AND NOT A DIRECT CALL: update-status fires several times per
+-- second, and wezterm has no async subprocess API in the config — every
+-- run_child_process blocks the event loop. So a timer refreshes a cache and
+-- update-status only ever READS that cache. One subprocess every few seconds
+-- instead of hundreds a minute.
+--
+-- `herdr agent list` emits a single line of JSON (it has no --json flag; that
+-- errors). Real shape:
+--   {"result":{"agents":[{"agent":"claude","agent_status":"idle",...}],...}}
+-- We COUNT agent_status occurrences rather than parsing JSON: no dependency,
+-- and an upstream schema change degrades to "no pill" instead of a broken config.
+local HERDR_POLL_SECONDS = 3
+local HERDR_MAX_FAILURES = 3
+local herdr_state = { working = 0, blocked = 0, total = 0 }
+local herdr_failures = 0
+
+-- Plain (non-pattern) substring count, so JSON punctuation needs no escaping.
+local function count_substr(s, needle)
+  local n, pos = 0, 1
+  while true do
+    local i = string.find(s, needle, pos, true)
+    if not i then break end
+    n, pos = n + 1, i + 1
+  end
+  return n
+end
+
+local function herdr_poll()
+  local ok, success, stdout = pcall(wezterm.run_child_process, { "herdr", "agent", "list" })
+  if ok and success and stdout then
+    herdr_failures = 0
+    herdr_state.working = count_substr(stdout, '"agent_status":"working"')
+    herdr_state.blocked = count_substr(stdout, '"agent_status":"blocked"')
+    herdr_state.total = count_substr(stdout, '"agent_status":"')
+  else
+    herdr_failures = herdr_failures + 1
+    herdr_state.working, herdr_state.blocked, herdr_state.total = 0, 0, 0
+    -- Give up permanently rather than spawning a doomed process every 3s for the
+    -- rest of the session when herdr isn't installed or no server is running.
+    if herdr_failures >= HERDR_MAX_FAILURES then
+      wezterm.log_info("herdr status polling stopped: " .. HERDR_MAX_FAILURES ..
+        " consecutive failures (herdr missing or no server). Restart WezTerm to retry.")
+      return
+    end
+  end
+  wezterm.time.call_after(HERDR_POLL_SECONDS, herdr_poll)
+end
+
+-- Start after a short delay so it never competes with GUI startup.
+wezterm.time.call_after(1, herdr_poll)
+
 -- Status bar: workspace pill on the left; leader + active key-table on the right.
 wezterm.on("update-status", function(window, _pane)
   -- Left: active workspace name in a Mauve pill.
@@ -198,8 +305,29 @@ wezterm.on("update-status", function(window, _pane)
     { Text = " " },
   }))
 
-  -- Right: leader indicator + modal key-table name (idle = empty).
+  -- Right: herdr agent state + leader indicator + modal key-table name.
   local cells = {}
+
+  -- Agent pill, read from the cache the poller above maintains. Hidden entirely
+  -- when no agents are running, so a non-agent session gains no extra chrome.
+  -- Red the moment anything is blocked — that's the state needing you.
+  if herdr_state.total > 0 then
+    local blocked = herdr_state.blocked > 0
+    table.insert(cells, { Background = { Color = blocked and "#f38ba8" or "#a6e3a1" } })
+    table.insert(cells, { Foreground = { Color = "#1e1e2e" } })
+    table.insert(cells, { Attribute = { Intensity = "Bold" } })
+    local label = "  󰚩 " .. herdr_state.total
+    if herdr_state.working > 0 then
+      label = label .. "  ● " .. herdr_state.working .. " working"
+    end
+    if blocked then
+      label = label .. "  ▲ " .. herdr_state.blocked .. " blocked"
+    end
+    table.insert(cells, { Text = label .. " " })
+    table.insert(cells, { Background = { Color = "#1e1e2e" } })
+    table.insert(cells, { Text = " " })
+  end
+
   if window:leader_is_active() then
     table.insert(cells, { Background = { Color = "#f9e2af" } })
     table.insert(cells, { Foreground = { Color = "#1e1e2e" } })
@@ -220,10 +348,15 @@ wezterm.on("update-status", function(window, _pane)
 end)
 
 -- Tab bar
+-- Fancy tab bar is required for INTEGRATED_BUTTONS (window controls live here
+-- instead of a titlebar). Fancy tab bar only renders at the TOP, so the bottom
+-- placement is off. Tab bar stays visible even with one tab — otherwise the
+-- min/max/close buttons would vanish and you'd have no mouse way to move/close
+-- the window.
 config.enable_tab_bar = true
-config.use_fancy_tab_bar = false
-config.hide_tab_bar_if_only_one_tab = true
-config.tab_bar_at_bottom = true
+config.use_fancy_tab_bar = true
+config.hide_tab_bar_if_only_one_tab = false
+config.tab_bar_at_bottom = false
 config.tab_max_width = 28
 
 config.colors = {
@@ -244,6 +377,16 @@ config.colors = {
     new_tab = { bg_color = "#181825", fg_color = "#6c7086" },
     new_tab_hover = { bg_color = "#313244", fg_color = "#cdd6f4" },
   },
+}
+
+-- Fancy tab bar frame (holds the integrated window buttons). Catppuccin Mocha
+-- crust/base so the frame reads as one piece with the tab bar colors above; a
+-- slightly smaller font keeps the bar compact so it doesn't cost much height.
+config.window_frame = {
+  active_titlebar_bg = "#11111b",
+  inactive_titlebar_bg = "#11111b",
+  font = wezterm.font({ family = "JetBrainsMono Nerd Font", weight = "Bold" }),
+  font_size = 11.0,
 }
 
 -- Cursor
@@ -267,8 +410,16 @@ config.visual_bell = {
   target = "CursorColor",
 }
 
--- Scrollback
+-- Scrollback. Left at 10k on purpose: herdr has its own scrollback plus history
+-- replay for agent runs, so there's no reason to spend RAM twice on a machine
+-- that already needs OOM/swap tooling.
 config.scrollback_lines = 10000
+
+-- Kitty keyboard protocol. Lets TUIs receive key events the legacy encoding
+-- cannot express — notably SHIFT+ENTER as distinct from Enter, which is how
+-- Claude Code inserts a newline in its prompt instead of submitting it.
+-- If an older TUI starts mis-reading keys, this is the line to revert.
+config.enable_kitty_keyboard = true
 
 -- Shell — zsh so autosuggestions / syntax-highlighting / fzf+fd are active
 -- (configured in ~/.zshrc; bash does not get them).
@@ -281,6 +432,45 @@ config.default_prog = { "/bin/zsh", "--login" }
 -- `wezterm` (left opt-in so the normal launch path / maximize stays simple).
 config.unix_domains = { { name = "unix" } }
 
+-- Agent launchers (Claude Code, herdr). Both run as HOST processes even though
+-- the WezTerm GUI is a Flatpak, and both resolve through the shell's PATH
+-- (~/.local/bin symlinks, mise shims) — so every spawn goes through a LOGIN
+-- shell. See docs/fixes/wezterm-flatpak-env-leak.md.
+--
+-- The trailing `exec zsh -l` is load-bearing: exit_behavior = "Close" would
+-- otherwise destroy the tab the moment claude exits, taking the session's whole
+-- scrollback with it, and a "command not found" would flash past unreadably.
+local function agent_cmd(cmd)
+  return { "/bin/zsh", "-lc", cmd .. "; exec /bin/zsh -l" }
+end
+
+-- Current pane's cwd, so a spawned agent starts in the repo you're looking at.
+-- get_current_working_dir() returns a Url object on current WezTerm and a plain
+-- string on older builds; handle both, and return nil rather than a bad path so
+-- the spawn just falls back to the default.
+local function pane_cwd(pane)
+  local ok, cwd = pcall(function() return pane:get_current_working_dir() end)
+  if not ok or not cwd then return nil end
+  if type(cwd) == "string" then
+    return (cwd:gsub("^file://[^/]*", ""))
+  end
+  return cwd.file_path
+end
+
+-- Spawn an agent in a new tab, or in a 50/50 split beside the current pane.
+local function spawn_agent(cmd, split)
+  return wezterm.action_callback(function(window, pane)
+    local spawn = { args = agent_cmd(cmd), cwd = pane_cwd(pane) }
+    if split then
+      window:perform_action(act.SplitPane({
+        direction = "Right", command = spawn, size = { Percent = 50 },
+      }), pane)
+    else
+      window:perform_action(act.SpawnCommandInNewTab(spawn), pane)
+    end
+  end)
+end
+
 -- Launch menu: multiple profiles in one click (Zsh first = default)
 config.launch_menu = {
   { label = " Zsh", args = { "/bin/zsh", "--login" } },
@@ -292,6 +482,10 @@ config.launch_menu = {
   { label = " Python REPL", args = { "python3" } },
   { label = " Node REPL", args = { "node" } },
   { label = " btop", args = { "btop" } },
+  -- Agents. Login-shell wrapped for the same PATH/Flatpak reason as above.
+  { label = "󰚩 Claude Code", args = agent_cmd("claude") },
+  { label = "󰚩 Claude Code (resume)", args = agent_cmd("claude --resume") },
+  { label = "󰕰 Herdr (agent multiplexer)", args = agent_cmd("herdr") },
 }
 
 -- Leader key (tmux-style). Ctrl+a then a second key. Existing Ctrl+Shift binds
@@ -301,6 +495,10 @@ config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 1000 }
 -- Quick-select copy: type the Leader+Space hint, then a letter, to copy any
 -- match to the clipboard. These ADD to WezTerm's built-in patterns (URLs, etc).
 config.quick_select_patterns = {
+  -- file:line[:col] FIRST — agent, compiler and stack-trace output is full of
+  -- these, and it must beat the generic path rule below, or "src/main.py:42"
+  -- gets grabbed without the line number that made it worth copying.
+  "[\\w./~+-]+\\.[A-Za-z0-9_]+:\\d+(?::\\d+)?",
   "[0-9a-f]{7,40}",                     -- git commit SHAs
   "(?:[0-9]{1,3}\\.){3}[0-9]{1,3}",     -- IPv4 addresses
   "0x[0-9a-fA-F]+",                     -- hex literals
@@ -357,19 +555,39 @@ local CHEATSHEET = [[
     Leader+b                toggle tab bar
     Leader+Shift+O          toggle transparency
 
+  AGENTS  (Leader+a, then one key)
+    Leader+a c              Claude Code in a new tab (inherits cwd)
+    Leader+a s              Claude Code in a split beside this pane
+    Leader+a r / k          claude --resume / --continue
+    Leader+a h              herdr (agent multiplexer; its own prefix is Ctrl+g)
+    Leader+a y              copy last command + its output as a markdown block
+    Leader+a Y              copy the whole scrollback
+
   LAUNCH
     Ctrl+Shift+p            profile launcher  |  Ctrl+Shift+z  Zellij in new tab
     Ctrl+Shift+Alt+P        command palette
     Leader+u                attach persistent mux session  (shell: wtp)
     Leader+?                this cheatsheet
 
+  SESSION (resurrect — survives close/reboot)
+    Leader+Shift+S          save current layout to disk
+    Leader+Shift+R          restore a saved layout (fuzzy picker)
+    (autosaves every 5 min + whenever a window loses focus/closes)
+
   Font: Ctrl+= / Ctrl+- / Ctrl+0   bigger / smaller / reset
 ]]
 
 local function show_cheatsheet(window, pane)
-  local path = os.tmpname()
+  -- Write to $HOME (shared between the Flatpak sandbox and the host), NOT
+  -- os.tmpname(). The GUI runs in the WezTerm Flatpak whose /tmp is private,
+  -- but spawned panes run on the HOST via flatpak-spawn --host — so a sandbox
+  -- /tmp path is invisible to the host `less` and the tab dies instantly.
+  local path = (os.getenv("HOME") or "/tmp") .. "/.wezterm-cheatsheet.txt"
   local f = io.open(path, "w")
-  if not f then return end
+  if not f then
+    window:toast_notification("WezTerm", "Cheatsheet: cannot write " .. path, nil, 3000)
+    return
+  end
   f:write(CHEATSHEET)
   f:close()
   window:perform_action(act.SpawnCommandInNewTab({
@@ -501,6 +719,12 @@ config.keys = {
   { key = "O", mods = "LEADER|SHIFT", action = act.EmitEvent("toggle-opacity") },
   -- Enter modal resize mode (status bar shows RESIZE); hjkl resize, Esc exits.
   { key = "r", mods = "LEADER", action = act.ActivateKeyTable({ name = "resize_pane", one_shot = false }) },
+  -- Agent layer (status bar shows AGENT). one_shot: fires a single key then
+  -- exits, so it never traps you. Leader+a is free — only LEADER|CTRL+a is
+  -- taken, for the literal Ctrl+a passthrough above.
+  { key = "a", mods = "LEADER", action = act.ActivateKeyTable({
+    name = "agent", one_shot = true, timeout_milliseconds = 2000,
+  }) },
   -- App/command suggestions: one fuzzy switcher over launch-menu apps, open
   -- tabs, workspaces and the full command list. Type to filter ("app suggestions").
   { key = "Space", mods = "CTRL|SHIFT", action = act.ShowLauncherArgs({
@@ -541,8 +765,86 @@ config.keys = {
   end) },
 }
 
+-- Session persistence keybinds (resurrect.wezterm) — only wired if the plugin
+-- loaded. Leader+Shift+S saves the current workspace layout (panes + cwds) to
+-- disk; Leader+Shift+R opens a fuzzy picker of saved sessions to restore.
+if ok_resurrect then
+  table.insert(config.keys, {
+    key = "S", mods = "LEADER|SHIFT",
+    action = wezterm.action_callback(function(win, _pane)
+      resurrect.state_manager.save_state(resurrect.workspace_state.get_workspace_state())
+      win:toast_notification("WezTerm", "Session saved", nil, 1500)
+    end),
+  })
+  table.insert(config.keys, {
+    key = "R", mods = "LEADER|SHIFT",
+    action = wezterm.action_callback(function(win, pane)
+      resurrect.fuzzy_loader.fuzzy_load(win, pane, function(id, _label)
+        local kind = string.match(id, "^([^/]+)")
+        id = string.match(id, "([^/]+)$")
+        id = string.match(id, "(.+)%..+$")
+        local opts = { relative = true, restore_text = true }
+        if kind == "workspace" then
+          resurrect.workspace_state.restore_workspace(
+            resurrect.state_manager.load_state(id, "workspace"), opts)
+        end
+      end)
+    end),
+  })
+end
+
+-- Copy the last command AND its output as a fenced markdown block — the shape
+-- you actually want when pasting a failure into an agent. Uses OSC 133 semantic
+-- zones (shell integration, on by default). Leader+y still copies output alone.
+local function copy_last_exchange(window, pane)
+  local inputs = pane:get_semantic_zones("Input")
+  local outputs = pane:get_semantic_zones("Output")
+  if (not inputs or #inputs == 0) and (not outputs or #outputs == 0) then
+    window:toast_notification("WezTerm", "No shell zones captured yet", nil, 2000)
+    return
+  end
+  local function last(zones)
+    if not zones or #zones == 0 then return "" end
+    return (pane:get_text_from_semantic_zone(zones[#zones]) or ""):gsub("%s+$", "")
+  end
+  local block = "```console\n$ " .. last(inputs) .. "\n" .. last(outputs) .. "\n```"
+  window:copy_to_clipboard(block, "ClipboardAndPrimarySelection")
+  window:toast_notification("WezTerm", "Copied last command + output", nil, 1500)
+end
+
+-- Whole scrollback to the clipboard — for handing an agent the full context of
+-- a long run rather than just the last screenful.
+local function copy_scrollback(window, pane)
+  local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows) or ""
+  if text == "" then
+    window:toast_notification("WezTerm", "Scrollback is empty", nil, 2000)
+    return
+  end
+  local _, lines = text:gsub("\n", "")
+  window:copy_to_clipboard(text, "ClipboardAndPrimarySelection")
+  window:toast_notification("WezTerm", "Copied " .. lines .. " lines of scrollback", nil, 1500)
+end
+
 -- Modal key-tables. Activated by leader chords above; status bar shows the mode.
 config.key_tables = {
+  -- Agent layer. Herdr owns agent DETECTION, state and notifications once you
+  -- are inside it (docs/terminal/herdr.mdx); this table is only about starting
+  -- an agent and feeding it terminal context — the emulator's own job.
+  agent = {
+    { key = "c", action = spawn_agent("claude") },
+    { key = "s", action = spawn_agent("claude", true) },
+    { key = "r", action = spawn_agent("claude --resume") },
+    { key = "k", action = spawn_agent("claude --continue") },
+    { key = "h", action = spawn_agent("herdr") },
+    { key = "y", action = wezterm.action_callback(copy_last_exchange) },
+    -- SHIFT is explicit: WezTerm reports Shift+y as key "Y" WITH mods=SHIFT, so
+    -- a bare key = "Y" can fail to match. Matches how the shifted binds in
+    -- config.keys above are written (LEADER|SHIFT for N / O / F).
+    { key = "Y", mods = "SHIFT", action = wezterm.action_callback(copy_scrollback) },
+    { key = "Escape", action = "PopKeyTable" },
+    { key = "q", action = "PopKeyTable" },
+  },
+
   -- Resize the active pane with hjkl/arrows; Esc or Enter leaves the mode.
   resize_pane = {
     { key = "h", action = act.AdjustPaneSize({ "Left", 3 }) },

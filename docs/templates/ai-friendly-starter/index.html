@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--
+  AI-Friendly + Distinctive starter — bakes in UI-UX-FEATURES.md §11 (anti-slop)
+  and §12 (AI-friendly). Static + semantic, SSR-ready (every fact is in this HTML,
+  not JS). Aesthetic: warm editorial / letterpress — deliberately NOT purple-on-white.
+  Replace EXAMPLE.com, copy, and JSON-LD with your real content.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acme Field Notes — Practical essays on building things</title>
+  <meta name="description" content="Short, practical essays on craft, tools, and shipping software — written to be read by humans and quoted accurately by machines.">
+  <link rel="canonical" href="https://example.com/">
+  <!-- §12: tell agents a clean Markdown version exists -->
+  <link rel="alternate" type="text/markdown" href="/index.md">
+
+  <!-- §12: Open Graph — AI crawlers read og:description + dates -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Acme Field Notes">
+  <meta property="og:description" content="Practical essays on building things, written for humans and machines.">
+  <meta property="og:url" content="https://example.com/">
+  <meta property="og:image" content="https://example.com/og.png">
+
+  <!-- §12: JSON-LD structured data (table-stakes for Google rich results) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Acme Field Notes",
+    "url": "https://example.com/",
+    "description": "Practical essays on building things.",
+    "publisher": { "@type": "Organization", "name": "Acme" }
+  }
+  </script>
+
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/main.css">
+  <!-- §11: characterful type, NOT Inter/Roboto. Display = Fraunces, body = Newsreader. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- §6/§12: semantic landmarks = free document outline for screen readers AND LLMs -->
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <nav aria-label="Primary">
+      <a class="brand" href="/">Acme<span class="brand-mark">¶</span>Field Notes</a>
+      <ul class="nav-links">
+        <li><a href="/essays">Essays</a></li>
+        <li><a href="/tools">Tools</a></li>
+        <li><a href="/about">About</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- §11: one bold, asymmetric hero — answer-first copy (also §12 quotable) -->
+    <section class="hero">
+      <p class="kicker">Field Notes · Est. 2026</p>
+      <h1>Build things that<br><em>outlast the demo.</em></h1>
+      <p class="lede">Short, opinionated essays on craft, tooling, and the unglamorous work of shipping — written to be read closely and quoted accurately.</p>
+      <a class="cta" href="/essays">Read the latest essay →</a>
+    </section>
+
+    <!-- §12: chunkable content — descriptive heading + leading topic sentence per section -->
+    <section aria-labelledby="recent">
+      <h2 id="recent">Recent essays</h2>
+      <article>
+        <h3><a href="/essays/ssr-for-agents">Why server-side rendering matters for AI agents</a></h3>
+        <p>Crawlers read your raw HTML response, not the hydrated DOM — so anything important must exist before JavaScript runs. This essay covers SSR, prerendering, and Markdown variants.</p>
+        <p><time datetime="2026-06-18">June 18, 2026</time></p>
+      </article>
+      <article>
+        <h3><a href="/essays/anti-slop-design">Designing past the default template</a></h3>
+        <p>Generic AI-generated UI is technically correct and instantly forgettable. A practical method for committing to one bold aesthetic and executing it precisely.</p>
+        <p><time datetime="2026-06-10">June 10, 2026</time></p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Acme. Built with semantic HTML, structured data, and a point of view.</p>
+    <p><a href="/llms.txt">llms.txt</a> · <a href="/feed.xml">RSS</a> · <a href="/sitemap.xml">Sitemap</a></p>
+  </footer>
+</body>
+</html>

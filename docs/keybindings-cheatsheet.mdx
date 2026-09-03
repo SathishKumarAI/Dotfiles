@@ -1,0 +1,374 @@
+---
+title: Keybindings Cheatsheet (All Apps)
+description: Complete keyboard map for every interactive app on this machine — GNOME, WezTerm, Zellij, tmux, Neovim, lazygit, shell, Nautilus — grouped by tool with conflict/precedence logic.
+status: live
+tags: [keybindings, cheatsheet, gnome, wezterm, zellij, neovim, shell]
+generated: 2026-06-22
+---
+
+# Keybindings Cheatsheet — Every App on This Machine
+
+One page per tool, the way the keys actually fire on **Rocky Linux 10 / GNOME 49
+Wayland**. The companion PDF (`assets/keybindings-cheatsheet.pdf`) is built from
+this same file.
+
+**Legend** — `C` = Ctrl · `S` = Shift · `A` = Alt · `Super` = Windows key ·
+`C+S` = Ctrl+Shift · `LEADER` = WezTerm leader (`Ctrl+A`, 1 s window) ·
+`→ key` = press, release, then the next key (modal / prefix).
+
+**Source of truth** — each table is extracted from the live config it names. Where
+two scripts disagree, the divergence is flagged in [§ Conflict & precedence logic](#conflict--precedence-logic).
+
+---
+
+## 0. The five keys to know first
+
+| Key | Action | Layer |
+|-----|--------|-------|
+| `Super + Space` | App launcher (rofi) | GNOME |
+| `C+S + D` / `C+S + E` | Split pane H / V | WezTerm |
+| `C+S + H/J/K/L` | Move between panes | WezTerm |
+| `Ctrl + A` | Multiplexer prefix / WezTerm leader | WezTerm → Zellij → tmux |
+| `Space` (in nvim) | Editor leader | Neovim |
+
+---
+
+## 1. GNOME — launch & custom shortcuts
+
+Set by `setup/gnome-desktop-setup.sh` (gsettings custom-keybindings) and
+`setup/setup-rofi-keybind.sh`.
+
+| Key | Action | Bound by |
+|-----|--------|----------|
+| `Super + Space` | Rofi app launcher (drun) | `setup-rofi-keybind.sh` → `<Super>space` |
+| `Super + T` | Terminal (ptyxis) | `gnome-desktop-setup.sh` custom0 |
+| `Super + E` | Files (Nautilus) | custom1 |
+| `Super + B` | Browser (Brave) | custom2 |
+| `Super + C` | VS Code (Flatpak) | custom3 |
+
+> **Divergence flag:** the older `md files/KEYBOARD-SHORTCUTS.md` (retired 2026-08-01) (driven by a
+> `run_onchange_after_gnome-launcher.sh` rofi-menu scheme) lists `Ctrl+Space`
+> launcher, `Super+Return` terminal, `Super+\` SSH menu, `Super+.` emoji,
+> `Super+=` calc, `Super+Escape` power, `Super+Shift+V` clipboard. Those apply
+> only if that launcher script ran. The table above is what the **current**
+> setup scripts write. Pick one scheme per host — see § Conflict logic.
+
+## 2. GNOME — window management
+
+`setup/gnome-desktop-setup.sh` → `org.gnome.desktop.wm.keybindings`.
+
+| Key | Action |
+|-----|--------|
+| `Super + Q` | Close window |
+| `Super + Up` | Toggle maximize |
+| `Super + Down` | Minimize |
+| `Super + Left` / `Right` | Snap left / right half *(Tiling Assistant; conflicts with PaperWM — see §logic)* |
+| `Alt + Tab` | Switch windows *(replaced by AATWS)* |
+| `Super + Tab` | Switch applications *(AATWS)* |
+| `Alt + F7` / `F8` | Move / resize window (keyboard) |
+| `Alt + Space` | Window menu · `Alt + F4` close |
+
+## 3. GNOME — workspaces & monitors
+
+| Key | Action |
+|-----|--------|
+| `Super + [` / `]` | Prev / next workspace |
+| `Super + Shift + [` / `]` | Move window to prev / next workspace |
+| `Super + Home` / `End` | First / last workspace |
+| `Ctrl + Alt + Up` / `Down` | Workspace up / down |
+| `Super + Shift + ←/→/↑/↓` | Move window to monitor in that direction |
+| `Super + P` | Switch display mode |
+| `Super + 1..9` | Focus pinned/open app N (Dash to Panel) |
+| `Super + Ctrl + 1..9` | New window of app N |
+
+## 4. GNOME — system & screenshots
+
+| Key | Action |
+|-----|--------|
+| `Super + A` | Show all applications |
+| `Super + V` / `Super + M` | Message tray / notifications |
+| `Super + S` | Quick settings · `Super + N` focus notification |
+| `Super + L` | Lock screen · `Ctrl+Alt+Del` log out |
+| `Print` | Screenshot UI · `Shift+Print` full · `Alt+Print` window |
+| `Ctrl + Shift + Alt + R` | Screen recording |
+| `Alt + F2` | Run dialog |
+
+---
+
+## 5. Tiling & switcher extensions
+
+Installed by `setup/install-tiling.sh`, `setup/gnome-taskbar.sh`,
+`setup/install-hover-taskbar.sh`. **Log out + back in** after install (Wayland
+can't hot-reload the shell).
+
+### PaperWM — scrollable tiling (niri-like) `paperwm@paperwm.github.com`
+
+| Key | Action |
+|-----|--------|
+| `Super + Left` / `Right` | Focus column left / right (scroll the strip) |
+| `Super + Up` / `Down` | Focus window within a column |
+| `Super + Shift + Left` / `Right` | Move focused window between columns |
+| `Super + Return` | New window in the current column |
+| `gnome-extensions prefs paperwm@paperwm.github.com` | Configure |
+
+### AATWS — Advanced Alt-Tab Window Switcher `advanced-alt-tab@G-dH.github.com`
+
+| Key | Action |
+|-----|--------|
+| `Alt + Tab` | Switch windows — start typing to filter |
+| `Super + Tab` | Switch apps |
+| `gnome-extensions prefs advanced-alt-tab@G-dH.github.com` | Configure |
+
+### Tiling Assistant `tiling-assistant@leleat-on-github`
+
+| Key | Action |
+|-----|--------|
+| `Super + Up` | Maximize / restore |
+| `Super + Left` / `Right` | Tile to left / right half |
+| `Super + Down` | Tile bottom / un-tile |
+| Drag to edge / corner | Tile half / quarter |
+| After tiling | Popup offers other windows to fill the rest |
+
+### Dash to Panel `dash-to-panel@jderose9.github.com` (hover-reveal taskbar)
+
+Intellihide on, pressure off — panel reveals on plain **hover** over the top edge.
+
+| Action | Effect |
+|--------|--------|
+| `Super + 1..9` | Focus open window N in the panel |
+| `Super + Ctrl + 1..9` | New window of app N |
+| Hover top edge | Reveal hidden panel |
+| Middle-click icon | New window of that app |
+| Right-click panel | Dash to Panel settings |
+
+> Other panel extensions (CopyQ clipboard, AppIndicator tray, Caffeine, Media
+> Controls, Just Perfection) are **click-only / GUI** — no default keybindings.
+
+---
+
+## 6. WezTerm — direct bindings
+
+From `chezmoi/dot_wezterm.lua`. These fire without the leader.
+
+### Panes
+
+| Key | Action |
+|-----|--------|
+| `C+S + D` / `C+S + E` | Split horizontal / vertical |
+| `C+S + H/J/K/L` | Focus pane left / down / up / right |
+| `C+S+A + H/J/K/L` | Resize pane (Left/Right ±5, Up/Down ±3) |
+| `C+S + Enter` | Toggle pane zoom |
+| `C+S + X` | Close pane (no confirm) |
+
+### Tabs & windows
+
+| Key | Action |
+|-----|--------|
+| `C+S + T` / `C+S + W` | New / close tab |
+| `Ctrl + Tab` / `C+S + Tab` | Next / previous tab |
+| `Alt + 1..9` | Jump to tab 1–9 |
+| `Super + ←/→` | Snap window left / right (mirrors GNOME) |
+| `Super + ↑` / `Super + ↓` | Maximize / restore window |
+| `Super + Return` | Toggle native fullscreen |
+| `Super + H` | Hide window |
+| `F11` | Toggle fullscreen (borderless) |
+
+### Copy, font, scroll, search
+
+| Key | Action |
+|-----|--------|
+| `C+S + C` / `C+S + V` | Copy / paste clipboard |
+| `C+S + F` | Search scrollback |
+| `Ctrl + =` / `Ctrl + -` / `Ctrl + 0` | Font bigger / smaller / reset |
+| `C+S + PageUp` / `PageDown` | Scroll half page |
+| `C+S + P` | Launch menu (profiles) |
+| `C+S + Z` | Open Zellij in a new tab |
+| `C+S+A + P` | Command palette |
+| `Ctrl + Click` | Open link under cursor |
+| Middle-click | Paste primary selection |
+
+## 7. WezTerm — LEADER layer (`Ctrl + A`)
+
+`config.leader = Ctrl+A`, 1000 ms timeout. Status bar shows `LEADER` when armed.
+`LEADER → Ctrl+A` passes a real `Ctrl+A` through to the inner app (Zellij/tmux).
+
+| `LEADER →` | Action |
+|------------|--------|
+| `\|` / `-` | Split horizontal / vertical |
+| `z` | Zoom pane · `x` close pane · `q` close tab |
+| `Shift+N` | New window · `p` PaneSelect (asdfghjkl) |
+| `f` | Search · `[` copy-mode · `Space` QuickSelect · `e` char-select |
+| `h` / `l` | Snap window left / right · `m` maximize · `c` center |
+| `←` / `→` | Snap left / right · `Shift+F` fullscreen |
+| `b` | Toggle tab bar · `,` hide window · `Shift+O` toggle opacity |
+| `u` | Attach unix mux domain · `o` open URL (QuickSelect) |
+| `r` | **resize_pane** key-table (modal, see below) |
+| `Tab` / `Shift+Tab` | Next / prev workspace · `]` next workspace |
+| `w` | Workspace fuzzy launcher · `n` new named workspace (prompt) |
+| `↑` / `↓` | Scroll to prev / next shell prompt |
+| `y` | Copy last command output |
+| `?` | Show this cheatsheet (in-terminal) |
+
+**`resize_pane` key-table** (after `LEADER → r`, stays active):
+`h/j/k/l` or arrows resize · `Esc` or `Enter` exit.
+
+### WezTerm launch profiles (`C+S + P`)
+
+Default shell = **Zsh**. Menu also offers: Bash · Zellij · Zellij (named "work") ·
+Python REPL (3.12) · Node REPL (24) · btop.
+
+---
+
+## 8. Zellij — multiplexer (prefix `Ctrl + A`)
+
+`chezmoi/private_dot_config/zellij/config.kdl` — prefix remapped `Ctrl+b → Ctrl+a`
+to dodge Vim. Press `Ctrl+A` to enter Normal mode, then:
+
+| `Ctrl+A →` | Action |
+|------------|--------|
+| `h/j/k/l` | Navigate panes (vim) |
+| `n` / `p` | Next / previous tab |
+| `c` | New pane · `x` close pane |
+| `d` | Detach session |
+| `[` | Scroll mode |
+| `Ctrl+A` | Lock / unlock |
+
+Aliases: `zj` = fzf session picker · `dev` = `zellij --layout dev` workspace.
+
+## 9. tmux — fallback multiplexer (prefix `Ctrl + A`)
+
+`chezmoi/dot_tmux.conf` — Zellij is primary; tmux mirrors the prefix.
+
+| `Ctrl+A →` | Action |
+|------------|--------|
+| `h/j/k/l` | Select pane (vim) |
+| `\|` / `-` | Split horizontal / vertical (keeps cwd) |
+| `r` | Reload config |
+| `Ctrl+A` | Send literal Ctrl+A to inner app |
+
+Windows/panes start at 1; mouse on; 10k scrollback.
+
+---
+
+## 10. Neovim — editor (leader = `Space`)
+
+`chezmoi/private_dot_config/nvim/init.lua`.
+
+| Key | Action |
+|-----|--------|
+| `Space w` / `Space q` | Save / quit |
+| `Space e` | File explorer (`:Ex`) |
+| `Ctrl + h/j/k/l` | Move between windows |
+| `J` / `K` *(visual)* | Move selection down / up |
+| `Ctrl + d` / `Ctrl + u` | Half-page down / up (centered) |
+| `n` / `N` | Next / prev search (centered) |
+| `Space p` *(visual)* | Paste over selection without yanking |
+| `Esc` | Clear search highlight |
+
+## 11. lazygit (`lg`)
+
+`chezmoi/private_dot_config/lazygit/config.yml` — default keymap, `nvim` as editor,
+file-tree view on. Defaults you'll use most:
+
+| Key | Action |
+|-----|--------|
+| `Space` | Stage / unstage file or hunk |
+| `c` | Commit · `C` commit with editor |
+| `P` / `p` | Push / pull |
+| `b` | Branches view · `Space` checkout |
+| `Enter` | Drill into file / focus panel |
+| `x` | Open menu of context actions · `?` keybinding help |
+| `q` | Quit |
+
+---
+
+## 12. Shell — zsh & bash (fzf, atuin, autosuggest)
+
+`chezmoi/dot_zshrc` / `dot_bashrc`.
+
+| Key | Action |
+|-----|--------|
+| `→` / `End` | Accept whole autosuggestion (zsh) |
+| `Ctrl + Space` | Accept suggestion (`bindkey '^ '`) — free now that rofi moved to `Super+Space` |
+| `Ctrl + R` | Fuzzy history search (atuin, falls back to fzf) |
+| `Ctrl + T` | Fuzzy file search (fzf + fd, bat preview) |
+| `Alt + C` | Fuzzy `cd` into subdir |
+| `↑` / `↓` | History prefix-search (zsh `history-search-*`) |
+| `Tab` | Menu completion |
+
+**Aliases:** `lg` lazygit · `v` nvim · `g` git · `gs/gd/gp/gl` git status/diff/push/log ·
+`ga/gco/gb/gcm/gst` add/checkout/branch/commit-m/stash · `dc` docker compose ·
+`zj` zellij picker · `dev` zellij dev layout · `wtp` wezterm mux · `ll/la/lt` eza ·
+`cat` bat · `..`/`...` up dirs.
+
+## 13. GNOME Files (Nautilus)
+
+| Key | Action |
+|-----|--------|
+| `Ctrl + +` / `Ctrl + -` / `Ctrl + 0` | Zoom icons / reset |
+| `Ctrl + 1` / `Ctrl + 2` | List / grid view |
+| `Ctrl + H` | Toggle hidden files |
+| `F2` | Rename · `Delete` trash |
+
+---
+
+## Conflict & precedence logic
+
+How overlapping keys are meant to resolve on this host.
+
+### `Ctrl + A` — three layers, intentional chain
+WezTerm leader → Zellij prefix → tmux prefix all use `Ctrl+A`. WezTerm's leader
+captures it first; `LEADER → Ctrl+A` (and tmux's `Ctrl+A Ctrl+A`) forward a real
+`Ctrl+A` inward. So nesting WezTerm › Zellij still works: tap twice to reach the
+inner multiplexer. **No fix needed — this is by design.**
+
+### `Super + ←/→/↑/↓` — three claimants, must pick one
+PaperWM (focus/scroll columns), Tiling Assistant (snap halves), and GNOME native
+(maximize/minimize on Up/Down) all want the Super+arrows. With PaperWM enabled it
+grabs them first and the snap behaviour is lost.
+**Logic:** run **one** tiler. Keep PaperWM for scrollable tiling, OR disable
+PaperWM and let Tiling Assistant own snapping:
+
+```bash
+gnome-extensions disable paperwm@paperwm.github.com      # → Tiling Assistant snapping
+# or keep PaperWM and disable the snap conflicter:
+gnome-extensions disable tiling-assistant@leleat-on-github
+```
+
+### `Ctrl + Space` — resolved
+Previously contested between zsh `autosuggest-accept` and an old rofi binding.
+Rofi now lives on `Super+Space` (`setup-rofi-keybind.sh`), so `Ctrl+Space` is free
+for the shell. If you still see the launcher fire, an old `gnome-launcher` scheme
+is active — re-run `setup-rofi-keybind.sh` or use `→`/`End` to accept suggestions.
+
+### `Super + Return` — two meanings
+PaperWM = new window in column. WezTerm (when focused) = toggle fullscreen. No real
+clash: PaperWM is a shell-global binding, WezTerm's is app-local and only matters
+while WezTerm has focus and PaperWM isn't intercepting. If PaperWM eats it, rebind
+WezTerm's fullscreen to `F11` (already bound).
+
+### Terminal launch — `Super+T` vs `Super+Return`
+Current scripts bind `Super+T` → ptyxis. The legacy doc lists `Super+Return` →
+WezTerm. They come from different launcher scripts; only the one you ran is live.
+Standardize on `Super+T` (current) and drop the legacy launcher to avoid surprise.
+
+---
+
+## Memorize order (frequency tiers)
+
+**Tier 1 — every session:** `Super+Space` launcher · `C+S+D/E` split ·
+`C+S+H/J/K/L` panes · `C+S+T/W` tab · `C+S+C/V` copy/paste.
+
+**Tier 2 — many times a day:** `Ctrl+Tab` / `C+S+Tab` tab cycle · `Alt+1..9` jump ·
+`C+S+Enter` zoom · `C+S+X` close pane · `Super+[`/`]` workspace.
+
+**Tier 3 — weekly:** `C+S+P` profiles · `C+S+Z` Zellij · `C+S+F` search ·
+`C+S+A+H/J/K/L` resize · `Ctrl + +/-/0` font · `Space e` nvim explorer.
+
+**Tier 4 — occasional:** `C+S+A+P` palette · `LEADER y` copy last output ·
+`LEADER r` resize mode · `F11` fullscreen · `Super+Q` close window.
+
+---
+
+*Generated 2026-06-22 from live configs. Companion: `assets/keybindings-cheatsheet.pdf`.
+Hub doc: [`keybindings.mdx`](./keybindings.mdx) · canonical: [`terminal/KEYBOARD-SHORTCUTS.md`](terminal/KEYBOARD-SHORTCUTS.md).*

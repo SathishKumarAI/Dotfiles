@@ -5,3 +5,6 @@ logs/
 .env
 *.swp
 *~
+
+# Pipeline run artefacts - machine-specific, regenerated on every run.
+state/

@@ -1,0 +1,518 @@
+<title>Terminal Command Deck</title>
+<style>
+  /* ---------- Catppuccin tokens: Latte (light) default, Mocha (dark) ---------- */
+  :root {
+    --base:#eff1f5; --mantle:#e6e9ef; --crust:#dce0e8;
+    --surface0:#ccd0da; --surface1:#bcc0cc; --surface2:#acb0be;
+    --text:#4c4f69; --subtext:#6c6f85; --overlay:#8c8fa1;
+    --mauve:#8839ef; --green:#40a02b; --peach:#fe640b;
+    --blue:#1e66f5; --teal:#179299; --yellow:#df8e1d; --red:#d20f39;
+    --shadow:rgba(76,79,105,.10);
+    --kbd-shadow:rgba(76,79,105,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --base:#1e1e2e; --mantle:#181825; --crust:#11111b;
+      --surface0:#313244; --surface1:#45475a; --surface2:#585b70;
+      --text:#cdd6f4; --subtext:#a6adc8; --overlay:#7f849c;
+      --mauve:#cba6f7; --green:#a6e3a1; --peach:#fab387;
+      --blue:#89b4fa; --teal:#94e2d5; --yellow:#f9e2af; --red:#f38ba8;
+      --shadow:rgba(0,0,0,.28);
+      --kbd-shadow:rgba(0,0,0,.45);
+    }
+  }
+  /* Viewer toggle overrides the media query in BOTH directions */
+  :root[data-theme="light"] {
+    --base:#eff1f5; --mantle:#e6e9ef; --crust:#dce0e8;
+    --surface0:#ccd0da; --surface1:#bcc0cc; --surface2:#acb0be;
+    --text:#4c4f69; --subtext:#6c6f85; --overlay:#8c8fa1;
+    --mauve:#8839ef; --green:#40a02b; --peach:#fe640b;
+    --blue:#1e66f5; --teal:#179299; --yellow:#df8e1d; --red:#d20f39;
+    --shadow:rgba(76,79,105,.10); --kbd-shadow:rgba(76,79,105,.18);
+  }
+  :root[data-theme="dark"] {
+    --base:#1e1e2e; --mantle:#181825; --crust:#11111b;
+    --surface0:#313244; --surface1:#45475a; --surface2:#585b70;
+    --text:#cdd6f4; --subtext:#a6adc8; --overlay:#7f849c;
+    --mauve:#cba6f7; --green:#a6e3a1; --peach:#fab387;
+    --blue:#89b4fa; --teal:#94e2d5; --yellow:#f9e2af; --red:#f38ba8;
+    --shadow:rgba(0,0,0,.28); --kbd-shadow:rgba(0,0,0,.45);
+  }
+
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; scroll-padding-top:9.5rem; }
+  body {
+    margin:0; background:var(--base); color:var(--text);
+    font-family:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
+    font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1180px; margin:0 auto; padding:0 1.25rem 5rem; }
+
+  /* ---------- Header ---------- */
+  header.top {
+    position:sticky; top:0; z-index:20;
+    background:color-mix(in srgb,var(--mantle) 92%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--surface0);
+  }
+  .top-inner { max-width:1180px; margin:0 auto; padding:1rem 1.25rem .85rem; }
+  .brandline { display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap; }
+  .prompt { color:var(--green); font-weight:700; }
+  h1 {
+    margin:0; font-size:1.5rem; letter-spacing:-.01em; font-weight:700;
+    text-wrap:balance;
+  }
+  .blink { color:var(--mauve); animation:blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  @media (prefers-reduced-motion:reduce){ .blink{ animation:none; } }
+  .sub { color:var(--subtext); font-size:.82rem; margin:.15rem 0 0; }
+
+  .controls { display:flex; gap:.6rem; margin-top:.85rem; align-items:center; flex-wrap:wrap; }
+  .search {
+    flex:1 1 260px; display:flex; align-items:center; gap:.55rem;
+    background:var(--base); border:1px solid var(--surface1);
+    border-radius:9px; padding:.5rem .7rem; min-width:0;
+  }
+  .search:focus-within { border-color:var(--mauve); box-shadow:0 0 0 2px color-mix(in srgb,var(--mauve) 30%,transparent); }
+  .search svg { flex:none; color:var(--overlay); }
+  .search input {
+    flex:1; min-width:0; border:0; background:transparent; color:var(--text);
+    font:inherit; outline:none;
+  }
+  .search kbd { color:var(--overlay); }
+  button.theme {
+    flex:none; background:var(--base); color:var(--subtext);
+    border:1px solid var(--surface1); border-radius:9px;
+    padding:.5rem .7rem; font:inherit; cursor:pointer; display:flex; gap:.4rem; align-items:center;
+  }
+  button.theme:hover { border-color:var(--mauve); color:var(--text); }
+  button.theme:focus-visible { outline:2px solid var(--mauve); outline-offset:2px; }
+
+  nav.jump { display:flex; gap:.4rem; margin-top:.8rem; flex-wrap:wrap; overflow-x:auto; }
+  nav.jump a {
+    text-decoration:none; font-size:.76rem; padding:.28rem .6rem; border-radius:999px;
+    color:var(--subtext); border:1px solid var(--surface0); white-space:nowrap;
+    background:var(--base); transition:color .12s,border-color .12s;
+  }
+  nav.jump a:hover { color:var(--text); border-color:var(--acc,var(--mauve)); }
+  nav.jump a b { color:var(--acc); }
+
+  /* ---------- Cards ---------- */
+  .grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+    gap:1.1rem; margin-top:1.5rem; align-items:start;
+  }
+  .group { grid-column:1/-1; margin-top:1.6rem; }
+  .group:first-of-type { margin-top:1.5rem; }
+  .group-h { display:flex; align-items:center; gap:.6rem; margin:0 0 .2rem; }
+  .group-h .dot { width:.7rem; height:.7rem; border-radius:50%; background:var(--acc); flex:none; box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent); }
+  .group-h h2 { margin:0; font-size:1.05rem; letter-spacing:.02em; }
+  .group-h .lead-note { color:var(--overlay); font-size:.76rem; margin-left:auto; }
+
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:1.1rem; margin-top:.7rem; align-items:start; }
+
+  .card {
+    background:var(--mantle); border:1px solid var(--surface0);
+    border-radius:12px; padding:0; overflow:hidden;
+    box-shadow:0 1px 2px var(--shadow);
+  }
+  .card > h3 {
+    margin:0; padding:.7rem .95rem; font-size:.82rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--acc); border-bottom:1px solid var(--surface0);
+    background:color-mix(in srgb,var(--acc) 8%, var(--mantle));
+    display:flex; justify-content:space-between; gap:.5rem;
+  }
+  .card > h3 .tag { color:var(--overlay); text-transform:none; letter-spacing:0; font-size:.72rem; }
+  ul.rows { list-style:none; margin:0; padding:.3rem .35rem; }
+  ul.rows li {
+    display:grid; grid-template-columns:minmax(9.5rem,auto) 1fr; gap:.5rem 1rem;
+    align-items:baseline; padding:.34rem .6rem; border-radius:7px;
+  }
+  ul.rows li:hover { background:var(--base); }
+  .keys { display:flex; flex-wrap:wrap; gap:.25rem; }
+  .desc { color:var(--subtext); font-size:.86rem;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  .desc b { color:var(--text); font-weight:600; }
+
+  kbd {
+    font-family:ui-monospace,monospace; font-size:.75rem; line-height:1;
+    padding:.28em .5em; border-radius:6px;
+    background:var(--surface0); color:var(--text);
+    border:1px solid var(--surface1); border-bottom-width:2px;
+    box-shadow:0 1px 0 var(--kbd-shadow); white-space:nowrap;
+  }
+  kbd.mod { color:var(--acc); border-color:color-mix(in srgb,var(--acc) 40%,var(--surface1)); }
+  .sep { color:var(--overlay); font-size:.8rem; align-self:center; }
+
+  .noresult { grid-column:1/-1; text-align:center; color:var(--overlay); padding:3rem 1rem; display:none; }
+  .noresult.show { display:block; }
+
+  footer { margin-top:3rem; padding-top:1.2rem; border-top:1px solid var(--surface0); color:var(--overlay); font-size:.78rem; }
+  footer code { color:var(--subtext); background:var(--mantle); padding:.1em .4em; border-radius:5px; }
+  a.inline { color:var(--blue); }
+
+  @media (max-width:560px){
+    ul.rows li { grid-template-columns:1fr; gap:.15rem; }
+    h1 { font-size:1.25rem; }
+  }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brandline">
+      <span class="prompt">❯</span>
+      <h1>Terminal Command Deck<span class="blink">▊</span></h1>
+    </div>
+    <p class="sub">Every keybind &amp; alias on this Rocky Linux box — WezTerm · Neovim · Zellij · shell · CLI. Catppuccin, categorized, filterable.</p>
+    <div class="controls">
+      <label class="search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="q" type="search" placeholder="Filter shortcuts…  (try 'git', 'split', 'save')" autocomplete="off" spellcheck="false" aria-label="Filter shortcuts">
+        <kbd>/</kbd>
+      </label>
+      <button class="theme" id="themeBtn" type="button" aria-label="Toggle theme"><span id="themeIcon">◐</span><span id="themeLbl">Theme</span></button>
+    </div>
+    <nav class="jump" id="jumpnav"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid" id="deck">
+
+    <!-- ============ WEZTERM ============ -->
+    <section class="group" id="wezterm" style="--acc:var(--mauve)">
+      <div class="group-h"><span class="dot"></span><h2>WezTerm</h2><span class="lead-note">Leader = Ctrl+a (then a key within 1s)</span></div>
+      <div class="cards">
+
+        <div class="card"><h3>Panes <span class="tag">split &amp; move</span></h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>d</kbd><span class="sep">/</span><kbd>e</kbd></span><span class="desc">Split <b>horizontal / vertical</b></span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>|</kbd><span class="sep">/</span><kbd>-</kbd></span><span class="desc">Split horizontal / vertical</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>h j k l</kbd></span><span class="desc">Focus pane left/down/up/right</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>↵</kbd><span class="sep">·</span><kbd class="mod">Ldr</kbd><kbd>z</kbd></span><span class="desc"><b>Zoom</b> pane (toggle)</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>x</kbd><span class="sep">·</span><kbd class="mod">Ldr</kbd><kbd>x</kbd></span><span class="desc">Close pane</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>p</kbd></span><span class="desc">Pick pane by letter</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>r</kbd></span><span class="desc"><b>Resize mode</b> (hjkl, Esc exits)</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd class="mod">Alt</kbd><kbd>H J K L</kbd></span><span class="desc">Resize pane</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Tabs</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>t</kbd></span><span class="desc">New tab</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>w</kbd><span class="sep">·</span><kbd class="mod">Ldr</kbd><kbd>q</kbd></span><span class="desc">Close tab</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>Tab</kbd><span class="sep">/</span><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>Tab</kbd></span><span class="desc">Next / prev tab</span></li>
+            <li><span class="keys"><kbd class="mod">Alt</kbd><kbd>1…9</kbd></span><span class="desc">Jump to tab 1–9</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Workspaces <span class="tag">apps</span></h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>n</kbd></span><span class="desc">New named workspace</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>w</kbd></span><span class="desc">Workspace switcher (fuzzy)</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>Tab</kbd><span class="sep">·</span><kbd class="mod">Ldr</kbd><kbd>]</kbd></span><span class="desc">Next workspace</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd class="mod">Shift</kbd><kbd>Tab</kbd></span><span class="desc">Previous workspace</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>Space</kbd></span><span class="desc"><b>Fuzzy switcher</b> — apps/tabs/workspaces/commands</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Scrollback &amp; Search</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>↑</kbd><span class="sep">/</span><kbd>↓</kbd></span><span class="desc">Jump to prev / next shell prompt</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>y</kbd></span><span class="desc">Copy the <b>last command's output</b></span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>[</kbd></span><span class="desc">Copy mode (vim motions)</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>f</kbd><span class="sep">·</span><kbd class="mod">Ldr</kbd><kbd>f</kbd></span><span class="desc">Search scrollback</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>PgUp</kbd><span class="sep">/</span><kbd>PgDn</kbd></span><span class="desc">Scroll half page</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Select &amp; Copy</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>Space</kbd></span><span class="desc"><b>Quick-select</b> — URLs, SHAs, IPs, paths, emails</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>o</kbd></span><span class="desc">Open a URL on screen in browser</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>e</kbd></span><span class="desc">Char / emoji picker (copies)</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>c</kbd><span class="sep">/</span><kbd>v</kbd></span><span class="desc">Copy / paste · drag=copy, mid-click=paste</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Window</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Super</kbd><kbd>←</kbd><span class="sep">/</span><kbd>→</kbd></span><span class="desc">Snap left / right half (<kbd class="mod">Ldr</kbd><kbd>h</kbd>/<kbd>l</kbd>)</span></li>
+            <li><span class="keys"><kbd class="mod">Super</kbd><kbd>↑</kbd><span class="sep">/</span><kbd>↓</kbd></span><span class="desc">Maximize / restore</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>m</kbd><span class="sep">/</span><kbd>c</kbd></span><span class="desc">Maximize / center</span></li>
+            <li><span class="keys"><kbd class="mod">Super</kbd><kbd>↵</kbd><span class="sep">·</span><kbd>F11</kbd><span class="sep">·</span><kbd class="mod">Ldr</kbd><kbd class="mod">Shift</kbd><kbd>F</kbd></span><span class="desc">Fullscreen</span></li>
+            <li><span class="keys"><kbd class="mod">Super</kbd><kbd>h</kbd><span class="sep">·</span><kbd class="mod">Ldr</kbd><kbd>,</kbd></span><span class="desc">Minimize</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>b</kbd></span><span class="desc">Toggle tab bar</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd class="mod">Shift</kbd><kbd>O</kbd></span><span class="desc">Toggle transparency</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Launch</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>p</kbd></span><span class="desc">Profile launcher</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd>z</kbd></span><span class="desc">Zellij in a new tab</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd class="mod">Shift</kbd><kbd class="mod">Alt</kbd><kbd>P</kbd></span><span class="desc">Command palette</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>u</kbd></span><span class="desc">Attach persistent mux session (<kbd>wtp</kbd>)</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>?</kbd></span><span class="desc">This cheatsheet (in-terminal)</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>=</kbd><span class="sep">/</span><kbd>-</kbd><span class="sep">/</span><kbd>0</kbd></span><span class="desc">Font bigger / smaller / reset</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Session <span class="tag">resurrect</span></h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd class="mod">Shift</kbd><kbd>S</kbd></span><span class="desc"><b>Save</b> current layout to disk</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd class="mod">Shift</kbd><kbd>R</kbd></span><span class="desc"><b>Restore</b> a saved layout (fuzzy picker)</span></li>
+            <li><span class="keys"><kbd>auto</kbd></span><span class="desc">Autosaves every 5 min + whenever a window loses focus/closes</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ NEOVIM ============ -->
+    <section class="group" id="neovim" style="--acc:var(--green)">
+      <div class="group-h"><span class="dot"></span><h2>Neovim</h2><span class="lead-note">Leader = Space · Lazy + Snacks/Oil/Neogit</span></div>
+      <div class="cards">
+
+        <div class="card"><h3>Pickers <span class="tag">Snacks</span></h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>f f</kbd></span><span class="desc"><b>Find files</b></span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>f g</kbd></span><span class="desc">Live <b>grep</b> (ripgrep)</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>f b</kbd></span><span class="desc">Buffers</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>f r</kbd></span><span class="desc">Recent files</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>f h</kbd></span><span class="desc">Help pages</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Files <span class="tag">Oil</span></h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd>-</kbd></span><span class="desc">Open <b>parent dir</b> — edit filesystem as a buffer</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>e</kbd></span><span class="desc">File explorer (Oil)</span></li>
+            <li><span class="keys"><kbd>q</kbd></span><span class="desc">Close Oil</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Git <span class="tag">Neogit · gitsigns</span></h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>g g</kbd></span><span class="desc"><b>Lazygit</b> float</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>g s</kbd></span><span class="desc"><b>Neogit</b> status</span></li>
+            <li><span class="keys"><kbd>]c</kbd><span class="sep">/</span><kbd>[c</kbd></span><span class="desc">Next / prev hunk</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>h s</kbd></span><span class="desc">Stage hunk</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>h r</kbd></span><span class="desc">Reset hunk</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>h p</kbd></span><span class="desc">Preview hunk</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>h b</kbd></span><span class="desc">Blame line</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Editing &amp; Motion</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>w</kbd><span class="sep">/</span><kbd>q</kbd></span><span class="desc">Save / quit</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>h j k l</kbd></span><span class="desc">Move between windows</span></li>
+            <li><span class="keys"><kbd class="mod">V</kbd><kbd>J</kbd><span class="sep">/</span><kbd>K</kbd></span><span class="desc">Move selection down / up</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>d</kbd><span class="sep">/</span><kbd>u</kbd></span><span class="desc">Half-page scroll, cursor centered</span></li>
+            <li><span class="keys"><kbd>n</kbd><span class="sep">/</span><kbd>N</kbd></span><span class="desc">Next / prev match, centered</span></li>
+            <li><span class="keys"><kbd class="mod">Ldr</kbd><kbd>p</kbd></span><span class="desc">Paste without losing clipboard</span></li>
+            <li><span class="keys"><kbd>Esc</kbd></span><span class="desc">Clear search highlight</span></li>
+            <li><span class="keys"><kbd>Space</kbd></span><span class="desc"><b>which-key</b> — popup of all leader maps</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ ZELLIJ ============ -->
+    <section class="group" id="zellij" style="--acc:var(--peach)">
+      <div class="group-h"><span class="dot"></span><h2>Zellij</h2><span class="lead-note">Prefix = Ctrl+a (remapped from Ctrl+b)</span></div>
+      <div class="cards">
+
+        <div class="card"><h3>Modes <span class="tag">after Ctrl+a</span></h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>p</kbd></span><span class="desc"><b>Pane</b> mode</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>t</kbd></span><span class="desc"><b>Tab</b> mode</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>r</kbd></span><span class="desc"><b>Resize</b> mode</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>s</kbd></span><span class="desc"><b>Scroll / search</b> mode</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>o</kbd></span><span class="desc"><b>Session</b> mode</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd class="mod">Ctrl</kbd><kbd>a</kbd></span><span class="desc">Lock / unlock</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Common actions</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>n</kbd></span><span class="desc">New pane</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>x</kbd></span><span class="desc">Close focused pane</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>h j k l</kbd></span><span class="desc">Move focus between panes</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>[</kbd><span class="sep">/</span><kbd>]</kbd></span><span class="desc">Prev / next tab</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>d</kbd></span><span class="desc"><b>Detach</b> (session keeps running)</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">→</span><kbd>w</kbd></span><span class="desc">Session manager</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ SHELL ALIASES ============ -->
+    <section class="group" id="shell" style="--acc:var(--blue)">
+      <div class="group-h"><span class="dot"></span><h2>Shell aliases</h2><span class="lead-note">zsh · type &amp; Enter</span></div>
+      <div class="cards">
+
+        <div class="card"><h3>Navigation &amp; files</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd>ll</kbd></span><span class="desc"><code>ls -alF</code> — long list, all</span></li>
+            <li><span class="keys"><kbd>la</kbd></span><span class="desc"><code>ls -A</code> — all incl. hidden</span></li>
+            <li><span class="keys"><kbd>..</kbd><span class="sep">/</span><kbd>...</kbd></span><span class="desc">Up one / two dirs</span></li>
+            <li><span class="keys"><kbd>mkcd</kbd> <kbd>dir</kbd></span><span class="desc">mkdir then cd into it</span></li>
+            <li><span class="keys"><kbd>cls</kbd></span><span class="desc">Clear screen</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Git</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd>g</kbd></span><span class="desc"><code>git</code></span></li>
+            <li><span class="keys"><kbd>gs</kbd><span class="sep">·</span><kbd>gd</kbd></span><span class="desc">status · diff</span></li>
+            <li><span class="keys"><kbd>ga</kbd><span class="sep">·</span><kbd>gcm</kbd></span><span class="desc">add · commit -m</span></li>
+            <li><span class="keys"><kbd>gco</kbd><span class="sep">·</span><kbd>gb</kbd></span><span class="desc">checkout · branch</span></li>
+            <li><span class="keys"><kbd>gp</kbd><span class="sep">·</span><kbd>gl</kbd></span><span class="desc">push · log (oneline 20)</span></li>
+            <li><span class="keys"><kbd>gst</kbd></span><span class="desc">stash</span></li>
+            <li><span class="keys"><kbd>lg</kbd></span><span class="desc"><b>lazygit</b> TUI</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Workspace &amp; system</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd>v</kbd></span><span class="desc"><b>nvim</b></span></li>
+            <li><span class="keys"><kbd>zj</kbd></span><span class="desc">Zellij fzf session picker (attach/new)</span></li>
+            <li><span class="keys"><kbd>dev</kbd></span><span class="desc">Zellij <b>dev layout</b> — editor + shells + git</span></li>
+            <li><span class="keys"><kbd>wtp</kbd></span><span class="desc">Attach WezTerm persistent mux</span></li>
+            <li><span class="keys"><kbd>up</kbd></span><span class="desc"><b>update-all</b> — pacman + AUR + mise + chezmoi + flatpak</span></li>
+            <li><span class="keys"><kbd>dc</kbd></span><span class="desc"><code>docker compose</code></span></li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ GLOBAL KEYS ============ -->
+    <section class="group" id="keys" style="--acc:var(--yellow)">
+      <div class="group-h"><span class="dot"></span><h2>Global shell keys</h2><span class="lead-note">atuin · fzf · zoxide · line editing</span></div>
+      <div class="cards">
+
+        <div class="card"><h3>History &amp; jump</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>r</kbd></span><span class="desc"><b>atuin</b> — fuzzy history search across sessions</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>Space</kbd></span><span class="desc">Accept grey autosuggestion</span></li>
+            <li><span class="keys"><kbd>z</kbd> <kbd>name</kbd></span><span class="desc"><b>zoxide</b> — jump to frecent dir</span></li>
+            <li><span class="keys"><kbd>zi</kbd></span><span class="desc">zoxide interactive picker</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>fzf &amp; line editing</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>t</kbd></span><span class="desc"><b>fzf</b> — insert file path</span></li>
+            <li><span class="keys"><kbd class="mod">Alt</kbd><kbd>c</kbd></span><span class="desc">fzf — cd into subdir</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>a</kbd><span class="sep">/</span><kbd class="mod">Ctrl</kbd><kbd>e</kbd></span><span class="desc">Start / end of line</span></li>
+            <li><span class="keys"><kbd class="mod">Ctrl</kbd><kbd>w</kbd></span><span class="desc">Delete word back</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ CLI TOOLBELT ============ -->
+    <section class="group" id="tools" style="--acc:var(--teal)">
+      <div class="group-h"><span class="dot"></span><h2>CLI toolbelt</h2><span class="lead-note">what each installed tool is for</span></div>
+      <div class="cards">
+
+        <div class="card"><h3>Runtimes &amp; dotfiles</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd>mise</kbd></span><span class="desc">Runtime manager — Python/Node/Go/Rust. <code>mise use node@24</code></span></li>
+            <li><span class="keys"><kbd>chezmoi</kbd></span><span class="desc">Dotfile manager. <code>chezmoi apply</code> · <code>chezmoi diff</code></span></li>
+            <li><span class="keys"><kbd>direnv</kbd></span><span class="desc">Auto-load per-dir env from <code>.envrc</code></span></li>
+            <li><span class="keys"><kbd>starship</kbd></span><span class="desc">The prompt (config in <code>starship.toml</code>)</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Modern replacements</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd>eza</kbd></span><span class="desc">Better <code>ls</code> — icons, git, tree</span></li>
+            <li><span class="keys"><kbd>bat</kbd></span><span class="desc">Better <code>cat</code> — syntax + paging</span></li>
+            <li><span class="keys"><kbd>fd</kbd></span><span class="desc">Better <code>find</code> — fast, intuitive</span></li>
+            <li><span class="keys"><kbd>rg</kbd></span><span class="desc">ripgrep — fast recursive grep</span></li>
+            <li><span class="keys"><kbd>delta</kbd></span><span class="desc">Git pager — syntax-highlit diffs</span></li>
+            <li><span class="keys"><kbd>zoxide</kbd></span><span class="desc">Smarter <code>cd</code> (the <code>z</code> command)</span></li>
+          </ul>
+        </div>
+
+        <div class="card"><h3>Git, GitHub &amp; sessions</h3>
+          <ul class="rows">
+            <li><span class="keys"><kbd>lazygit</kbd></span><span class="desc">Full git TUI — stage, commit, rebase, branch</span></li>
+            <li><span class="keys"><kbd>gh</kbd></span><span class="desc">GitHub CLI — <code>gh pr create</code>, <code>gh repo clone</code></span></li>
+            <li><span class="keys"><kbd>zellij</kbd></span><span class="desc">Terminal multiplexer — panes, tabs, persistence</span></li>
+            <li><span class="keys"><kbd>atuin</kbd></span><span class="desc">Shell history DB — searchable, synced</span></li>
+            <li><span class="keys"><kbd>fzf</kbd></span><span class="desc">Fuzzy finder — pipe anything through it</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <p class="noresult" id="noresult">No shortcut matches “<span id="qecho"></span>”. <a class="inline" href="#" onclick="document.getElementById('q').value='';filter();return false;">Clear</a></p>
+  </div>
+
+  <footer>
+    <p>Sources of truth: <code>~/.wezterm.lua</code> · <code>~/.config/nvim/</code> · <code>~/.config/zellij/config.kdl</code> · <code>~/.zshrc</code> — all chezmoi-managed. Leader legend: <kbd class="mod" style="--acc:var(--mauve)">Ldr</kbd> = WezTerm Ctrl+a · Neovim Space. Generated for Rocky Linux · Catppuccin.</p>
+  </footer>
+</main>
+
+<script>
+  // ---------- Theme toggle (overrides prefers-color-scheme via data-theme) ----------
+  const root = document.documentElement, tIcon = document.getElementById('themeIcon'), tLbl = document.getElementById('themeLbl');
+  function sysDark(){ return window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function curDark(){ const t = root.getAttribute('data-theme'); return t ? t==='dark' : sysDark(); }
+  function paintBtn(){ const d = curDark(); tIcon.textContent = d ? '☾' : '☀'; tLbl.textContent = d ? 'Dark' : 'Light'; }
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    root.setAttribute('data-theme', curDark() ? 'light' : 'dark'); paintBtn();
+  });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintBtn);
+  paintBtn();
+
+  // ---------- Build jump nav from sections ----------
+  const nav = document.getElementById('jumpnav');
+  document.querySelectorAll('section.group').forEach(s => {
+    const name = s.querySelector('h2').textContent;
+    const a = document.createElement('a');
+    a.href = '#'+s.id; a.style.setProperty('--acc', getComputedStyle(s).getPropertyValue('--acc'));
+    a.innerHTML = '<b>#</b> '+name;
+    nav.appendChild(a);
+  });
+
+  // ---------- Live filter ----------
+  const q = document.getElementById('q'), noresult = document.getElementById('noresult'), qecho = document.getElementById('qecho');
+  function filter(){
+    const term = q.value.trim().toLowerCase();
+    let anyGlobal = false;
+    document.querySelectorAll('section.group').forEach(sec => {
+      let secHits = 0;
+      sec.querySelectorAll('.card').forEach(card => {
+        let cardHits = 0;
+        card.querySelectorAll('ul.rows li').forEach(li => {
+          const hit = !term || li.textContent.toLowerCase().includes(term);
+          li.style.display = hit ? '' : 'none';
+          if (hit) cardHits++;
+        });
+        card.style.display = cardHits ? '' : 'none';
+        secHits += cardHits;
+      });
+      sec.style.display = secHits ? '' : 'none';
+      if (secHits) anyGlobal = true;
+    });
+    noresult.classList.toggle('show', !anyGlobal);
+    qecho.textContent = q.value;
+  }
+  q.addEventListener('input', filter);
+
+  // ---------- "/" focuses search ----------
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== q){ e.preventDefault(); q.focus(); }
+    if (e.key === 'Escape' && document.activeElement === q){ q.value=''; filter(); q.blur(); }
+  });
+</script>

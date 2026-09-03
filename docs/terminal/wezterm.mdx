@@ -1,29 +1,42 @@
 ---
 title: wezterm
 description: GPU-accelerated terminal — Catppuccin Mocha, vim-style panes/tabs, profile launch menu.
-status: diverged
+status: live
 tags: [terminal, wezterm]
 ---
 
 # wezterm
 
 **Intro.** A GPU-accelerated, Lua-configured terminal emulator. JetBrainsMono
-Nerd Font, Catppuccin Mocha, 92% background opacity, bottom tab bar, and a
-**launch menu** of shell/REPL profiles. Defaults to `zsh --login` so all the
-interactive zsh features are active. Config: `chezmoi/dot_wezterm.lua` →
-`~/.wezterm.lua`.
+Nerd Font, Catppuccin Mocha, 92% background opacity, top tab bar with integrated
+window buttons, and a **launch menu** of shell/REPL profiles. Defaults to
+`zsh --login` so all the interactive zsh features are active. Config:
+`chezmoi/dot_wezterm.lua` → `~/.wezterm.lua`.
 
-> Status: **diverged** — reconcile with `chezmoi diff ~/.wezterm.lua`.
+> Status: **live** — `chezmoi/dot_wezterm.lua` matches `~/.wezterm.lua` (reconciled 2026-07-02).
 
 ## Why this
 
 - **GPU (WebGpu) rendering** at up to 120fps — smooth scroll/animation.
 - **Lua config** — full programmability (keys, launch menu, per-host logic)
   versus INI-style configs in alacritty/kitty.
-- **Runs on XWayland deliberately** (`config.enable_wayland = false`): GNOME's
-  explicit-sync path crashes wezterm's native Wayland backend with
-  `wp_linux_drm_syncobj ... os error 71`. XWayland trades native fractional
-  scaling for actually launching.
+- **Native Wayland** (`config.enable_wayland = true`): GNOME's explicit-sync
+  path once crashed the native backend with `wp_linux_drm_syncobj ... os error 71`,
+  but `enable_wayland = false` made wezterm fail to start entirely (XWayland is
+  unavailable in this session — `XOpenDisplay` fails). If the crash returns,
+  upgrade wezterm or switch `front_end` to `"OpenGL"`.
+- **Integrated window buttons** (`config.window_decorations =
+  "INTEGRATED_BUTTONS|RESIZE"`): drops GNOME's separate titlebar and draws
+  minimize/maximize/close *inside* the tab bar — a smaller frame with no wasted
+  titlebar row. Requires the fancy tab bar at the top, which is why
+  `tab_bar_at_bottom = false`. Move the window by dragging empty tab-bar space,
+  or `Super`+left-drag. Alternatives: `"TITLE|RESIZE"` for GNOME's normal
+  server-side titlebar, `"NONE"` for borderless but no buttons, `"RESIZE"` for
+  borders only.
+- **Kitty keyboard protocol** (`config.enable_kitty_keyboard = true`): lets TUIs
+  receive key events the legacy encoding can't express — notably **Shift+Enter**
+  as distinct from Enter, which is how Claude Code inserts a newline in its
+  prompt instead of submitting. Revert this line if an older TUI mis-reads keys.
 
 ## Install / enable
 
@@ -77,6 +90,9 @@ Window management (snap / size). `Super` = the OS meta key:
 | `Leader + h` / `l` | Snap left / right half |
 | `Leader + m` / `c` | Maximize / center |
 
+> Titlebar buttons + edge-resize come from `window_decorations = "TITLE|RESIZE"`
+> (see *Why this*). Also: drag titlebar to move, double-click it to maximize.
+>
 > Snapping uses WezTerm's window-geometry API. On GNOME Wayland the compositor
 > may override it — GNOME's own `Super+Left/Right` tiling always works as a fallback.
 
@@ -99,9 +115,73 @@ Leader layer (tmux-style). `Leader` = `Ctrl+a`, press then the next key:
 | `Leader + u` | Attach the persistent `unix` mux session |
 | `Leader + o` | Keyboard URL hints — label links, type to open |
 | `Leader + Shift+O` | Toggle background opacity (0.92 ↔ solid) |
+| `Leader + a` | **Agent layer** — see below |
 
 Mouse: drag to select **copies to clipboard + primary**; **middle-click pastes**
 the primary selection; `Ctrl+Click` opens a link.
+
+## Agent layer (`Leader + a`)
+
+A one-shot modal table — press `Leader+a`, then a single key. The status bar
+shows `AGENT` while it's open, and it exits after one key so it never traps you.
+
+| Key | Action |
+|-----|--------|
+| `c` | Claude Code in a new tab, inheriting the current pane's cwd |
+| `s` | Claude Code in a 50/50 split beside this pane |
+| `r` / `k` | `claude --resume` / `claude --continue` |
+| `h` | [herdr](./herdr.mdx), the agent multiplexer |
+| `y` | copy the last command **and** its output as a ` ```console ` block |
+| `Y` | copy the whole scrollback |
+| `Esc` / `q` | cancel |
+
+Two details that matter:
+
+- Every spawn is wrapped as `zsh -lc '<cmd>; exec zsh -l'`. The **login shell is
+  mandatory** — wezterm is a Flatpak that spawns *host* shells, and `claude`
+  resolves through a `~/.local/bin` symlink on the shell's PATH (see
+  [wezterm-flatpak-env-leak](../fixes/wezterm-flatpak-env-leak.md)). The trailing
+  `exec zsh -l` keeps the pane alive after the agent exits, so scrollback
+  survives and a "command not found" stays readable — otherwise
+  `exit_behavior = "Close"` destroys the tab instantly.
+- **Scope is deliberately narrow.** Agent *detection*, state tracking and
+  notifications belong to [herdr](./herdr.mdx), not here. This table only starts
+  agents and feeds them terminal context — the emulator's own job. Building both
+  would mean two notification systems fighting.
+
+`Leader + y` still copies the last command's output alone; `Leader+a y` adds the
+command that produced it.
+
+### Agent state in the status bar
+
+When a [herdr](./herdr.mdx) session is running, the right status bar shows a live
+pill — so you see an agent needs you without switching to its tab:
+
+```
+  󰚩 3  ● 2 working  ▲ 1 blocked        LEADER
+```
+
+Green while agents are idle or working; **red the moment any agent is blocked**,
+because that's the state that wants your attention. Hidden entirely when no
+agents are running, so a non-agent session gains no extra chrome.
+
+**How it avoids being expensive.** `update-status` fires several times per
+second, and wezterm has no async subprocess API in the config — every
+`run_child_process` blocks the event loop. So a `wezterm.time.call_after` timer
+polls `herdr agent list` every 3s into a cache, and `update-status` only ever
+*reads* that cache. One subprocess every few seconds instead of hundreds a
+minute. After 3 consecutive failures it stops polling permanently rather than
+spawning a doomed process forever when herdr isn't running; restart wezterm to
+retry.
+
+`herdr agent list` emits a single line of JSON (there is no `--json` flag — it
+errors). The config counts `"agent_status":"…"` occurrences rather than parsing
+JSON, so an upstream schema change degrades to "no pill" instead of a broken
+config.
+
+**Quick-select** (`Leader + Space`) also matches `file.ext:12` and
+`file.ext:12:34` references, ordered ahead of the generic path pattern so a
+`src/main.py:42` from compiler or agent output keeps its line number.
 
 ## Persistent sessions (`unix` mux)
 
@@ -122,8 +202,9 @@ The status bar shows the active workspace (left) and a `LEADER` / mode badge
 ## Launch menu profiles (`Ctrl+Shift+P`)
 
 Zsh (default) · Bash · Zellij · Zellij (new "work" session) · Python REPL ·
-Node REPL · btop. Profiles use bare command names so they resolve via PATH on
-any host.
+Node REPL · btop · **Claude Code** · **Claude Code (resume)** · **Herdr**.
+Shell/REPL profiles use bare command names so they resolve via PATH on any host;
+the agent profiles are login-shell wrapped for the Flatpak PATH reason above.
 
 ## Visuals
 
@@ -148,11 +229,22 @@ All Catppuccin Mocha:
 
 ## Troubleshooting
 
-- Crash on launch under Wayland → confirm `enable_wayland = false`.
+- Crash on launch under Wayland (`os error 71`) → switch `front_end` to `"OpenGL"`
+  or upgrade wezterm. Do **not** set `enable_wayland = false` — XWayland is
+  unavailable here and wezterm won't start.
+- No minimize/resize buttons, can't drag edges → `window_decorations` got set to
+  `"NONE"`; restore `"INTEGRATED_BUTTONS|RESIZE"` and open a fresh window
+  (decorations don't hot-reload).
+- Shift+Enter submits instead of inserting a newline in Claude Code → the kitty
+  keyboard protocol isn't active. Confirm `enable_kitty_keyboard = true` and open
+  a **fresh window**; it doesn't hot-reload.
 - Missing glyphs → install JetBrainsMono Nerd Font.
 
 ## Links
 
 - Config: `chezmoi/dot_wezterm.lua` · Install: `setup/install-wezterm.sh`
-- Full keys: [`md files/KEYBOARD-SHORTCUTS.md`](../../md%20files/KEYBOARD-SHORTCUTS.md#wezterm--pane-management)
+- Agent multiplexer that runs inside it: [herdr](./herdr.mdx)
+- Windows variant of this config: [wezterm (Windows)](./wezterm-windows.mdx)
+- Interactive keymap: [`wezterm-keymap.html`](./wezterm-keymap.html) — type-to-filter cheatsheet
+- Full keys: [`terminal/KEYBOARD-SHORTCUTS.md`](../terminal/KEYBOARD-SHORTCUTS.md#wezterm--pane-management)
 - Upstream: <https://wezterm.org>

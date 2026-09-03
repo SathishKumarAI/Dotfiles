@@ -1,0 +1,170 @@
+---
+title: herdr
+description: Terminal multiplexer built for coding agents — detects Claude Code, tracks agent state, keeps panes alive across detach.
+status: new
+tags: [terminal, multiplexer, agents, claude-code]
+---
+
+# herdr
+
+**Intro.** A Rust terminal multiplexer whose unit of work is an *agent*, not a
+pane. It detects Claude Code running in a pane, classifies it as `idle` /
+`working` / `blocked` / `done`, and rolls that state up a sidebar — so when four
+agents run in parallel you can see at a glance which one is waiting on you.
+Panes survive detach. A CLI and local socket API let scripts (and agents
+themselves) drive it. Config: `chezmoi/private_dot_config/herdr/config.toml` →
+`~/.config/herdr/config.toml`.
+
+> Status: **new** — added 2026-07-31. Pinned to v0.7.5.
+
+## Why this, when zellij already exists
+
+herdr does not replace zellij. They answer different questions:
+
+| Tool | Prefix | For |
+|---|---|---|
+| **herdr** | `Ctrl+g` | agent sessions — state tracking, parallel agents, detach |
+| **zellij** | `Ctrl+a` | ordinary multiplexing, layouts, general dev work |
+| **tmux** | `Ctrl+a` | fallback on remote hosts |
+
+The thing zellij cannot do is tell you *which agent needs a decision*. A pane
+running Claude Code looks identical whether it is mid-refactor or has been
+sitting on a permission prompt for ten minutes. herdr reads the pane and rolls
+that state up to the sidebar; blocked agents flag their pane, tab and workspace.
+
+**It is deliberately additive.** herdr is pre-1.0 (v0.7.5, released 2026-07-21;
+the repo was created 2026-03-27) and versions its own client/server protocol.
+zellij, tmux and resurrect.wezterm are all left intact, so nothing here is a
+single point of failure.
+
+## Install
+
+```bash
+bash ~/coding/workspace/dotfiles/scripts/install-herdr.sh
+chezmoi apply ~/.config/herdr/config.toml
+```
+
+The script prefers `mise use -g herdr@0.7.5` (mise manages runtimes here), probes
+the registry first, and falls back to the pinned GitHub release binary if the
+entry is absent. It deliberately does **not** use upstream's
+`curl -fsSL https://herdr.dev/install.sh | sh` — this repo declined that same
+pattern once already for caveman (see `scripts/install-claude-skills.sh`).
+
+Upstream publishes no checksum file with its release assets, so the fallback path
+prints the sha256 of what it downloaded rather than pretending to verify it.
+
+## Keys
+
+**The prefix here is `Ctrl+g`, not upstream's `Ctrl+b`.** Two separate collisions
+force it, and upstream docs, tutorials and herdr's own `prefix+?` help screen
+will all disagree with this machine:
+
+- `Ctrl+b` is vim's page-up. `docs/terminal/index.mdx` records that zellij and
+  tmux were *both* deliberately moved off `Ctrl+b` for exactly this reason.
+  Letting herdr take it would undo that decision a third time.
+- `Ctrl+a` is unavailable — WezTerm's leader intercepts it in the emulator, so
+  the keypress never reaches herdr at all.
+
+| Key | Action |
+|---|---|
+| `Ctrl+g` `?` | show all active bindings |
+| `Ctrl+g` `c` | new tab |
+| `Ctrl+g` `v` / `-` | split vertical / horizontal |
+| `Ctrl+g` `q` | detach (processes keep running) |
+| `Ctrl+alt + h/j/k/l` | focus pane left/down/up/right — no prefix needed |
+
+`Ctrl+alt` is upstream's recommended prefix-free chord: terminals leave it
+untouched and it survives terminals without modern keyboard protocols. Verified
+free here — WezTerm's pane-resize binds are `Ctrl+Shift+Alt`, not `Ctrl+Alt`. If
+one of these does nothing, GNOME consumed it first; rebind under `[keys]`.
+
+herdr is also **mouse-first**: click to focus, drag borders to resize, right-click
+for split/switch menus. The prefix matters less here than in tmux.
+
+## Agent workflow
+
+```bash
+cd ~/coding/live/pickleball-vision-llm && herdr   # start a session in a project
+# open a pane, run `claude` — herdr detects it automatically
+
+herdr agent list                      # every live agent and its state
+herdr agent explain <target> --json   # WHY it classified that way
+herdr agent attach <target>           # jump straight into that agent's terminal
+herdr agent prompt <target> "..."     # send work to an agent from outside
+herdr server stop                     # stop everything
+```
+
+**How solid is detection?** Two mechanisms exist: lifecycle hooks (authoritative)
+and screen manifests (reading the pane's bottom buffer against a TOML pattern).
+Upstream states Claude Code uses **screen-manifest detection for session identity
+and does not hand herdr full lifecycle authority** — so treat `done` as a strong
+hint, not gospel. `herdr integration install claude` (run by the install script)
+improves it; `herdr agent explain` is how you debug a wrong call.
+
+## WezTerm surfaces herdr's agent state
+
+Both wezterm configs poll `herdr agent list` every 3s and show a pill in the
+right status bar — `󰚩 3  ● 2 working  ▲ 1 blocked` — green normally, **red when
+anything is blocked**. This means you get the "which agent needs me" signal even
+while looking at a plain shell tab outside herdr.
+
+The pill is hidden when no agents are running, and polling stops permanently
+after 3 consecutive failures so nothing is spawned in a loop when herdr isn't
+up. Details in [wezterm → Agent state in the status bar](./wezterm.mdx).
+
+## Claude Code can drive herdr
+
+The install script vendors upstream's official skill to
+`claude-skills/vendor/herdr/SKILL.md`, symlinked into `~/.claude/skills/`. With
+it, Claude Code can split panes, run commands, read pane output, and start or
+prompt *other* agents. It self-checks with `test "${HERDR_ENV:-}" = 1` before
+issuing any control command, and herdr injects `$HERDR_WORKSPACE_ID`,
+`$HERDR_TAB_ID` and `$HERDR_PANE_ID` into managed panes.
+
+The skill is scoped to trigger only when you explicitly mention herdr, so it
+won't fire on unrelated work.
+
+## Configuration
+
+`~/.config/herdr/config.toml` is a deliberately **minimal overlay**, not a full
+config — herdr merges it over its defaults, so upstream default changes still
+reach us instead of being frozen by a copy-pasted dump. See everything available
+with `herdr --default-config`; reload a running server with
+`herdr server reload-config`.
+
+The one override that matters most:
+
+```toml
+[terminal]
+default_shell = "/bin/zsh"
+```
+
+**herdr ships nushell as its default shell.** Left alone, agent panes would have
+none of this machine's setup — no zsh aliases, no autosuggestions or
+syntax-highlighting, no fzf+fd wiring, and critically none of the Flatpak env
+guard in `~/.zshrc`. That guard is what keeps `chezmoi`, `gsettings`,
+`notify-send` and Claude Code's `/voice` working. See
+[../fixes/wezterm-flatpak-env-leak.md](../fixes/wezterm-flatpak-env-leak.md).
+
+## Troubleshooting
+
+- **`herdr status` can't find the server from a WezTerm pane.** This is the most
+  likely failure on this machine. WezTerm is a Flatpak and leaks its sandbox
+  `XDG_CONFIG_HOME`; if the guard in `~/.zshrc` isn't active, the socket resolves
+  to `~/.var/app/org.wezfurlong.wezterm/config/herdr/herdr.sock` and a server
+  started anywhere else is invisible. Check with `echo "$XDG_CONFIG_HOME"` — it
+  must be `/home/<you>/.config`.
+- **Upstream docs say `Ctrl+b` and nothing happens.** Expected — the prefix is
+  `Ctrl+g` here. `Ctrl+g ?` lists the real bindings.
+- **A `Ctrl+alt` chord does nothing.** GNOME or the terminal ate it before herdr
+  saw it. Rebind under `[keys]`.
+- **Agent shows the wrong state.** `herdr agent explain <target> --json` shows the
+  matched manifest; `herdr integration status` confirms the Claude integration is
+  live.
+- **Logs:** `~/.config/herdr/herdr.log`, `herdr-client.log`, `herdr-server.log`.
+
+## Links
+
+- Config: `chezmoi/private_dot_config/herdr/config.toml` · Install: `scripts/install-herdr.sh`
+- Sibling multiplexers: [zellij](./zellij.mdx) · [tmux](./tmux.mdx) · emulator: [wezterm](./wezterm.mdx)
+- Upstream: <https://herdr.dev/docs/> · <https://github.com/herdrdev/herdr> (Apache-2.0)

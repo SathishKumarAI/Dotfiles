@@ -12,6 +12,14 @@ from __future__ import annotations
 import os, re, sys
 from urllib.parse import unquote
 
+# Windows pipes default to cp1252, which cannot encode the ✓/✗ glyphs below -
+# the check would pass and then die on its own success message.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOCS = os.path.join(ROOT, "docs")
 LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")

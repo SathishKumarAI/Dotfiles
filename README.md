@@ -2,9 +2,32 @@
 
 **mise + chezmoi + starship + zellij + neovim + GNOME**
 
+[![CI](https://github.com/SathishKumarAI/Dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/SathishKumarAI/Dotfiles/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Rocky%2010%20%C2%B7%20Fedora%20%C2%B7%20Arch%20%C2%B7%20Windows-informational)](#quick-start-new-machine)
+[![Managed by chezmoi](https://img.shields.io/badge/dotfiles-chezmoi-2ea44f)](https://chezmoi.io)
+[![Theme: Catppuccin Mocha](https://img.shields.io/badge/theme-Catppuccin%20Mocha-cba6f7)](#theme--catppuccin-mocha-everywhere)
+
 One repo. All configs, setup scripts, desktop theming, and dev knowledge. Drop onto any Rocky Linux / Fedora / RHEL machine and have a fully configured development environment in minutes.
 
 📚 **Full documentation:** [`docs/`](docs/index.mdx) — a browsable, no-gaps reference for every tool, feature, customization, keybinding, AI/agent workflow, and a prompt library. Start at [`docs/index.mdx`](docs/index.mdx); the live status of every feature is in [`docs/feature-catalog.mdx`](docs/feature-catalog.mdx).
+
+---
+
+## Table of Contents
+
+- [Quick Start (New Machine)](#quick-start-new-machine) · [Windows](#windows)
+- [What's New](#whats-new-2026-06-22)
+- [Repository Structure](#repository-structure)
+- [What's Inside — Detailed Breakdown](#whats-inside--detailed-breakdown)
+- [Theme — Catppuccin Mocha](#theme--catppuccin-mocha-everywhere)
+- [GNOME Desktop Setup](#gnome-desktop-setup) · [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Runtimes (via mise)](#runtimes-via-mise) · [60+ Installed Tools](#60-installed-tools-summary)
+- [Documentation Index](#documentation-index)
+- [Continuous Integration](#continuous-integration)
+- [Contributing](#contributing)
+- [TODO — Future Improvements](#todo--future-improvements)
+- [License](#license)
 
 ---
 
@@ -29,14 +52,32 @@ bash setup/setup.sh --os arch      # force a target if detection is wrong
 ### Windows
 
 ```powershell
-# From the repo's setup/ folder, in PowerShell:
+# From the repo's setup/ folder, in PowerShell. Every script takes -DryRun.
 powershell -ExecutionPolicy Bypass -File .\setup.ps1 -DryRun   # preview, change nothing
 powershell -ExecutionPolicy Bypass -File .\setup.ps1           # ensure winget+scoop, then install
 
-# then:
+# OR do all of it in one orchestrated, resumable pipeline (recommended):
+powershell -ExecutionPolicy Bypass -File .\pipeline-windows-ml.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File .\pipeline-windows-ml.ps1
+python ..\tools\mlops_dashboard.py      # live dashboard on http://127.0.0.1:8765
+
+# then, as needed:
+powershell -ExecutionPolicy Bypass -File .\install-windows-apps.ps1  # GlazeWM, PowerToys, Obsidian, ...
+powershell -ExecutionPolicy Bypass -File .\install-ml-windows.ps1    # Python + uv + GPU-matched PyTorch
+powershell -ExecutionPolicy Bypass -File .\install-wsl-ubuntu.ps1    # WSL2 + Ubuntu (CUDA passthrough)
+
 chezmoi init --apply SathishKumarAI/Dotfiles
 mise install
 ```
+
+> **Pipeline + dashboard:** [`docs/setup/ml-devops-pipeline.mdx`](docs/setup/ml-devops-pipeline.mdx)
+>
+> **Full Windows guide:** [`docs/setup/windows.mdx`](docs/setup/windows.mdx) —
+> script inventory, the Microsoft Store Python-stub trap, the GPU wheel/compute
+> capability table, and the WSL2 driver rule.
+>
+> **No script in this repo installs, updates, or modifies a GPU driver.** The ML
+> scripts only *read* `nvidia-smi` to select a matching PyTorch wheel.
 
 > **Per-OS scripts:** the main entry detects the OS and runs the matching
 > orchestrator — all in [`setup/`](setup/):
@@ -47,6 +88,11 @@ mise install
 > | Arch / Manjaro | `setup.sh` | `setup-arch.sh` | pacman/yay + GNOME extensions + TLP |
 > | Windows 10/11 | `setup.ps1` | `setup-windows.ps1` | winget + scoop (+ `update-user-path.ps1`) |
 >
+> Windows has three extra, optional layers with no Linux counterpart:
+> `install-windows-apps.ps1` (the app set restored from
+> `dotfiles/misc/all_programs.txt`), `install-ml-windows.ps1` (Python + CUDA
+> stack), and `install-wsl-ubuntu.ps1` + `wsl/bootstrap-wsl.sh`.
+>
 > All three orchestrators install the same toolset (modern CLI, starship,
 > zellij, mise, neovim, lazygit, WezTerm, chezmoi). The Linux pair shares the
 > dual-OS installers (`install-modern-cli.sh`, `install-automation-tools.sh`,
@@ -55,10 +101,14 @@ mise install
 
 ---
 
-## What's New (2026-06-08)
+## What's New (2026-06-22)
 
 | Change | Where | Why |
 |--------|-------|-----|
+| **All-apps keybindings cheatsheet** (MDX + printable PDF) | [`docs/keybindings-cheatsheet.mdx`](docs/keybindings-cheatsheet.mdx), [`assets/keybindings-cheatsheet.pdf`](assets/keybindings-cheatsheet.pdf) | One keyboard map for every tool (GNOME, tiling, WezTerm, Zellij, tmux, Neovim, lazygit, shell) + conflict/precedence logic. Rebuild: `bash setup/build-keybindings-pdf.sh`. |
+| **CI lint gate** | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | `bash -n` + shellcheck on every setup script + `wezterm` config validation — catches shell bugs and doc/config drift before merge. |
+| **Cheatsheet prompt template** | [`docs/templates/prompts/build-keybindings-cheatsheet.md`](docs/templates/prompts/build-keybindings-cheatsheet.md) | Reusable, config-sourced prompt to regenerate the cheatsheet without drift. |
+| **`~/.cargo/bin` on PATH** + media/PDF + perf installers | `chezmoi/dot_bashrc`, `chezmoi/dot_zshrc`, `setup/install-media-pdf.sh`, `setup/optimize-responsiveness.sh`, `setup/speedup-boot.sh` | cargo-installed CLIs (eza, delta, atuin) resolve; media/PDF toolchain powers the cheatsheet render; GNOME/boot tuning. |
 | **Wofi launcher** added to this machine | `chezmoi/private_dot_config/wofi/` | Mainline rofi can't run on GNOME Wayland (no layer-shell support). Wofi is a Wayland-native GTK launcher with the same Catppuccin Mocha look. Bound to `Super+Space`. |
 | **chezmoi source root fixed** | `.chezmoiroot` (=`chezmoi`) | Repo had no `.chezmoiroot`; chezmoi was about to scatter repo docs into `$HOME`. The marker scopes the source tree to `chezmoi/` only. |
 | **Feature dirs consolidated** under `chezmoi/` | `chezmoi/private_dot_config/{remote-desktop,rofi,wofi}/` | Single source root, single edit path. The old root-level `private_dot_config/` is gone. |
@@ -77,7 +127,12 @@ Dotfiles/
 ├── README.md                           # You are here
 ├── ROADMAP.md                          # Aggregated future tasks across all features
 ├── TOOLS_LINKS.md                      # Official URLs for every tool
+├── LICENSE                             # MIT
+├── CONTRIBUTING.md                     # How to file issues / send PRs
 ├── .chezmoiroot                        # Scopes chezmoi's source to the chezmoi/ subdir
+│
+├── .github/
+│   └── workflows/ci.yml                # CI: bash -n + shellcheck + wezterm config validate
 │
 ├── chezmoi/                            # Single chezmoi source root (per .chezmoiroot)
 │   ├── dot_bashrc                      #   → ~/.bashrc
@@ -99,6 +154,11 @@ Dotfiles/
 │   ├── rocky-dev-setup.sh              #   Original setup script (reference)
 │   ├── rocky-dev-setup-custom.sh       #   Main setup: mise + chezmoi + Docker
 │   ├── gnome-desktop-setup.sh          #   Desktop UI/UX: theme, fonts, extensions
+│   ├── build-keybindings-pdf.sh        #   Render keybindings cheatsheet → PDF (via md2html.py)
+│   ├── md2html.py                      #   MDX/Markdown → styled HTML (cheatsheet pipeline)
+│   ├── install-media-pdf.sh            #   Media + PDF toolchain
+│   ├── optimize-responsiveness.sh      #   GNOME responsiveness tuning
+│   ├── speedup-boot.sh                 #   Boot-time tuning
 │   ├── chezmoi-migration.sh            #   Migrate existing dotfiles → chezmoi
 │   ├── .mise.toml                      #   Project-level runtime versions
 │   ├── .gitignore                      #   Ignore build artifacts
@@ -132,7 +192,8 @@ Dotfiles/
 │
 ├── assets/                             # Images and cheatsheets
 │   ├── glazewm-cheatsheet.png
-│   └── glazewm-sample-config.yaml
+│   ├── glazewm-sample-config.yaml
+│   └── keybindings-cheatsheet.pdf      #   Printable all-apps keybindings map
 │
 ├── tools/                              # Helper scripts
 │   └── fetch_env_refs.py               #   Environment reference fetcher
@@ -330,6 +391,7 @@ Full details: [setup/FULL_TOOLS_INVENTORY.md](setup/FULL_TOOLS_INVENTORY.md)
 | [setup/CLAUDE_TOOLS_GUIDE.md](setup/CLAUDE_TOOLS_GUIDE.md) | Claude Code, SDKs, CLAUDE.md, permissions, memory, token-saving | AI-assisted development |
 | [setup/SCRIPT_EXPLAINED.md](setup/SCRIPT_EXPLAINED.md) | Setup script deep-dive, Rocky 10 compatibility, risk flags | Sysadmins / anyone auditing the scripts |
 | [setup/OPEN_SOURCE_TOOLS.md](setup/OPEN_SOURCE_TOOLS.md) | 30+ alternatives compared: mise, chezmoi, Devbox, Nix, Omakub | Decision-makers choosing tools |
+| [docs/keybindings-cheatsheet.mdx](docs/keybindings-cheatsheet.mdx) | Every app's keyboard map (GNOME, tiling, WezTerm, Zellij, tmux, Neovim, lazygit, shell) + conflict/precedence logic. Printable: [`assets/keybindings-cheatsheet.pdf`](assets/keybindings-cheatsheet.pdf) (rebuild: `bash setup/build-keybindings-pdf.sh`) | Anyone learning the keybindings |
 | [TOOLS_LINKS.md](TOOLS_LINKS.md) | Official URLs for every tool | Quick reference |
 | [ROADMAP.md](ROADMAP.md) | Aggregated future tasks (per-feature + cross-cutting) with subtasks | Planning / picking next work |
 | [wofi/README.md](chezmoi/private_dot_config/wofi/README.md) | Wayland app launcher: install, theme, troubleshoot | Anyone running Wayland |
@@ -351,7 +413,7 @@ Full details: [setup/FULL_TOOLS_INVENTORY.md](setup/FULL_TOOLS_INVENTORY.md)
 - [ ] **Obsidian Git plugin** — Auto-commit vault to GitHub for cross-machine sync
 - [ ] **Obsidian Spaced Repetition** — Flashcard plugin for coding study (Python, system design, ML concepts)
 - [ ] **SSH config** — Managed `~/.ssh/config` for common hosts (via chezmoi with encryption)
-- [ ] **Conda environments** — Pre-built `environment.yml` files for AI/ML projects (torch, transformers, langchain)
+- [x] **ML environments** — done via uv instead of conda: `setup/install-ml-windows.ps1` + `setup/ml/requirements-ml.txt` (GPU-matched torch, transformers, langchain). See [`docs/setup/windows.mdx`](docs/setup/windows.mdx). *Linux equivalent still to do.*
 - [ ] **Hyprland config** — Alternative to GNOME for tiling WM enthusiasts (Wayland-native)
 - [ ] **GNOME dconf backup** — Export full `dconf dump /` as a restorable file in chezmoi
 
@@ -395,9 +457,47 @@ Full details: [setup/FULL_TOOLS_INVENTORY.md](setup/FULL_TOOLS_INVENTORY.md)
 - [x] **Wofi** — Wayland app launcher (2026-05-27): builds wofi + gtk-layer-shell from source, Catppuccin Mocha themed, bound to Super+Space
 - [x] **chezmoi source root fixed** (2026-05-27): added `.chezmoiroot`, moved feature dirs under `chezmoi/`, single source of truth via `sourceDir = ~/coding/Dotfiles`
 - [x] **ROADMAP.md** added (2026-06-08): single aggregated view of every pending and future task with subtasks
+- [x] **All-apps keybindings cheatsheet** (2026-06-22): `docs/keybindings-cheatsheet.mdx` + printable `assets/keybindings-cheatsheet.pdf`, regenerable via `setup/build-keybindings-pdf.sh`
+- [x] **CI lint gate** (2026-06-22): `.github/workflows/ci.yml` — `bash -n` + shellcheck + wezterm config validation on push/PR
+- [x] **MIT LICENSE + CONTRIBUTING.md** (2026-06-22): formal license file and contribution checklist
+
+---
+
+## Continuous Integration
+
+Every push and pull request runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
+
+| Job | What it checks |
+|-----|----------------|
+| **shell** | `bash -n` (syntax) on every `*.sh`, then `shellcheck -S warning` (advisory) |
+| **wezterm** | Loads `chezmoi/dot_wezterm.lua` via `wezterm … ls-fonts` to catch config errors and doc/config drift |
+
+Run the same checks locally before pushing:
+
+```bash
+find . -name '*.sh' -not -path './.git/*' -exec bash -n {} \;   # syntax
+find . -name '*.sh' -not -path './.git/*' -exec shellcheck -S warning {} +
+wezterm --config-file chezmoi/dot_wezterm.lua ls-fonts >/dev/null  # config valid
+```
+
+> There is no automated test suite (this is a configs + scripts repo); CI is the
+> lint/validation gate. New scripts must pass `bash -n` and should be shellcheck-clean.
+
+---
+
+## Contributing
+
+This is a personal dotfiles repo, but fixes and ideas are welcome.
+
+- **Bugs / requests:** open a [GitHub issue](https://github.com/SathishKumarAI/Dotfiles/issues) with your OS, the command run, and the output.
+- **Pull requests:** branch off `main`, keep changes **additive** (extend configs, don't rebind or delete existing keys/settings), and make sure CI passes (`bash -n` + shellcheck clean, wezterm config valid).
+- **Style:** docs follow the house style in [`docs/templates/README.md`](docs/templates/README.md) — lead with the point, tables over prose, show the *why*. Setup scripts that need `sudo` go in `setup/` as standalone `.sh` files.
+- **Commits:** Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`).
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full checklist.
 
 ---
 
 ## License
 
-Personal dotfiles — use freely, attribution appreciated.
+[MIT](LICENSE) © Sathish Kumar. Use freely; attribution appreciated.

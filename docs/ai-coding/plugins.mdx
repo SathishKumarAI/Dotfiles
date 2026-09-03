@@ -1,0 +1,284 @@
+---
+title: Claude Code Plugins
+description: The installed plugin set (31), their measured always-on context cost, the marketplaces they come from, and how to keep the overhead in check.
+status: live
+tags: [ai, claude, plugins, marketplace, context]
+---
+
+# Claude Code Plugins
+
+**Intro.** Plugins bundle skills, agents, hooks, MCP servers, and LSP servers
+behind one install. They are strictly more than skills — and they are **not
+free**: every plugin adds always-on tokens to *every* session. This page is the
+installed inventory with real measured costs, not estimates.
+
+> **Snapshot:** 2026-07-31 (post-audit) · **31 installed, 10 enabled** ·
+> **~6.9k tokens always-on**, down from ~20.9k · two marketplaces.
+> Measure yours with `claude plugin details <name>`.
+
+**Full audit + decision table + per-repo scoping guide:**
+[`../PLUGIN-AUDIT.md`](../PLUGIN-AUDIT.md). That file is the working document;
+this page is the reference.
+
+## Current state (2026-07-31 audit)
+
+Enabled — everything else is `false` in `~/.claude/settings.json`:
+
+| Plugin | Always-on | Why kept |
+|---|---:|---|
+| `plugin-dev` | 2,349 | authoring plugins/skills, active work |
+| `mlflow` | 1,987 | experiment tracking, active ML work |
+| `caveman` | 1,420 | net-negative cost — output compression outweighs it |
+| `superpowers` | 688 | TDD / brainstorming / sub-agent process skills |
+| `claude-md-management` | 175 | CLAUDE.md upkeep |
+| `skill-creator` | 112 | skill authoring |
+| `frontend-design` | 78 | |
+| `code-review` | 20 | the one review plugin kept of four overlapping |
+| `typescript-lsp` | 0 | `node` present |
+| `pyright-lsp` | 0 | **needs `npm i -g pyright`** — non-functional until then |
+| **Total** | **~6.8k** | was ~20.9k |
+
+Disabled in the audit, biggest first: `huggingface-skills` (5,029),
+`pr-review-toolkit` (2,033), `firecrawl` (1,967), `pinecone` (1,212),
+`duckdb-skills` (995), `sentry` (861), `chrome-devtools-mcp` (654),
+`mcp-server-dev` (502), `nvidia-skills` (269), `agent-sdk-dev` (233),
+`exa` (185), plus the zero-context MCP/LSP ones (`context7`, `github`,
+`playwright`, `serena`, `qdrant-skills`, `pydantic-ai`, `gopls-lsp`,
+`rust-analyzer-lsp`, `lua-lsp`) — dropped for broken auth, missing binaries,
+or duplication with built-ins.
+
+**Why those went.** Four separate causes, all verified at audit time:
+
+| Cause | Plugins |
+|---|---|
+| API key / OAuth never set up, so the MCP could not work at all | `github`, `pinecone`, `exa`, `sentry`, `firecrawl`, `huggingface-skills` |
+| Language toolchain absent on this box | `gopls-lsp` (no `go`), `rust-analyzer-lsp` (no `rustc`), `lua-lsp` |
+| Duplicates a built-in | `chrome-devtools-mcp` + `playwright` (vs `claude-in-chrome`), `serena` (vs LSP + Grep), `exa` (vs WebSearch), `pr-review-toolkit` (vs `/review`, `/security-review`, `code-review`) |
+| Domain not currently active | `qdrant-skills`, `duckdb-skills`, `pydantic-ai`, `mcp-server-dev`, `agent-sdk-dev`, `nvidia-skills`, `context7` |
+
+Backup of the pre-audit config: `~/.claude/settings.json.bak`. Every plugin is
+listed explicitly as `false` rather than deleted, so re-enabling is a
+one-character edit and nothing silently reappears on update.
+
+## Scoping instead of deleting
+
+The lever that makes a lean global set workable: a repo's own
+`.claude/settings.json` takes the same `enabledPlugins` key and layers over the
+user-level file, so you list only the deltas.
+
+```json
+{
+  "enabledPlugins": {
+    "huggingface-skills@claude-plugins-official": true
+  }
+}
+```
+
+Dropped in `~/coding/live/pickleball-vision-llm/`, that charges HF's 5k
+always-on tokens **only** in that repo. Commit the file — the config travels
+with the work. Use `.claude/settings.local.json` (gitignored) for anything
+carrying a secret. Verify once with `/plugin` inside the repo versus outside.
+
+There is no built-in "auto-disable after N days unused". Scoping is the
+supported substitute.
+
+## Marketplaces
+
+| Marketplace | Source | Plugins used |
+|---|---|---|
+| `claude-plugins-official` | `anthropics/claude-plugins-official` | 30 |
+| `caveman` | `JuliusBrussee/caveman` | 1 |
+
+```bash
+claude plugin marketplace list          # configured marketplaces
+claude plugin marketplace add <repo>    # add one
+claude plugin list                      # installed + enabled/failed status
+claude plugin details <name>            # component inventory + token cost
+```
+
+There is **no search command**. To browse what a marketplace offers, read its
+manifest directly:
+
+```bash
+grep -oE '"name": "[a-z0-9-]+"' \
+  ~/.claude/plugins/marketplaces/claude-plugins-official/.claude-plugin/marketplace.json \
+  | sort -u
+```
+
+## The context bill
+
+Always-on cost is what the plugin adds to **every** session before you invoke
+anything. On-invoke cost only lands when a skill actually fires.
+
+*Measured when all 30 were enabled. Kept as the reference table — the numbers
+per plugin do not change, only which rows you are paying for. Re-measure after
+any install with `claude plugin details <name>`.*
+
+| Plugin | Always-on | Skills | Note |
+|---|---:|---:|---|
+| `posthog` *(disabled)* | ~~23,176~~ 0 | 133 | Disabled — was 53% of the entire bill |
+| `huggingface-skills` | 5,029 | 25 | models/datasets/hub |
+| `plugin-dev` | 2,349 | 8 | authoring plugins |
+| `pr-review-toolkit` | 2,033 | 1 | + 6 agents |
+| `mlflow` | 1,987 | 11 | experiment tracking |
+| `firecrawl` | 1,967 | 11 | web scraping |
+| `caveman` | 1,420 | 12 | + 3 agents |
+| `pinecone` | 1,212 | 10 | vector DB |
+| `duckdb-skills` | 995 | 9 | local analytics |
+| `sentry` | 861 | 7 | error tracking |
+| `superpowers` | 688 | 14 | TDD / brainstorming / sub-agents |
+| `chrome-devtools-mcp` | 654 | 6 | live browser debugging |
+| `mcp-server-dev` | 502 | 3 | |
+| `nvidia-skills` | 269 | 1 | CUDA/GPU |
+| `agent-sdk-dev` | 233 | 1 | + 2 agents |
+| `exa` | 185 | 2 | search |
+| `claude-md-management` | 175 | 2 | |
+| `skill-creator` | 112 | 1 | |
+| `frontend-design` | 78 | 1 | |
+| `code-review` | 20 | 1 | |
+| `context7`, `github`, `playwright`, `serena` | 0 | 0 | MCP-only — cost is in tool schemas, not context |
+| 5× `*-lsp`, `pydantic-ai`, `qdrant-skills` | 0 | 0 | LSP/on-demand only |
+
+**`posthog` was a bad trade** and is now disabled. 133 skills and 23.2k
+always-on tokens for a product-analytics tool used occasionally - 53% of the
+whole bill. Disabling it took the total from ~44.1k to **~20.9k**:
+
+```bash
+claude plugin disable posthog        # keeps it installed, stops the context cost
+claude plugin enable posthog         # turn back on when you need it
+```
+
+The same logic applies to `firecrawl`, `pinecone`, and `huggingface-skills` if
+you are not actively using them. `disable` is the right tool — no need to
+uninstall and re-resolve later.
+
+## Installed set by purpose
+
+Bold = enabled after the 2026-07-31 audit. The rest stay installed at zero cost
+and are one edit away.
+
+| Purpose | Plugins |
+|---|---|
+| **Core workflow** | **`superpowers`** (TDD, brainstorming, sub-agents), **`caveman`**, `context7` (live library docs), `github` (PR/issue — `gh` CLI covers this) |
+| **Frontend** | **`frontend-design`**, `chrome-devtools-mcp` (built-in `claude-in-chrome` covers this) |
+| **Code intelligence** | **`pyright-lsp`**, **`typescript-lsp`**, `gopls-lsp`, `rust-analyzer-lsp`, `lua-lsp`, `serena` |
+| **Review + security** | **`code-review`**, `pr-review-toolkit` |
+| **ML / data** | `nvidia-skills`, `huggingface-skills`, **`mlflow`**, `duckdb-skills`, `pydantic-ai`, `qdrant-skills`, `pinecone` |
+| **Agent authoring** | **`skill-creator`**, **`plugin-dev`**, **`claude-md-management`**, `agent-sdk-dev`, `mcp-server-dev` |
+| **Ops / research** | `sentry`, `posthog`, `exa`, `firecrawl`, `playwright` |
+
+### LSP servers
+
+There is **no meta "LSP pack"** — the marketplace ships 13 separate `*-lsp`
+plugins. Five are installed, matching the languages actually used here. Also
+available: `clangd`, `jdtls`, `csharp`, `kotlin`, `php`, `ruby`, `swift`,
+`liquid`. **No Dart LSP exists** in this marketplace.
+
+## Known issue — the `mlflow` hooks bug
+
+`mlflow@1.0.0` ships a manifest that declares its own hooks file:
+
+```json
+"hooks": "./hooks/hooks.json"
+```
+
+Claude Code loads `hooks/hooks.json` **automatically**, so declaring it again is
+a duplicate load and the entire plugin fails:
+
+```
+Status: ✘ failed to load
+Error: Hook load failed: Duplicate hooks file detected: ./hooks/hooks.json
+       resolves to already-loaded file ...
+```
+
+`manifest.hooks` should only reference *additional* hook files. Local fix —
+delete that one line from the cached manifest:
+
+```bash
+f=~/.claude/plugins/cache/claude-plugins-official/mlflow/1.0.0/.claude-plugin/plugin.json
+cp "$f" "$f.bak"
+sed -i '/"hooks": ".\/hooks\/hooks.json",/d' "$f"
+claude plugin list | grep -A3 mlflow    # verify: enabled
+```
+
+> **This patch is lost when the plugin updates.** It is a workaround for an
+> upstream packaging bug, not a fix — re-apply after `claude plugin update
+> mlflow`, or report it to `mlflow/skills`.
+
+## Not installed
+
+- **`impeccable`** — already vendored in this repo at
+  `.claude/skills/impeccable/`, so it is active for this project without a
+  plugin. To use it everywhere, symlink it into `~/.claude/skills/` per the
+  convention in `~/coding/CLAUDE.md`.
+- **`ponytail`** — not present in any configured marketplace, and `obra/ponytail`
+  does not resolve. Source unknown.
+
+## Change log
+
+- **2026-07-31 — full audit, 30 enabled -> 10.** Total ~20.9k -> **~6.9k**
+  always-on. Four MCP servers (`context7`, `playwright`, `serena`, `github`)
+  stopped spawning at session start, so startup is faster too. Decision table
+  and rationale: [`../PLUGIN-AUDIT.md`](../PLUGIN-AUDIT.md).
+- **`posthog` disabled.** 133 skills, 23.2k always-on tokens for occasional
+  analytics. `claude plugin enable posthog` brings it back. Total dropped
+  ~44.1k -> ~20.9k. Never enable this one globally — per-repo only.
+- **`semgrep` uninstalled.** Its PostToolUse hook blocked *every* file write
+  with `Not logged into Semgrep Guardian`, and the auth is not available here.
+  Disabling was not enough - hook config stays loaded for the rest of the
+  session, so a restart is needed after removing a hook-bearing plugin.
+
+## Where the tokens actually go
+
+Three separate cost sites. Only one of them responds to disabling, which is why
+disabling is the lever that matters.
+
+| Cost site | Charged | What lives there | Shrink it by |
+|---|---|---|---|
+| System prompt | **every message** | skill `description:` lines, agent descriptions, command names | disabling the plugin — nothing else touches it |
+| Tool schemas | on load | MCP tool JSON schemas | already deferred on this machine (`ToolSearch` loads them on demand) |
+| Hooks | per session or per message | hook script output injected as context | disable the plugin, or set its opt-out env var |
+
+Agent descriptions cost more per item than skill descriptions — they ship full
+multi-example blocks. `pr-review-toolkit` was 2,033 tokens from **six agents and
+one skill**, which is why it outranked plugins with ten skills.
+
+Hooks currently firing: `caveman` (SessionStart + UserPromptSubmit, every
+message — but net-negative, output compression more than pays for it),
+`superpowers` (SessionStart, re-injects the whole `using-superpowers` body,
+~700 tokens — that is the design, it is what makes the skills fire reliably),
+`mlflow` (UserPromptSubmit, every message).
+
+## Rules of thumb
+
+1. **Measure before you keep.** `claude plugin details <name>` before deciding a
+   plugin earns its slot. A 133-skill plugin is a red flag.
+2. **`disable`, don't uninstall.** Keeps it one command away at zero cost.
+3. **Scope heavy plugins per repo** rather than keeping them global. See above.
+4. **MCP-only plugins are near-free in context** — their cost is tool schemas,
+   which load differently from skill frontmatter. They still cost *startup time*
+   if they shell out to `npx`/`uvx`.
+5. **A plugin whose auth was never set up is pure cost.** It cannot work, and
+   you pay its context bill every message regardless. Audit for this first.
+6. **Re-audit after every install.** The failure mode is drift — plugins
+   accumulate, nobody removes them.
+7. **Vetted only.** Same rule as skills: plugin path, never `curl|bash`. See
+   [skills](./skills.mdx).
+
+## Verifying
+
+```bash
+claude plugin list                   # enabled/disabled/failed
+/context                             # real breakdown, run right after /clear
+/plugin                              # TUI toggle, no JSON editing
+/caveman-stats                       # output-token savings + USD
+```
+
+`/context` immediately after a `/clear` shows the **floor** cost of the plugin
+set — the most honest number available.
+
+## See also
+
+- [skills](./skills.mdx) — the skill marketplaces + install script
+- [mcp-servers](./mcp-servers.mdx) — MCP configuration
+- [claude-code](./claude-code.mdx) — settings, deny-list, memory

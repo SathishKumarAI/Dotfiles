@@ -1,0 +1,118 @@
+---
+title: wezterm (Windows)
+description: The Windows variant of the wezterm config — pwsh shell, same Leader+a agent layer, installed via a watched stub.
+status: live
+tags: [terminal, wezterm, windows]
+---
+
+# wezterm (Windows)
+
+**Intro.** A separate config file for Windows, not a chezmoi template. The
+agent layer, keymap and Catppuccin theme are **identical** to Linux so muscle
+memory carries across machines; only the plumbing underneath differs — shell,
+process spawning, and which window-manager keys are reachable.
+
+> Status: **live** — added 2026-07-31. Verified parsing and key registration
+> against `C:\Program Files\WezTerm\wezterm.exe`.
+
+| File | Platform |
+|------|----------|
+| `dotfiles/wezterm/wezterm-windows.lua` | Windows — this page |
+| `chezmoi/dot_wezterm.lua` | Linux — [wezterm](./wezterm.mdx) |
+| `%USERPROFILE%\.wezterm.lua` | stub that loads the repo file |
+
+## Why two files instead of one template
+
+chezmoi can template a single config with `{{ if eq .chezmoi.os "windows" }}`
+conditionals. That was rejected here: the two platforms diverge on the things
+that matter most — shell, spawn mechanics, window system — and a template buries
+those differences inside branches, making both versions harder to read than
+either standalone file.
+
+## Install
+
+The stub is already in place. To recreate it:
+
+```lua
+-- %USERPROFILE%\.wezterm.lua
+local wezterm = require("wezterm")
+local target = "C:/Users/PRANAS/Documents/coding/workspace/dotfiles/dotfiles/wezterm/wezterm-windows.lua"
+wezterm.add_to_config_reload_watch_list(target)
+return dofile(target)
+```
+
+**Why a stub, not a copy or a symlink.** Windows symlinks need Developer Mode or
+an elevated shell, so they're unreliable to script. A copy silently drifts from
+the repo the moment you forget to re-copy. `dofile` keeps exactly one source of
+truth. The `add_to_config_reload_watch_list` line is what preserves hot-reload —
+WezTerm watches only `.wezterm.lua` by default, so without it, repo edits would
+go unnoticed until a full restart.
+
+## Windows deltas vs Linux
+
+| Area | Linux | Windows | Why |
+|------|-------|---------|-----|
+| Shell | `/bin/zsh --login` | `pwsh -NoLogo` | PowerShell 7 — chain operators, ternary, null-coalescing |
+| Agent spawn | `zsh -lc '<cmd>; exec zsh -l'` | `pwsh -NoLogo -NoExit -Command <cmd>` | `-NoExit` is the counterpart to `exec zsh -l`: keeps the pane alive after the agent exits |
+| Window system | `enable_wayland = true` | *(absent)* | Wayland is Linux-only |
+| Flatpak env guard | required | *(absent)* | no sandbox involved |
+| `Super`+Arrow snapping | bound | **dropped** | Windows reserves Win+Arrow for Snap and never passes it through — use `Leader+h/l/m/c` |
+| Process icons | bare names | strips `.exe` and backslashes | Windows reports `C:\...\pwsh.exe`, not `pwsh` |
+| Cheatsheet pager | `less -R` | `Out-Host -Paging` | works with nothing extra installed |
+| Quick-select | POSIX paths | **plus** `C:\...` paths | the POSIX rule misses drive-letter paths |
+
+Everything else — the `Leader+a` agent layer, `file:line` quick-select, kitty
+keyboard, tab titles, status bar, resize mode, mouse bindings — is unchanged.
+
+## Fonts
+
+This machine has **JetBrains Mono but not the Nerd Font build**. The config still
+lists `JetBrainsMono Nerd Font` first (for other machines) and falls through.
+
+Nerd glyphs render anyway: WezTerm ships a built-in **Symbols Nerd Font Mono**
+and resolves icons through it automatically. Confirmed with:
+
+```powershell
+wezterm ls-fonts --text "󰚩"
+#  glyph=robot ... wezterm.font("Symbols Nerd Font Mono") -- <built-in>, BuiltIn
+```
+
+Install JetBrainsMono Nerd Font if you want the icons metrically matched to the
+text font, but nothing is broken without it.
+
+## Verify
+
+```powershell
+wezterm show-keys                      # exit 0 = config parses
+wezterm show-keys | Select-String -Context 0,11 "Key Table: agent"
+wezterm ls-fonts --text "󰚩"            # which font supplies the agent icon
+```
+
+Verified on 2026-07-31: parses with exit 0, and the `agent` key table registers
+all 9 bindings with `Leader+a → ActivateKeyTable{one_shot: true, timeout: 2000}`.
+
+Runtime behaviour is **not** covered by the above — launch a window and press
+`Leader+a` then `c`; the status bar should show `AGENT` and Claude Code should
+open in a new tab at the current directory.
+
+## Known issues
+
+- **`The syntax of the command is incorrect.` ×3 on every launch.** This is the
+  `resurrect.wezterm` plugin, not the config — measured, not guessed: a bare
+  config prints 0 of these, the plugin alone prints 3. The plugin is archived and
+  shells out with POSIX syntax that `cmd.exe` rejects. WezTerm still starts
+  normally (exit 0).
+- **Session save/restore (`Leader+Shift+S` / `R`) is unverified on Windows.**
+  The failing calls above are plausibly how resurrect enumerates its state
+  directory, so restore may find nothing. Treat it as broken until tested. To
+  silence the noise if you don't use it, set `ok_resurrect = false` after the
+  plugin block in the config.
+- **`herdr` stable releases are Linux/macOS only** — Windows support is preview,
+  via `install.ps1`. The `Leader+a h` bind and launch-menu entry are present but
+  depend on a preview install. See [herdr](./herdr.mdx).
+
+## Links
+
+- Config: `dotfiles/wezterm/wezterm-windows.lua` · Stub: `%USERPROFILE%\.wezterm.lua`
+- Linux counterpart: [wezterm](./wezterm.mdx) · Agent multiplexer: [herdr](./herdr.mdx)
+- Upstream: <https://wezterm.org>

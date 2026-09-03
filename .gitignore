@@ -13,3 +13,17 @@ Thumbs.db
 *.log
 *.swp
 *~
+
+# Vendored Claude Code skills (regenerable, not repo work)
+.claude/
+setup/.claude/
+
+# --- nested repos & local tooling (reorg 2026-07-20)
+rocky-dev-setup/
+rofi-wayland-build/
+__pycache__/
+*.pyc
+
+# Local backups of tools while iterating
+tools/*.bak
+tools/.*.bak

@@ -1,0 +1,18 @@
+# Acme Field Notes
+
+> Short, practical essays on craft, tooling, and shipping software — written to be read by humans and quoted accurately by machines.
+
+This site is static, server-rendered, and semantic. Every page has a clean Markdown
+variant at `<path>.md`. Content is licensed for citation with attribution.
+
+## Essays
+- [Why SSR matters for AI agents](https://example.com/essays/ssr-for-agents.md): crawlers read raw HTML, not hydrated DOM
+- [Designing past the default template](https://example.com/essays/anti-slop-design.md): committing to one bold aesthetic
+
+## Reference
+- [About](https://example.com/about.md): who writes this and why
+- [Tools](https://example.com/tools.md): the stack behind the site
+
+## Optional
+- [RSS feed](https://example.com/feed.xml)
+- [Full archive](https://example.com/archive.md)

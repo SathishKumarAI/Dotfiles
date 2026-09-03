@@ -1,0 +1,75 @@
+# requirements-ml.txt — the ML library set, installed by setup/install-ml-windows.ps1
+#
+# NOTE: torch / torchvision / torchaudio are deliberately NOT listed here.
+# They must come from PyTorch's own package index with a CUDA channel matched
+# to the GPU (see install-ml-windows.ps1). Listing them here would let the
+# resolver pull a generic wheel with no kernels for the card.
+#
+# Deliberately unpinned: this is a workstation environment, not a reproducible
+# build. Pin per project (uv.lock / requirements.lock), not globally.
+
+# --- core numerics ---
+numpy
+scipy
+pandas
+polars                  # faster dataframes for anything over ~1M rows
+pyarrow                 # parquet + zero-copy interchange
+
+# --- classical ML ---
+scikit-learn
+xgboost
+lightgbm
+statsmodels
+
+# --- plotting ---
+matplotlib
+seaborn
+plotly
+
+# --- notebooks ---
+jupyterlab
+ipykernel
+ipywidgets
+nbformat
+
+# --- deep learning ecosystem (torch itself comes from the CUDA index) ---
+transformers
+datasets
+accelerate
+safetensors
+sentencepiece
+huggingface-hub
+einops
+timm
+
+# --- vision ---
+pillow
+opencv-python
+albumentations
+
+# --- experiment tracking / config ---
+mlflow
+tensorboard
+hydra-core
+python-dotenv
+
+# --- LLM / agent work ---
+openai
+anthropic
+tiktoken
+langchain
+langchain-community
+faiss-cpu               # vector index; GPU build is conda-only
+sentence-transformers
+
+# --- serving ---
+fastapi
+uvicorn[standard]
+pydantic
+
+# --- dev tooling ---
+ruff                    # lint + format, matches the Linux side of this repo
+pytest
+mypy
+rich
+tqdm

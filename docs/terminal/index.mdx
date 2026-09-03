@@ -1,6 +1,6 @@
 ---
 title: Terminal
-description: wezterm terminal emulator plus zellij and tmux multiplexers.
+description: wezterm terminal emulator plus herdr, zellij and tmux multiplexers.
 status: live
 tags: [terminal, overview]
 ---
@@ -9,16 +9,40 @@ tags: [terminal, overview]
 
 | Page | What |
 |------|------|
-| [wezterm](./wezterm.mdx) | GPU terminal emulator (default), Catppuccin, vim-style panes, launch menu |
+| [agent-workflow](./agent-workflow.mdx) | **Start here for agents** — how to use `Leader+a`, the status pill, every shortcut, setup and troubleshooting |
+| [wezterm](./wezterm.mdx) | GPU terminal emulator (default, **Linux**), Catppuccin, vim-style panes, launch menu |
+| [wezterm (Windows)](./wezterm-windows.mdx) | Windows variant — `pwsh` shell, same `Leader+a` agent layer, installed via a watched stub |
+| [wezterm-keymap.html](./wezterm-keymap.html) | Interactive keymap cheatsheet — type-to-filter every binding, Catppuccin Mocha. Open in a browser |
+| [herdr](./herdr.mdx) | Agent multiplexer (`Ctrl+g` prefix) — detects Claude Code, tracks agent state, panes survive detach |
 | [zellij](./zellij.mdx) | Primary multiplexer (`Ctrl+a` prefix), dev layout, `zellij-pick` |
 | [tmux](./tmux.mdx) | Fallback multiplexer (`Ctrl+a` prefix), vim nav |
 
 ## The stack
 
-- **wezterm** is the emulator (window, GPU rendering, fonts, tabs/panes).
-- **zellij** is the primary multiplexer for persistent, layout-driven sessions.
+- **wezterm** is the emulator (window, GPU rendering, fonts, tabs/panes). Two
+  configs, deliberately not one chezmoi template: `chezmoi/dot_wezterm.lua` for
+  Linux and `dotfiles/wezterm/wezterm-windows.lua` for Windows. The keymap and
+  the `Leader+a` agent layer are identical across both, so muscle memory
+  carries; only shell and spawn plumbing differ. See
+  [wezterm (Windows)](./wezterm-windows.mdx).
+- **herdr** is the multiplexer for **agent** sessions: it detects Claude Code in
+  a pane, classifies it `idle`/`working`/`blocked`/`done`, and rolls that up a
+  sidebar — so with several agents running you can see which one needs a
+  decision. Added 2026-07-31, pinned to v0.7.5.
+- **zellij** is the primary multiplexer for ordinary persistent, layout-driven
+  sessions. herdr does **not** replace it: herdr is pre-1.0, so keeping zellij
+  means no single point of failure.
 - **tmux** is kept as a fallback (e.g. on remote hosts) with a matching
   `Ctrl+a` prefix and vim navigation so muscle memory carries over.
 
-Both multiplexers use **`Ctrl+a`** as prefix (not the default `Ctrl+b`) to avoid
-clashing with vim's `Ctrl+b` page-up.
+### Three prefixes, and why they differ
+
+| Tool | Prefix | Reason |
+|------|--------|--------|
+| zellij, tmux | `Ctrl+a` | moved off the default `Ctrl+b` so vim's page-up survives |
+| wezterm | `Ctrl+a` (leader) | same chord, but consumed by the emulator before any multiplexer sees it |
+| herdr | `Ctrl+g` | `Ctrl+b` would undo the page-up decision above; `Ctrl+a` never reaches it, since wezterm's leader intercepts first |
+
+herdr's upstream docs and its own `prefix+?` help screen all say `Ctrl+b`. They
+will not match this machine — that deviation is deliberate and documented in
+[herdr.mdx](./herdr.mdx).
