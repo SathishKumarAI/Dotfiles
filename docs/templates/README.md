@@ -20,6 +20,7 @@ Referenced from `~/coding/CLAUDE.md` so Claude Code picks them up in any repo.
 | [`prompts/commit-and-pr.md`](prompts/commit-and-pr.md) | Clean commit messages + PR description |
 | [`prompts/build-keybindings-cheatsheet.md`](prompts/build-keybindings-cheatsheet.md) | Build an all-apps keyboard cheatsheet from real configs + render PDF |
 | [`prompts/backlog-fanout-and-build.md`](prompts/backlog-fanout-and-build.md) | Multi-agent: generate a ranked feature backlog, then build + ship the top N (opt-in Workflow) |
+| [`prompts/learn-with-visual.md`](prompts/learn-with-visual.md) | Learn a concept: explanation → working code → walkthrough → interactive visual |
 
 ## How to use
 
